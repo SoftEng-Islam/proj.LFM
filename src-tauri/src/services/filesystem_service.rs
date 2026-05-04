@@ -33,3 +33,37 @@ pub fn is_dir(path: &Path) -> bool {
         false
     }
 }
+
+pub async fn read_directory_paginated(
+    path: String,
+    offset: usize,
+    limit: usize,
+) -> AppResult<Vec<String>> {
+    let entries = tokio::task::spawn_blocking(move || {
+        let mut results = Vec::new();
+
+        if let Ok(read_dir) = fs::read_dir(path) {
+            for (index, entry) in read_dir.enumerate() {
+                if index < offset {
+                    continue;
+                }
+
+                if results.len() >= limit {
+                    break;
+                }
+
+                if let Ok(entry) = entry {
+                    if let Some(name) = entry.file_name().to_str() {
+                        results.push(name.to_string());
+                    }
+                }
+            }
+        }
+
+        results
+    })
+    .await
+    .map_err(|error| crate::errors::AppError::Operation(error.to_string()))?;
+
+    Ok(entries)
+}
