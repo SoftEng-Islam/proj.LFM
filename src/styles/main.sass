@@ -1,0 +1,125 @@
+:root
+	--win-bg: #f3f3f3
+	--win-panel: #ffffff
+	--win-sidebar: #f3f3f3
+	--win-toolbar: #eeeeee
+	--win-title-bar: #e8e8e8
+	--win-border: rgba(0, 0, 0, 0.09)
+	--win-blue: #0067c0
+	--win-blue-subtle: rgba(0, 103, 192, 0.11)
+	--win-hover: rgba(0, 0, 0, 0.055)
+	--win-active: rgba(0, 0, 0, 0.09)
+	--win-selected: rgba(0, 103, 192, 0.14)
+	--win-text: #1a1a1a
+	--win-text-muted: #5c5c5c
+	--win-accent-bar: #0067c0
+	--win-folder: #ffc83d
+	--win-item-bg: #fafafa
+	--win-item-hover: rgba(0, 103, 192, 0.08)
+	--win-item-selected-border: #0067c0
+	--win-status-bg: #f3f3f3
+	--win-context-bg: #2c2c2c
+	--win-context-border: rgba(255,255,255,0.12)
+	--win-context-hover: rgba(255,255,255,0.08)
+	--win-context-text: #f0f0f0
+	--win-context-divider: rgba(255,255,255,0.1)
+
+.dark
+	--win-bg: #202020
+	--win-panel: #2b2b2b
+	--win-sidebar: #202020
+	--win-toolbar: #292929
+	--win-title-bar: #1e1e1e
+	--win-border: rgba(255, 255, 255, 0.09)
+	--win-blue: #60aaef
+	--win-blue-subtle: rgba(96, 170, 239, 0.16)
+	--win-hover: rgba(255, 255, 255, 0.06)
+	--win-active: rgba(255, 255, 255, 0.10)
+	--win-selected: rgba(96, 170, 239, 0.18)
+	--win-text: #f3f3f3
+	--win-text-muted: #9d9d9d
+	--win-accent-bar: #60aaef
+	--win-folder: #ffc83d
+	--win-item-bg: #2b2b2b
+	--win-item-hover: rgba(96, 170, 239, 0.10)
+	--win-item-selected-border: #60aaef
+	--win-status-bg: #1e1e1e
+	--win-context-bg: #2c2c2c
+	--win-context-border: rgba(255,255,255,0.12)
+	--win-context-hover: rgba(255,255,255,0.08)
+	--win-context-text: #f0f0f0
+	--win-context-divider: rgba(255,255,255,0.1)
+
+html,
+body,
+#app
+	height: 100%
+	min-height: 100%
+
+body
+	margin: 0
+	font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif
+	font-size: 12px
+	color: var(--win-text)
+	background: var(--win-bg)
+	transition: background-color 150ms ease, color 150ms ease
+	-webkit-font-smoothing: antialiased
+
+*
+	box-sizing: border-box
+
+button,
+input,
+textarea,
+select
+	font: inherit
+
+a
+	color: inherit
+	text-decoration: none
+
+/* Selection */
+::selection
+	background: var(--win-blue-subtle)
+	color: var(--win-text)
+
+/* Win11 thin scrollbar */
+::-webkit-scrollbar
+	width: 6px
+	height: 6px
+
+::-webkit-scrollbar-thumb
+	border-radius: 3px
+	background: rgba(100, 100, 100, 0.36)
+
+::-webkit-scrollbar-track
+	background: transparent
+
+/* Route transition */
+.route-fade-enter-active,
+.route-fade-leave-active
+	transition: opacity 120ms ease
+
+.route-fade-enter-from,
+.route-fade-leave-to
+	opacity: 0
+
+.route-fade-enter-to,
+.route-fade-leave-from
+	opacity: 1
+
+/* Tippy overrides */
+.tippy-box[data-theme~='lfm']
+	border-radius: 4px
+	background: rgba(50, 50, 50, 0.96)
+	font-size: 11px
+	font-weight: 500
+	padding: 2px 4px
+
+.tippy-box[data-theme~='lfm'][data-placement^='top'] > .tippy-arrow::before
+	border-top-color: rgba(50, 50, 50, 0.96)
+
+.tippy-box[data-theme~='lfm'][data-placement^='bottom'] > .tippy-arrow::before
+	border-bottom-color: rgba(50, 50, 50, 0.96)
+
+

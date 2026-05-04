@@ -1,0 +1,78 @@
+# Write your extension (Beta)
+
+Currently extension type that is supported is theme extension. Stay tuned for other extensions!
+
+## Get started
+
+In this topic, we'll teach you how to create your first extension for Files. To get started, make sure you have [Node.js](https://nodejs.org/en/) installed, then install yeoman and Files Extension Generator by running following command:
+
+```bash
+npm i -g yo generator-Files-extensions
+```
+
+The generator scaffolds a new extension project ready for development. Run the generator and fill out a few fields to get started.
+
+```bash
+yo Files-extensions
+```
+
+![Generating Files Extension](/img/docs/create-extensions.gif)
+
+## Start the development process
+
+You can start the development process by running the following command:
+
+```bash
+npm start
+```
+
+You can start edit the extension file and see the changes in Files, it's hot reloaded!
+![Files Extension Development](/img/docs/developing-extensions.gif)
+
+### Theme
+
+Your generated theme extension file is under `./themes` folder and is a JSON file. The syntax for the theme file is as follows:
+
+```json
+"<scope><element query><CSS key>": "<CSS value>"
+```
+
+Scopes are: `root`, `windowmanager`, `tabs`, `settings`, `favorites`, `favorites`, `grid`, `contextmenu`, `prompt`, `preview` and `properties`. Scopes are used to group the theme.
+
+Element query: basically just like what a CSS query does.
+
+CSS Key is the name of the CSS property you want to change. Please note that `snakeCase` will be converted into `snake-case`.
+
+:::tip
+
+There're some CSS variables provided to the theme value that you can make use of are:
+
+1. `--sidebar-transparency`, the transparency of the sidebar, in percentage
+2. `--workspace-transparency`, the transparency of the workspace, in percentage
+3. `--topbar-transparency`, the transparency of the topbar, in percentage
+
+:::
+
+#### Examples
+
+Examples of theme extensions are found in the [`example/themes` on GitHub repository](https://github.com/softeng/Files/tree/master/example/themes).
+
+## Packaging your extension
+
+When you're ready to package your extension, you can run the following command:
+
+```bash
+npm run build
+```
+
+This command will package and build your extensions into Files reserved `.xtension` file format.
+
+![Packaging Files Extension](/img/docs/packaging-extensions.gif)
+
+## Install the packaged extension
+
+```bash
+npm run Files:install
+```
+
+![Install Packaged Extension](/img/docs/install-packaged-extensions.gif)

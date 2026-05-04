@@ -1,0 +1,27 @@
+{
+	"name": "winter",
+	"extensionName": "Winter",
+	"description": "My Extension Description",
+	"category": "theme",
+	"version": "0.1.0",
+	"license": "MIT",
+	"scripts": {
+		"start": "Files --theme winter-dark",
+		"build": "Files extensions theme build",
+		"Files:install": "Files extensions theme install"
+	},
+	"FilesExtensionConfig": {
+		"themes": [
+			{
+				"identifier": "winter",
+				"name": "Winter",
+				"path": "./themes/winter-color-theme.json"
+			},
+			{
+				"identifier": "winter-dark",
+				"name": "Dark Winter",
+				"path": "./themes/winter-dark-color-theme.json"
+			}
+		]
+	}
+}

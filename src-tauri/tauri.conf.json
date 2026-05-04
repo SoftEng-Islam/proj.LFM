@@ -1,0 +1,76 @@
+{
+    "bundle": {
+        "active": true,
+        "targets": "all",
+        "windows": {
+            "certificateThumbprint": null,
+            "digestAlgorithm": "sha256",
+            "timestampUrl": "",
+            "wix": {
+                "template": "./installer.wxs"
+            }
+        },
+        "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+        "resources": ["../lib/files.json", "../lib/folder.json", "./src/extractIcon.ps1"],
+        "externalBin": [],
+        "copyright": "Apache-2.0",
+        "category": "Utility",
+        "shortDescription": "Linux-first desktop file manager.",
+        "longDescription": "LFM is a Linux-first file manager that combines a Vue desktop interface with native filesystem operations powered by Rust and Tauri.",
+        "macOS": {
+            "frameworks": [],
+            "minimumSystemVersion": "",
+            "exceptionDomain": "",
+            "signingIdentity": null,
+            "entitlements": null
+        },
+        "linux": {
+            "deb": {
+                "depends": []
+            }
+        },
+        "licenseFile": "../LICENSE",
+        "createUpdaterArtifacts": "v1Compatible"
+    },
+    "build": {
+        "devUrl": "http://localhost:1420",
+        "frontendDist": "../dist",
+        "beforeDevCommand": "pnpm run dev:ui",
+        "beforeBuildCommand": "pnpm run build:web"
+    },
+    "productName": "LFM",
+    "mainBinaryName": "LFM",
+    "version": "0.4.0",
+    "identifier": "io.softeng.lfm",
+    "plugins": {
+        "updater": {
+            "pubkey": "",
+            "endpoints": []
+        }
+    },
+    "app": {
+        "macOSPrivateApi": false,
+        "windows": [
+            {
+                "title": "LFM",
+                "width": 1280,
+                "height": 800,
+                "minWidth": 960,
+                "minHeight": 640,
+                "resizable": true,
+                "fullscreen": false,
+                "transparent": false,
+                "useHttpsScheme": true,
+                "decorations": false
+            }
+        ],
+        "security": {
+            "assetProtocol": {
+                "scope": ["*"],
+                "enable": true
+            },
+            "csp": null
+        },
+        "withGlobalTauri": true
+    }
+}

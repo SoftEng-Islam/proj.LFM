@@ -1,0 +1,22 @@
+{
+	"name": "shadesofpurple",
+	"extensionName": "Shades of Purple",
+	"description": "My Extension Description",
+	"category": "theme",
+	"version": "0.1.0",
+	"license": "MIT",
+	"scripts": {
+		"start": "Files --theme shadesofpurple",
+		"build": "Files extensions theme build",
+		"Files:install": "Files extensions theme install"
+	},
+	"FilesExtensionConfig": {
+		"themes": [
+			{
+				"identifier": "shadesofpurple",
+				"name": "Shades of Purple",
+				"path": "./themes/shadesofpurple-color-theme.json"
+			}
+		]
+	}
+}
