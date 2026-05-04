@@ -3,6 +3,7 @@
     windows_subsystem = "windows"
 )]
 
+mod commands;
 mod drives;
 mod extensions;
 mod file_lib;
@@ -14,13 +15,8 @@ use clap::{Arg, ArgMatches, Command as ClapCommand};
 
 mod tests;
 
-use font_loader::system_fonts;
 use lazy_static::lazy_static;
 use std::env;
-
-#[cfg(target_os = "windows")]
-use std::os::windows::process::CommandExt;
-use std::process::Command;
 use tauri::Manager;
 #[cfg(not(target_os = "linux"))]
 use window_shadows::set_shadow;
@@ -111,40 +107,6 @@ lazy_static! {
             )
             .get_matches()
     };
-}
-
-#[cfg(target_os = "windows")]
-#[tauri::command]
-#[inline]
-async fn check_vscode_installed() -> Result<bool, String> {
-    let output = Command::new("cmd")
-        .args(["/C", "code -v"])
-        .creation_flags(0x08000000)
-        .output()
-        .expect("failed to execute process");
-
-    Ok(output.status.success())
-}
-
-#[cfg(not(target_os = "windows"))]
-#[tauri::command]
-#[inline]
-async fn check_vscode_installed() -> Result<bool, String> {
-    let output = Command::new("sh")
-        .arg("-c")
-        .arg("code -v")
-        .output()
-        .expect("failed to execute process");
-
-    Ok(output.status.success())
-}
-
-#[tauri::command]
-#[inline]
-fn get_available_fonts() -> Result<Vec<String>, String> {
-    let fonts = system_fonts::query_all();
-
-    Ok(fonts)
 }
 
 #[cfg(target_os = "windows")]
@@ -242,8 +204,8 @@ async fn main() {
             storage::delete_storage_data,
             extensions::listen_stylesheet_change,
             extensions::get_cli_args,
-            check_vscode_installed,
-            get_available_fonts,
+            commands::system::check_vscode_installed,
+            commands::system::get_available_fonts,
             enable_shadow_effect,
             change_transparent_effect
         ])
