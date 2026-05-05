@@ -5,20 +5,22 @@ import { readDirectory } from '@/services/filesystem.service';
 interface ExplorerState {
   currentPath: string;
   files: FileEntry[];
-  selectedFiles: string[];
+  selectedFiles: Set<string>;
   loading: boolean;
   error: string | null;
   history: string[];
+  showHiddenFiles: boolean;
 }
 
 export const useExplorerStore = defineStore('explorer', {
   state: (): ExplorerState => ({
     currentPath: '/',
     files: [],
-    selectedFiles: [],
+    selectedFiles: new Set<string>(),
     loading: false,
     error: null,
     history: [],
+    showHiddenFiles: false,
   }),
 
   actions: {
@@ -29,7 +31,10 @@ export const useExplorerStore = defineStore('explorer', {
 
         const files = await readDirectory(path);
 
-        this.files = files;
+        this.files = this.showHiddenFiles
+          ? files
+          : files.filter((file) => !file.name.startsWith('.'));
+
         this.currentPath = path;
         this.history.push(path);
       } catch (error) {
@@ -40,13 +45,19 @@ export const useExplorerStore = defineStore('explorer', {
     },
 
     selectFile(path: string) {
-      if (!this.selectedFiles.includes(path)) {
-        this.selectedFiles.push(path);
-      }
+      this.selectedFiles.add(path);
+    },
+
+    unselectFile(path: string) {
+      this.selectedFiles.delete(path);
     },
 
     clearSelection() {
-      this.selectedFiles = [];
+      this.selectedFiles.clear();
+    },
+
+    toggleHiddenFiles() {
+      this.showHiddenFiles = !this.showHiddenFiles;
     },
   },
 });
