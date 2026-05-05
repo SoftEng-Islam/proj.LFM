@@ -2303,6 +2303,7 @@ dependencies = [
  "tauri-plugin-dialog",
  "tauri-plugin-os",
  "tauri-plugin-window-state",
+ "thiserror 1.0.69",
  "tokio",
  "trash",
  "url",
