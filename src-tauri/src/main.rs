@@ -5,9 +5,11 @@
 
 mod commands;
 mod drives;
+mod errors;
 mod extensions;
 mod file_lib;
 mod files_api;
+mod services;
 mod storage;
 mod utils;
 
@@ -198,6 +200,8 @@ async fn main() {
             files_api::remove_file,
             files_api::compress_to_zip,
             files_api::decompress_from_zip,
+            commands::files::read_directory_paginated,
+            commands::watchers::watch_directory,
             drives::get_drives,
             storage::write_data,
             storage::read_data,
