@@ -175,17 +175,17 @@ pub async fn get_file_properties(file_path: &str) -> Result<FileMetaData, String
 
     let last_modified = match metadata.modified() {
         Ok(result) => result,
-        Err(e) => return Err(e.to_string()),
+        Err(_) => std::time::SystemTime::UNIX_EPOCH,
     };
 
     let last_accessed = match metadata.accessed() {
         Ok(result) => result,
-        Err(e) => return Err(e.to_string()),
+        Err(_) => last_modified, // Fallback to last_modified if atime is not supported or disabled
     };
 
     let created = match metadata.created() {
         Ok(result) => result,
-        Err(e) => return Err(e.to_string()),
+        Err(_) => last_modified, // Fallback to last_modified if creation time is not supported (common on Linux)
     };
 
     let is_symlink = FileSystemUtils::check_is_symlink(file_path);
@@ -342,7 +342,8 @@ pub fn is_dir(path: &Path) -> Result<bool, String> {
 
 /// Read files and its information of a directory
 #[tauri::command]
-pub async fn read_directory(dir: &Path) -> Result<FolderInformation, String> {
+pub async fn read_directory(dir: String) -> Result<FolderInformation, String> {
+    let dir = std::path::Path::new(&dir);
     let preference = match storage::read_data("preference") {
         Ok(result) => result,
         Err(_) => return Err("Error reading preference".into()),
@@ -416,7 +417,8 @@ pub async fn read_directory(dir: &Path) -> Result<FolderInformation, String> {
 /// Get array of files of a directory
 #[tauri::command]
 #[inline]
-pub async fn get_files_in_directory(dir: &Path) -> Result<Vec<String>, String> {
+pub async fn get_files_in_directory(dir: String) -> Result<Vec<String>, String> {
+    let dir = std::path::Path::new(&dir);
     let paths = fs::read_dir(dir).map_err(|err| err.to_string())?;
     let mut files = Vec::new();
     for path in paths {

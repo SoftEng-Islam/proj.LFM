@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+import { openFile, convertFileSrc } from '@/services/tauri-bridge';
 
 import ActionToolbar from '@/features/explorer/components/ActionToolbar.vue';
 import ContextMenu from '@/features/explorer/components/ContextMenu.vue';
@@ -7,6 +10,7 @@ import FolderIcon from '@/components/ui/FolderIcon.vue';
 import { useFileManagerStore } from '@/stores/file-manager';
 
 const store = useFileManagerStore();
+const router = useRouter();
 const selectedId = computed(() => store.selectedItem?.id ?? '');
 
 // Context menu state
@@ -27,8 +31,16 @@ function closeContextMenu() {
 }
 
 // Determine icon type for non-folder entries
-function isFolder(entry: { category: string }) {
-	return entry.category === 'folder';
+function isFolder(entry: { kind: string }) {
+	return entry.kind === 'folder';
+}
+
+function openItem(entry: any) {
+	if (isFolder(entry)) {
+		router.push(entry.id);
+	} else {
+		openFile(entry.id);
+	}
 }
 
 // File type icon color map
@@ -78,6 +90,7 @@ function fileGlyph(category: string): string {
 					class="win-grid-item"
 					:class="{ 'win-grid-item--selected': selectedId === entry.id }"
 					@click="store.selectItem(entry.id)"
+					@dblclick="openItem(entry)"
 					@contextmenu="(e) => openContextMenu(e, entry.id)"
 					:aria-selected="selectedId === entry.id"
 					:title="entry.name"
@@ -85,6 +98,24 @@ function fileGlyph(category: string): string {
 					<!-- Folder or file icon -->
 					<div class="win-grid-item-icon">
 						<FolderIcon v-if="isFolder(entry)" :size="64" />
+						
+						<!-- Image Thumbnail -->
+						<img 
+							v-else-if="entry.category === 'image'" 
+							:src="convertFileSrc(entry.id)" 
+							class="win-media-thumbnail" 
+							loading="lazy"
+						/>
+						
+						<!-- Video Thumbnail -->
+						<video 
+							v-else-if="entry.category === 'video'" 
+							:src="convertFileSrc(entry.id) + '#t=0.1'" 
+							class="win-media-thumbnail"
+							preload="metadata"
+							muted
+						></video>
+
 						<div
 							v-else
 							class="win-file-icon"
@@ -114,10 +145,27 @@ function fileGlyph(category: string): string {
 					class="win-list-row"
 					:class="{ 'win-list-row--selected': selectedId === entry.id }"
 					@click="store.selectItem(entry.id)"
+					@dblclick="openItem(entry)"
 					@contextmenu="(e) => openContextMenu(e, entry.id)"
 				>
 					<div class="win-list-col win-list-col--name">
 						<FolderIcon v-if="isFolder(entry)" :size="16" />
+						
+						<img 
+							v-else-if="entry.category === 'image'" 
+							:src="convertFileSrc(entry.id)" 
+							class="win-list-media-thumbnail" 
+							loading="lazy"
+						/>
+						
+						<video 
+							v-else-if="entry.category === 'video'" 
+							:src="convertFileSrc(entry.id) + '#t=0.1'" 
+							class="win-list-media-thumbnail"
+							preload="metadata"
+							muted
+						></video>
+
 						<div
 							v-else
 							class="win-list-file-icon"
@@ -226,6 +274,22 @@ function fileGlyph(category: string): string {
 .win-file-icon-glyph {
 	font-size: 20px;
 	filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
+.win-media-thumbnail {
+	max-width: 64px;
+	max-height: 64px;
+	object-fit: cover;
+	border-radius: 4px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.win-list-media-thumbnail {
+	width: 16px;
+	height: 16px;
+	object-fit: cover;
+	border-radius: 2px;
+	margin-right: 8px;
 }
 
 .win-grid-item-name {

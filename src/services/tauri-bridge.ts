@@ -8,7 +8,8 @@
  *   import { readDirectory, getDrives } from '@/services/tauri-bridge';
  */
 
-import { invoke } from '@tauri-apps/api/core';
+import { invoke, convertFileSrc } from '@tauri-apps/api/core';
+export { convertFileSrc };
 
 // ─── Shared Types ────────────────────────────────────────────────────────────
 

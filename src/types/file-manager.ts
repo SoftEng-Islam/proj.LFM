@@ -1,5 +1,5 @@
 export type UiTheme = 'light' | 'dark';
-export type SectionId = 'home' | 'documents' | 'downloads' | 'projects' | 'media' | 'shared' | 'trash';
+export type SectionId = string;
 export type ViewMode = 'grid' | 'list';
 export type SortMode = 'name' | 'modified' | 'size' | 'kind';
 export type AccentTone = 'sky' | 'emerald' | 'amber' | 'violet' | 'rose' | 'cyan' | 'slate';
@@ -47,7 +47,7 @@ export interface FileEntry {
 	id: string;
 	name: string;
 	kind: 'folder' | 'file';
-	category: 'folder' | 'document' | 'spreadsheet' | 'image' | 'video' | 'archive' | 'code' | 'pdf' | 'audio';
+	category: string;
 	typeLabel: string;
 	sizeLabel: string;
 	sortSize: number;

@@ -13,7 +13,7 @@ function closeTab(tabId: string) {
 	if (store.windowTabs.length <= 1) return;
 	const idx = store.windowTabs.findIndex((t) => t.id === tabId);
 	if (idx === -1) return;
-	const isActive = store.currentSectionId === store.windowTabs[idx]?.sectionId;
+	const isActive = store.currentPath === store.windowTabs[idx]?.sectionId;
 	if (!isActive) return;
 	const next = store.windowTabs[idx === 0 ? 1 : idx - 1];
 	if (next) router.push(next.path);
@@ -48,9 +48,9 @@ function refresh() { location.reload(); }
 					:key="tab.id"
 					:to="tab.path"
 					class="win-tab"
-					:class="{ 'win-tab--active': store.currentSectionId === tab.sectionId }"
+					:class="{ 'win-tab--active': store.currentPath === tab.sectionId }"
 					role="tab"
-					:aria-selected="store.currentSectionId === tab.sectionId"
+					:aria-selected="store.currentPath === tab.sectionId"
 				>
 					<svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="win-tab-icon">
 						<rect x="1" y="4" width="14" height="10" rx="2" fill="#FFC83D"/>
@@ -63,7 +63,7 @@ function refresh() { location.reload(); }
 						@click.prevent="closeTab(tab.id)"
 					>×</button>
 				</RouterLink>
-				<button class="win-new-tab" title="New tab" @click="router.push('/home')">+</button>
+				<button class="win-new-tab" title="New tab" @click="router.push('/')">+</button>
 			</div>
 
 			<!-- Drag region spacer -->
@@ -96,7 +96,7 @@ function refresh() { location.reload(); }
 
 			<!-- Home icon + breadcrumb -->
 			<div class="win-breadcrumb-bar" role="navigation" aria-label="Breadcrumb">
-				<RouterLink to="/home" class="win-breadcrumb-home" title="Home">
+				<RouterLink to="/" class="win-breadcrumb-home" title="Home">
 					<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
 						<path d="M1.5 7.5L8 2L14.5 7.5V14H10.5V10H5.5V14H1.5V7.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
 					</svg>
@@ -143,11 +143,7 @@ function refresh() { location.reload(); }
 			</aside>
 
 			<main class="win-content" id="main-content">
-				<RouterView v-slot="{ Component, route }">
-					<Transition name="route-fade" mode="out-in">
-						<component :is="Component" :key="route.fullPath" />
-					</Transition>
-				</RouterView>
+				<slot />
 			</main>
 		</div>
 

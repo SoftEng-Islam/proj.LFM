@@ -3,8 +3,90 @@ import { computed } from 'vue';
 import { useToast } from 'vue-toastification';
 
 import BaseButton from '@/components/ui/BaseButton.vue';
-import { accentThemeMap, categorySymbolMap, statusToneMap } from '@/features/explorer/workspace';
 import { useFileManagerStore } from '@/stores/file-manager';
+import type { AccentTone, FileStatus } from '@/types/file-manager';
+
+export const accentThemeMap: Record<
+	AccentTone,
+	{
+		chip: string;
+		bar: string;
+		surface: string;
+		ring: string;
+		glow: string;
+	}
+> = {
+	sky: {
+		chip: 'bg-sky-500/12 text-sky-700 dark:bg-sky-400/12 dark:text-sky-200',
+		bar: 'bg-sky-500',
+		surface: 'from-sky-500/12 via-sky-500/3 to-transparent',
+		ring: 'ring-sky-300/50',
+		glow: 'shadow-[0_18px_34px_rgba(14,165,233,0.18)]',
+	},
+	emerald: {
+		chip: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-400/12 dark:text-emerald-200',
+		bar: 'bg-emerald-500',
+		surface: 'from-emerald-500/12 via-emerald-500/3 to-transparent',
+		ring: 'ring-emerald-300/50',
+		glow: 'shadow-[0_18px_34px_rgba(16,185,129,0.18)]',
+	},
+	amber: {
+		chip: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/12 dark:text-amber-200',
+		bar: 'bg-amber-500',
+		surface: 'from-amber-500/12 via-amber-500/3 to-transparent',
+		ring: 'ring-amber-300/50',
+		glow: 'shadow-[0_18px_34px_rgba(245,158,11,0.18)]',
+	},
+	violet: {
+		chip: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/12 dark:text-violet-200',
+		bar: 'bg-violet-500',
+		surface: 'from-violet-500/12 via-violet-500/3 to-transparent',
+		ring: 'ring-violet-300/50',
+		glow: 'shadow-[0_18px_34px_rgba(139,92,246,0.18)]',
+	},
+	rose: {
+		chip: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/12 dark:text-rose-200',
+		bar: 'bg-rose-500',
+		surface: 'from-rose-500/12 via-rose-500/3 to-transparent',
+		ring: 'ring-rose-300/50',
+		glow: 'shadow-[0_18px_34px_rgba(244,63,94,0.18)]',
+	},
+	cyan: {
+		chip: 'bg-cyan-500/12 text-cyan-700 dark:bg-cyan-400/12 dark:text-cyan-200',
+		bar: 'bg-cyan-500',
+		surface: 'from-cyan-500/12 via-cyan-500/3 to-transparent',
+		ring: 'ring-cyan-300/50',
+		glow: 'shadow-[0_18px_34px_rgba(6,182,212,0.18)]',
+	},
+	slate: {
+		chip: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/12 dark:text-slate-200',
+		bar: 'bg-slate-500',
+		surface: 'from-slate-500/12 via-slate-500/3 to-transparent',
+		ring: 'ring-slate-300/50',
+		glow: 'shadow-[0_18px_34px_rgba(100,116,139,0.18)]',
+	},
+};
+
+export const statusToneMap: Record<FileStatus, string> = {
+	synced: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-400/12 dark:text-emerald-200',
+	shared: 'bg-cyan-500/12 text-cyan-700 dark:bg-cyan-400/12 dark:text-cyan-200',
+	draft: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/12 dark:text-amber-200',
+	favorite: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/12 dark:text-rose-200',
+	local: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/12 dark:text-slate-200',
+	recent: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/12 dark:text-violet-200',
+};
+
+export const categorySymbolMap: Record<string, string> = {
+	folder: 'F',
+	document: 'D',
+	spreadsheet: 'X',
+	image: 'P',
+	video: 'V',
+	archive: 'Z',
+	code: '</>',
+	pdf: 'PDF',
+	audio: 'A',
+};
 
 const store = useFileManagerStore();
 const toast = useToast();
@@ -29,7 +111,7 @@ function pinSelection() {
 					class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] text-sm font-semibold"
 					:class="accentThemeMap[selectedItem.accent].chip"
 				>
-					{{ categorySymbolMap[selectedItem.category] }}
+					{{ categorySymbolMap[selectedItem.category] || '?' }}
 				</div>
 				<div>
 					<p class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">{{ selectedItem.typeLabel }}</p>

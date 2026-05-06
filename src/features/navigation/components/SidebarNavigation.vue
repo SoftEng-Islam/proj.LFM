@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
-import { navigationGroups } from '@/features/navigation/navigation';
+import { navigationGroups, defaultPath } from '@/features/navigation/navigation';
 import { useFileManagerStore } from '@/stores/file-manager';
 
 const store = useFileManagerStore();
@@ -39,7 +39,7 @@ const cloudItems = [
 <template>
 	<nav class="win-sidebar-nav" aria-label="Navigation pane">
 		<!-- Home -->
-		<RouterLink to="/home" class="win-sbar-item win-sbar-item--home" :class="{ 'win-sbar-item--active': isActive('/home') }">
+		<RouterLink :to="defaultPath" class="win-sbar-item win-sbar-item--home" :class="{ 'win-sbar-item--active': isActive(defaultPath) }">
 			<span class="win-sbar-icon win-sbar-icon--home">
 				<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
 					<path d="M1.5 7.5L8 2L14.5 7.5V14H10.5V10H5.5V14H1.5V7.5Z" fill="#0067c0" stroke="#0067c0" stroke-width="0.5" stroke-linejoin="round"/>

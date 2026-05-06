@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+import { watch, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 import WorkspaceOverview from '@/features/explorer/components/WorkspaceOverview.vue';
@@ -10,11 +10,26 @@ import type { SectionId } from '@/types/file-manager';
 const route = useRoute();
 const store = useFileManagerStore();
 
+function handleKeydown(e: KeyboardEvent) {
+	if (e.key === 'F5') {
+		e.preventDefault();
+		store.openSection(store.currentPath);
+	}
+}
+
+onMounted(() => {
+	window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+	window.removeEventListener('keydown', handleKeydown);
+});
+
 watch(
-	() => route.meta.sectionId as SectionId | undefined,
-	(sectionId) => {
-		if (sectionId) {
-			store.openSection(sectionId);
+	() => route.path,
+	(path) => {
+		if (path) {
+			store.openSection(path);
 		}
 	},
 	{ immediate: true }

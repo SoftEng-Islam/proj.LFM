@@ -2,15 +2,15 @@ import { computed, ref, watch } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { acceptHMRUpdate, defineStore } from 'pinia';
 
-import { activityLibrary, seededEntries } from '@/features/explorer/workspace';
-import { defaultSectionId, driveCards, navigationGroups, windowTabs } from '@/features/navigation/navigation';
+import { defaultPath, driveCards, navigationGroups, windowTabs } from '@/features/navigation/navigation';
+import { readDirectory } from '@/services/tauri-bridge';
+import type { FileMetaData } from '@/services/tauri-bridge';
 import type {
 	ActivityEntry,
 	BreadcrumbSegment,
 	DriveCard,
 	FileEntry,
 	NavigationGroup,
-	SectionId,
 	SortMode,
 	ViewMode,
 	WindowTab,
@@ -21,36 +21,30 @@ const viewModeKey = 'lfm-view-mode';
 const sortModeKey = 'lfm-sort-mode';
 const previewPaneKey = 'lfm-preview-pane';
 
-function cloneSeedEntries(): Record<SectionId, FileEntry[]> {
-	return structuredClone(seededEntries);
+function formatSize(bytes: number): string {
+	if (bytes === 0) return '0 B';
+	const k = 1024;
+	const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+	const i = Math.floor(Math.log(bytes) / Math.log(k));
+	return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 export const useFileManagerStore = defineStore('file-manager', () => {
-	const currentSectionId = ref<SectionId>(defaultSectionId);
-	const entriesBySection = ref<Record<SectionId, FileEntry[]>>(cloneSeedEntries());
+	const currentPath = ref<string>(defaultPath);
+	const currentEntries = ref<FileEntry[]>([]);
 	const searchQuery = ref('');
 	const selectedItemId = ref<string | null>(null);
 	const viewMode = useStorage<ViewMode>(viewModeKey, 'grid');
 	const sortMode = useStorage<SortMode>(sortModeKey, 'modified');
 	const previewOpen = useStorage(previewPaneKey, true);
-
-	const currentSection = computed(() => {
-		for (const group of navigationGroups) {
-			const match = group.items.find((item) => item.id === currentSectionId.value);
-			if (match) {
-				return match;
-			}
-		}
-
-		return navigationGroups[0]!.items[0]!;
-	});
+	const isLoading = ref(false);
 
 	const navigationGroupsWithCounts = computed<NavigationGroup[]>(() =>
 		navigationGroups.map((group) => ({
 			...group,
 			items: group.items.map((item) => ({
 				...item,
-				count: entriesBySection.value[item.id]?.length ?? 0
+				count: 0
 			}))
 		}))
 	);
@@ -58,24 +52,24 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	const tabsWithAccent = computed<WindowTab[]>(() =>
 		windowTabs.map((tab) => ({
 			...tab,
-			accent:
-				navigationGroupsWithCounts.value
-					.flatMap((group) => group.items)
-					.find((item) => item.id === tab.sectionId)?.accent ?? 'slate'
+			accent: 'slate'
 		}))
 	);
 
-	const currentEntries = computed(() => {
-		const source = [...(entriesBySection.value[currentSectionId.value] ?? [])];
+	const sortedAndFilteredEntries = computed(() => {
+		const source = [...currentEntries.value];
 		const query = searchQuery.value.trim().toLowerCase();
 		const filtered = query
 			? source.filter((entry) => {
-					const haystack = [entry.name, entry.preview, entry.typeLabel, ...entry.tags].join(' ').toLowerCase();
+					const haystack = [entry.name, entry.typeLabel, ...entry.tags].join(' ').toLowerCase();
 					return haystack.includes(query);
 				})
 			: source;
 
 		return filtered.sort((left, right) => {
+			if (left.kind === 'folder' && right.kind !== 'folder') return -1;
+			if (left.kind !== 'folder' && right.kind === 'folder') return 1;
+
 			switch (sortMode.value) {
 				case 'name':
 					return left.name.localeCompare(right.name);
@@ -92,70 +86,55 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	const selectedItem = computed<FileEntry | null>(() => {
 		if (selectedItemId.value) {
-			const match = currentEntries.value.find((entry) => entry.id === selectedItemId.value);
+			const match = sortedAndFilteredEntries.value.find((entry) => entry.id === selectedItemId.value);
 			if (match) {
 				return match;
 			}
 		}
 
-		return currentEntries.value[0] ?? null;
+		return sortedAndFilteredEntries.value[0] ?? null;
 	});
 
-	const favoriteItems = computed(() =>
-		Object.values(entriesBySection.value)
-			.flatMap((items) => items)
-			.filter((entry) => entry.pinned)
-			.slice(0, 4)
-	);
+	const favoriteItems = computed(() => []);
 
 	const spotlightItems = computed(() => {
-		const spotlight = currentEntries.value.filter((entry) => entry.kind === 'folder' || entry.pinned).slice(0, 3);
-		return spotlight.length ? spotlight : currentEntries.value.slice(0, 3);
+		const spotlight = sortedAndFilteredEntries.value.filter((entry) => entry.kind === 'folder').slice(0, 3);
+		return spotlight.length ? spotlight : sortedAndFilteredEntries.value.slice(0, 3);
 	});
 
 	const breadcrumbs = computed<BreadcrumbSegment[]>(() => {
+		const parts = currentPath.value.split('/').filter(Boolean);
+		let accPath = '';
 		const base: BreadcrumbSegment[] = [
-			{ label: 'LFM', path: '/home' },
-			{ label: currentSection.value.label, path: currentSection.value.path }
+			{ label: 'Root', path: '/' }
 		];
 
-		if (selectedItem.value) {
-			base.push({ label: selectedItem.value.name });
+		for (const part of parts) {
+			accPath += '/' + part;
+			base.push({ label: part, path: accPath });
 		}
 
 		return base;
 	});
 
 	const workspaceStats = computed<WorkspaceStat[]>(() => {
-		const current = entriesBySection.value[currentSectionId.value] ?? [];
-		const folderCount = current.filter((entry) => entry.kind === 'folder').length;
-		const sharedCount = current.filter((entry) => entry.status === 'shared').length;
-		const pinnedCount = current.filter((entry) => entry.pinned).length;
+		const folderCount = currentEntries.value.filter((entry) => entry.kind === 'folder').length;
+		const fileCount = currentEntries.value.filter((entry) => entry.kind === 'file').length;
 
 		return [
-			{ label: 'Folders', value: String(folderCount), helper: 'Structured work areas', accent: currentSection.value.accent },
-			{ label: 'Shared', value: String(sharedCount), helper: 'Cross-team surfaces', accent: 'cyan' },
-			{ label: 'Pinned', value: String(pinnedCount), helper: 'Always visible items', accent: 'rose' }
+			{ label: 'Folders', value: String(folderCount), helper: 'Total directories', accent: 'emerald' },
+			{ label: 'Files', value: String(fileCount), helper: 'Total files', accent: 'cyan' },
 		];
 	});
 
 	const activityFeed = computed<ActivityEntry[]>(() => {
-		if (selectedItem.value) {
-			const activity = activityLibrary[selectedItem.value.id];
-			if (activity) {
-				return activity;
-			}
-		}
-
 		return [
-			{ id: 'fallback-1', title: 'Selection ready', summary: 'This item is staged for preview, sharing, or a native open action.', timeLabel: 'Now', tone: 'info' },
-			{ id: 'fallback-2', title: 'Metadata indexed', summary: 'Name, tags, and timestamps are already surfaced in the inspector pane.', timeLabel: 'Today', tone: 'success' },
-			{ id: 'fallback-3', title: 'Native action pending', summary: 'Hook this row up to Tauri commands when the filesystem bridge is connected.', timeLabel: 'Next', tone: 'attention' }
+			{ id: 'fallback-1', title: 'Real FS Loaded', summary: 'Connected to Tauri backend.', timeLabel: 'Now', tone: 'success' },
 		];
 	});
 
 	watch(
-		currentEntries,
+		sortedAndFilteredEntries,
 		(nextEntries) => {
 			if (!nextEntries.some((entry) => entry.id === selectedItemId.value)) {
 				selectedItemId.value = nextEntries[0]?.id ?? null;
@@ -164,9 +143,61 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		{ immediate: true }
 	);
 
-	function openSection(sectionId: SectionId) {
-		currentSectionId.value = sectionId;
+	async function fetchDirectory(path: string) {
+		currentPath.value = path;
 		searchQuery.value = '';
+		isLoading.value = true;
+		try {
+			const res = await readDirectory(path);
+			try {
+				currentEntries.value = res.files.map((file: FileMetaData) => {
+					// Safely parse the last_modified time, fallback to current time if missing
+					let modifiedDate = new Date().toISOString();
+					if (file.last_modified && typeof file.last_modified.secs_since_epoch === 'number') {
+						modifiedDate = new Date(file.last_modified.secs_since_epoch * 1000).toISOString();
+					} else if (typeof file.last_modified === 'number') {
+						modifiedDate = new Date(file.last_modified * 1000).toISOString();
+					} else if (file.last_modified && (file.last_modified as any).secs_since_epoch === undefined) {
+						// Catch cases where SystemTime serialized differently
+						console.warn('Unknown SystemTime format:', file.last_modified);
+					}
+
+					const fileTypeStr = file.file_type || '';
+					return {
+						id: file.file_path || `unknown-${Math.random()}`,
+						name: file.basename || 'Unknown',
+						kind: file.is_dir ? 'folder' : 'file',
+						category: fileTypeStr.toLowerCase() || 'default',
+						typeLabel: fileTypeStr || (file.is_dir ? 'Directory' : 'File'),
+						sizeLabel: file.is_dir ? '' : formatSize(file.size || 0),
+						sortSize: file.size || 0,
+						modifiedAt: modifiedDate,
+						preview: '',
+						status: 'local',
+						accent: file.is_dir ? 'sky' : 'slate',
+						locationPath: [path, file.basename || ''],
+						tags: [],
+						collaborators: [],
+						pinned: false,
+					};
+				});
+			} catch (e) {
+				import('vue-toastification').then(m => m.useToast().error(`Mapping failed: ${e}`));
+				currentEntries.value = [];
+			}
+		} catch (error) {
+			console.error('Failed to read directory:', error);
+			import('vue-toastification').then(m => m.useToast().error(`Read failed: ${error}`));
+			currentEntries.value = [];
+		} finally {
+			isLoading.value = false;
+		}
+	}
+
+	function openSection(path: string) {
+		currentPath.value = path;
+		searchQuery.value = '';
+		fetchDirectory(path);
 	}
 
 	function selectItem(itemId: string) {
@@ -192,56 +223,39 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	function createFolder() {
-		const targetSection = currentSectionId.value === 'trash' ? 'projects' : currentSectionId.value;
-		const label = `New Folder ${entriesBySection.value[targetSection].length + 1}`;
-		const createdAt = new Date().toISOString();
+		// Mock implementation, will need to be hooked to Tauri API
 		const folder: FileEntry = {
 			id: `folder-${Date.now()}`,
-			name: label,
+			name: 'New Folder',
 			kind: 'folder',
 			category: 'folder',
-			typeLabel: 'Fresh folder',
-			sizeLabel: '0 items',
+			typeLabel: 'Directory',
+			sizeLabel: '',
 			sortSize: 0,
-			modifiedAt: createdAt,
-			preview: 'Freshly created folder ready for drag-and-drop grouping, tagging, and native open actions.',
+			modifiedAt: new Date().toISOString(),
+			preview: '',
 			status: 'draft',
-			accent: currentSection.value.accent,
-			locationPath: ['LFM', currentSection.value.label, label],
-			tags: ['new'],
-			collaborators: ['You'],
+			accent: 'sky',
+			locationPath: [currentPath.value, 'New Folder'],
+			tags: [],
+			collaborators: [],
 			pinned: false
 		};
-
-		entriesBySection.value[targetSection] = [folder, ...entriesBySection.value[targetSection]];
-		if (currentSectionId.value !== targetSection) {
-			currentSectionId.value = targetSection;
-		}
-		selectedItemId.value = folder.id;
+		currentEntries.value = [folder, ...currentEntries.value];
 		return folder;
 	}
 
 	function togglePinnedForSelection() {
-		if (!selectedItem.value) {
-			return;
-		}
-
-		const collection = entriesBySection.value[currentSectionId.value];
-		const match = collection.find((entry) => entry.id === selectedItem.value?.id);
+		if (!selectedItem.value) return;
+		const match = currentEntries.value.find((entry) => entry.id === selectedItem.value?.id);
 		if (match) {
 			match.pinned = !match.pinned;
-			match.status = match.pinned ? 'favorite' : 'synced';
 		}
-	}
-
-	function sectionCount(sectionId: SectionId) {
-		return entriesBySection.value[sectionId]?.length ?? 0;
 	}
 
 	return {
-		currentSectionId,
-		currentSection,
-		currentEntries,
+		currentPath,
+		currentEntries: sortedAndFilteredEntries,
 		selectedItem,
 		searchQuery,
 		viewMode,
@@ -255,6 +269,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		navigationGroups: navigationGroupsWithCounts,
 		windowTabs: tabsWithAccent,
 		driveCards: computed<DriveCard[]>(() => driveCards),
+		fetchDirectory,
 		openSection,
 		selectItem,
 		setSearchQuery,
@@ -263,7 +278,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		cycleSortMode,
 		createFolder,
 		togglePinnedForSelection,
-		sectionCount
 	};
 });
 

@@ -148,7 +148,7 @@ export function getHomeDir(): string {
 	if (typeof window !== 'undefined') {
 		// If the app injected the home dir (e.g. via cli args initialisation),
 		// use it. Otherwise fall back to /home/<username> using a heuristic.
-		const injected = (window as Record<string, unknown>).__LFM_HOME__ as string | undefined;
+		const injected = (window as any).__LFM_HOME__ as string | undefined;
 		if (injected) return injected;
 	}
 	// Safest cross-browser default when running inside a Tauri webview on Linux.
@@ -203,7 +203,7 @@ export async function initHomeDir(): Promise<void> {
 			if (homeVar) {
 				const homeVal = homeVar.slice(5);
 				if (homeVal) {
-					(window as Record<string, unknown>).__LFM_HOME__ = homeVal;
+					(window as any).__LFM_HOME__ = homeVal;
 				}
 			}
 		}
@@ -224,7 +224,7 @@ export async function initHomeDir(): Promise<void> {
  */
 export async function initHomeDirFromStorage(): Promise<string> {
 	// If already resolved, return it.
-	const cached = (window as Record<string, unknown>).__LFM_HOME__ as string | undefined;
+	const cached = (window as any).__LFM_HOME__ as string | undefined;
 	if (cached && cached !== '/root') return cached;
 
 	try {
