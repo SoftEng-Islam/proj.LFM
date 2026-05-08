@@ -1,0 +1,71 @@
+
+> lfm@0.4.0 dev /data/github/proj.LFM
+> tauri dev
+
+
+> lfm@0.4.0 dev:ui /data/github/proj.LFM
+> vite
+
+
+  VITE v8.0.10  ready in 1202 ms
+
+  ➜  Local:   http://localhost:1420/
+  ➜  Network: http://10.88.0.1:1420/
+  ➜  Vue DevTools: Open http://localhost:1420/__devtools__/ as a separate window
+  ➜  Vue DevTools: Press Alt(⌥)+Shift(⇧)+D in App to toggle the Vue DevTools
+/*! 🌼 daisyUI 5.5.19 */
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_element_get_static_pad: assertion 'GST_IS_ELEMENT (element)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_object_unref: assertion 'object != NULL' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_bin_add_many: assertion 'GST_IS_ELEMENT (element_1)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_element_get_static_pad: assertion 'GST_IS_ELEMENT (element)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_ghost_pad_new: assertion 'GST_IS_PAD (target)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_element_add_pad: assertion 'GST_IS_PAD (pad)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_element_link_pads_full: assertion 'GST_IS_ELEMENT (src)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_element_link_pads_full: assertion 'GST_IS_ELEMENT (src)' failed
+
+(WebKitWebProcess:53042): GLib-GObject-CRITICAL **: 16:12:25.440: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_bin_add: assertion 'GST_IS_ELEMENT (element)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_element_get_static_pad: assertion 'GST_IS_ELEMENT (element)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_object_unref: assertion 'object != NULL' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_bin_add_many: assertion 'GST_IS_ELEMENT (element_1)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_element_get_static_pad: assertion 'GST_IS_ELEMENT (element)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_ghost_pad_new: assertion 'GST_IS_PAD (target)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_element_add_pad: assertion 'GST_IS_PAD (pad)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_element_link_pads_full: assertion 'GST_IS_ELEMENT (src)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.440: gst_element_link_pads_full: assertion 'GST_IS_ELEMENT (src)' failed
+
+(WebKitWebProcess:53042): GLib-GObject-CRITICAL **: 16:12:25.441: g_object_set: assertion 'G_IS_OBJECT (object)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.441: gst_bin_add: assertion 'GST_IS_ELEMENT (element)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.441: gst_element_get_static_pad: assertion 'GST_IS_ELEMENT (element)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.441: gst_object_unref: assertion 'object != NULL' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.441: gst_bin_add_many: assertion 'GST_IS_ELEMENT (element_1)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.441: gst_element_get_static_pad: assertion 'GST_IS_ELEMENT (element)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.441: gst_ghost_pad_new: assertion 'GST_IS_PAD (target)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.441: gst_element_add_pad: assertion 'GST_IS_PAD (pad)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.441: gst_element_link_pads_full: assertion 'GST_IS_ELEMENT (src)' failed
+
+(WebKitWebProcess:53042): GStreamer-CRITICAL **: 16:12:25.441: gst_element_link_pads_full: assertion 'GST_IS_ELEMENT (src)' failed

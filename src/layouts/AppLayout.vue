@@ -43,25 +43,13 @@ function refresh() { location.reload(); }
 		<div class="win-tab-row" data-tauri-drag-region>
 			<!-- Tab strip -->
 			<div class="win-tab-strip" role="tablist">
-				<RouterLink
-					v-for="tab in store.windowTabs"
-					:key="tab.id"
-					:to="tab.path"
-					class="win-tab"
-					:class="{ 'win-tab--active': store.currentPath === tab.sectionId }"
-					role="tab"
-					:aria-selected="store.currentPath === tab.sectionId"
-				>
+				<RouterLink v-for="tab in store.windowTabs" :key="tab.id" :to="tab.path" class="win-tab" :class="{ 'win-tab--active': store.currentPath === tab.sectionId }" role="tab" :aria-selected="store.currentPath === tab.sectionId">
 					<svg width="14" height="14" viewBox="0 0 16 16" fill="none" class="win-tab-icon">
-						<rect x="1" y="4" width="14" height="10" rx="2" fill="#FFC83D"/>
-						<path d="M1 6C1 4.9 1.9 4 3 4h4l2 2H1V6z" fill="#E3A416"/>
+						<rect x="1" y="4" width="14" height="10" rx="2" fill="#FFC83D" />
+						<path d="M1 6C1 4.9 1.9 4 3 4h4l2 2H1V6z" fill="#E3A416" />
 					</svg>
 					<span class="win-tab-label">{{ tab.label }}</span>
-					<button
-						class="win-tab-close"
-						title="Close tab"
-						@click.prevent="closeTab(tab.id)"
-					>×</button>
+					<button class="win-tab-close" title="Close tab" @click.prevent="closeTab(tab.id)">×</button>
 				</RouterLink>
 				<button class="win-new-tab" title="New tab" @click="router.push('/')">+</button>
 			</div>
@@ -75,22 +63,22 @@ function refresh() { location.reload(); }
 			<!-- Nav arrows -->
 			<button class="win-nav-btn" :disabled="!canGoBack" title="Back" @click="goBack">
 				<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-					<path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
 				</svg>
 			</button>
 			<button class="win-nav-btn" :disabled="!canGoForward" title="Forward" @click="goForward">
 				<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-					<path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
 				</svg>
 			</button>
 			<button class="win-nav-btn" title="Up one level" @click="goUp">
 				<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-					<path d="M8 12V4M4 8L8 4L12 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M8 12V4M4 8L8 4L12 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
 				</svg>
 			</button>
 			<button class="win-nav-btn" title="Refresh" @click="refresh">
 				<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-					<path d="M13.5 8A5.5 5.5 0 1 1 8 2.5V1M8 1L11 4M8 1L5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M13.5 8A5.5 5.5 0 1 1 8 2.5V1M8 1L11 4M8 1L5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
 				</svg>
 			</button>
 
@@ -98,17 +86,13 @@ function refresh() { location.reload(); }
 			<div class="win-breadcrumb-bar" role="navigation" aria-label="Breadcrumb">
 				<RouterLink to="/" class="win-breadcrumb-home" title="Home">
 					<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<path d="M1.5 7.5L8 2L14.5 7.5V14H10.5V10H5.5V14H1.5V7.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/>
+						<path d="M1.5 7.5L8 2L14.5 7.5V14H10.5V10H5.5V14H1.5V7.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none" />
 					</svg>
 				</RouterLink>
 				<span class="win-breadcrumb-sep">›</span>
 
 				<template v-for="(crumb, i) in store.breadcrumbs" :key="crumb.label">
-					<RouterLink
-						v-if="i < store.breadcrumbs.length - 1 && crumb.path"
-						:to="crumb.path"
-						class="win-breadcrumb-crumb win-breadcrumb-crumb--link"
-					>{{ crumb.label }}</RouterLink>
+					<RouterLink v-if="i < store.breadcrumbs.length - 1 && crumb.path" :to="crumb.path" class="win-breadcrumb-crumb win-breadcrumb-crumb--link">{{ crumb.label }}</RouterLink>
 					<span v-else class="win-breadcrumb-crumb win-breadcrumb-crumb--current">{{ crumb.label }}</span>
 					<span v-if="i < store.breadcrumbs.length - 1" class="win-breadcrumb-sep">›</span>
 				</template>
@@ -118,19 +102,19 @@ function refresh() { location.reload(); }
 			<div class="win-nav-right">
 				<button class="win-nav-btn" title="Expand address bar">
 					<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-						<path d="M2 5H12M2 9H12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+						<path d="M2 5H12M2 9H12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
 					</svg>
 				</button>
 				<button class="win-nav-btn" title="Search">
 					<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.4"/>
-						<path d="M10 10L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+						<circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.4" />
+						<path d="M10 10L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
 					</svg>
 				</button>
 				<button class="win-nav-btn" title="Details pane">
 					<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-						<rect x="2" y="2" width="7" height="12" rx="1" stroke="currentColor" stroke-width="1.3"/>
-						<rect x="11" y="2" width="3" height="12" rx="1" stroke="currentColor" stroke-width="1.3"/>
+						<rect x="2" y="2" width="7" height="12" rx="1" stroke="currentColor" stroke-width="1.3" />
+						<rect x="11" y="2" width="3" height="12" rx="1" stroke="currentColor" stroke-width="1.3" />
 					</svg>
 				</button>
 			</div>
@@ -152,7 +136,9 @@ function refresh() { location.reload(); }
 	</div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@referance "tailwindcss";
+
 .win-shell {
 	display: flex;
 	flex-direction: column;
@@ -214,6 +200,7 @@ function refresh() { location.reload(); }
 	border-bottom: none;
 	position: relative;
 }
+
 .win-tab--active::after {
 	content: '';
 	position: absolute;
@@ -251,6 +238,7 @@ function refresh() { location.reload(); }
 	opacity: 0.7;
 	transition: background 100ms, opacity 100ms;
 }
+
 .win-tab-close:hover {
 	background: rgba(196, 43, 28, 0.9);
 	color: white;
@@ -271,6 +259,7 @@ function refresh() { location.reload(); }
 	opacity: 0.6;
 	transition: background 100ms, opacity 100ms;
 }
+
 .win-new-tab:hover {
 	background: var(--win-hover);
 	opacity: 1;
@@ -299,9 +288,11 @@ function refresh() { location.reload(); }
 	color: var(--win-text);
 	transition: background 100ms;
 }
+
 .win-wctrl:hover {
 	background: var(--win-hover);
 }
+
 .win-wctrl--close:hover {
 	background: #c42b1c;
 	color: white;
@@ -333,16 +324,20 @@ function refresh() { location.reload(); }
 	transition: background 100ms;
 	flex-shrink: 0;
 }
+
 .win-nav-btn:hover {
 	background: var(--win-hover);
 }
+
 .win-nav-btn:active {
 	background: var(--win-active);
 }
+
 .win-nav-btn:disabled {
 	opacity: 0.35;
 	cursor: default;
 }
+
 .win-nav-btn:disabled:hover {
 	background: transparent;
 }
@@ -358,6 +353,7 @@ function refresh() { location.reload(); }
 	border-radius: 4px;
 	margin: 0 4px;
 	overflow: hidden;
+	@apply rounded-full;
 }
 
 .win-breadcrumb-home {
@@ -369,6 +365,7 @@ function refresh() { location.reload(); }
 	border-radius: 2px;
 	transition: background 100ms;
 }
+
 .win-breadcrumb-home:hover {
 	background: var(--win-hover);
 }
@@ -384,6 +381,7 @@ function refresh() { location.reload(); }
 	font-size: 12px;
 	white-space: nowrap;
 }
+
 .win-breadcrumb-crumb--link {
 	color: var(--win-text);
 	text-decoration: none;
@@ -391,9 +389,11 @@ function refresh() { location.reload(); }
 	border-radius: 2px;
 	transition: background 100ms;
 }
+
 .win-breadcrumb-crumb--link:hover {
 	background: var(--win-hover);
 }
+
 .win-breadcrumb-crumb--current {
 	color: var(--win-text);
 	font-weight: 500;
