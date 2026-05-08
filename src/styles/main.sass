@@ -1,54 +1,54 @@
 :root
-	--win-bg: #f3f3f3
-	--win-panel: #ffffff
-	--win-sidebar: #f3f3f3
-	--win-toolbar: #eeeeee
-	--win-title-bar: #e8e8e8
-	--win-border: rgba(0, 0, 0, 0.09)
-	--win-blue: #0067c0
-	--win-blue-subtle: rgba(0, 103, 192, 0.11)
-	--win-hover: rgba(0, 0, 0, 0.055)
-	--win-active: rgba(0, 0, 0, 0.09)
-	--win-selected: rgba(0, 103, 192, 0.14)
-	--win-text: #1a1a1a
-	--win-text-muted: #5c5c5c
-	--win-accent-bar: #0067c0
-	--win-folder: #ffc83d
-	--win-item-bg: #fafafa
-	--win-item-hover: rgba(0, 103, 192, 0.08)
-	--win-item-selected-border: #0067c0
-	--win-status-bg: #f3f3f3
-	--win-context-bg: #2c2c2c
-	--win-context-border: rgba(255,255,255,0.12)
-	--win-context-hover: rgba(255,255,255,0.08)
-	--win-context-text: #f0f0f0
-	--win-context-divider: rgba(255,255,255,0.1)
+	--LFM-bg: #f3f3f3
+	--LFM-panel: #ffffff
+	--LFM-sidebar: #f3f3f3
+	--LFM-toolbar: #eeeeee
+	--LFM-title-bar: #e8e8e8
+	--LFM-border: rgba(0, 0, 0, 0.09)
+	--LFM-blue: #0067c0
+	--LFM-blue-subtle: rgba(0, 103, 192, 0.11)
+	--LFM-hover: rgba(0, 0, 0, 0.055)
+	--LFM-active: rgba(0, 0, 0, 0.09)
+	--LFM-selected: rgba(0, 103, 192, 0.14)
+	--LFM-text: #1a1a1a
+	--LFM-text-muted: #5c5c5c
+	--LFM-accent-bar: #0067c0
+	--LFM-folder: #ffc83d
+	--LFM-item-bg: #fafafa
+	--LFM-item-hover: rgba(0, 103, 192, 0.08)
+	--LFM-item-selected-border: #0067c0
+	--LFM-status-bg: #f3f3f3
+	--LFM-context-bg: #2c2c2c
+	--LFM-context-border: rgba(255,255,255,0.12)
+	--LFM-context-hover: rgba(255,255,255,0.08)
+	--LFM-context-text: #f0f0f0
+	--LFM-context-divider: rgba(255,255,255,0.1)
 
 .dark
-	--win-bg: #202020
-	--win-panel: #2b2b2b
-	--win-sidebar: #202020
-	--win-toolbar: #292929
-	--win-title-bar: #1e1e1e
-	--win-border: rgba(255, 255, 255, 0.09)
-	--win-blue: #60aaef
-	--win-blue-subtle: rgba(96, 170, 239, 0.16)
-	--win-hover: rgba(255, 255, 255, 0.06)
-	--win-active: rgba(255, 255, 255, 0.10)
-	--win-selected: rgba(96, 170, 239, 0.18)
-	--win-text: #f3f3f3
-	--win-text-muted: #9d9d9d
-	--win-accent-bar: #60aaef
-	--win-folder: #ffc83d
-	--win-item-bg: #2b2b2b
-	--win-item-hover: rgba(96, 170, 239, 0.10)
-	--win-item-selected-border: #60aaef
-	--win-status-bg: #1e1e1e
-	--win-context-bg: #2c2c2c
-	--win-context-border: rgba(255,255,255,0.12)
-	--win-context-hover: rgba(255,255,255,0.08)
-	--win-context-text: #f0f0f0
-	--win-context-divider: rgba(255,255,255,0.1)
+	--LFM-bg: #202020
+	--LFM-panel: #2b2b2b
+	--LFM-sidebar: #202020
+	--LFM-toolbar: #292929
+	--LFM-title-bar: #1e1e1e
+	--LFM-border: rgba(255, 255, 255, 0.09)
+	--LFM-blue: #60aaef
+	--LFM-blue-subtle: rgba(96, 170, 239, 0.16)
+	--LFM-hover: rgba(255, 255, 255, 0.06)
+	--LFM-active: rgba(255, 255, 255, 0.10)
+	--LFM-selected: rgba(96, 170, 239, 0.18)
+	--LFM-text: #f3f3f3
+	--LFM-text-muted: #9d9d9d
+	--LFM-accent-bar: #60aaef
+	--LFM-folder: #ffc83d
+	--LFM-item-bg: #2b2b2b
+	--LFM-item-hover: rgba(96, 170, 239, 0.10)
+	--LFM-item-selected-border: #60aaef
+	--LFM-status-bg: #1e1e1e
+	--LFM-context-bg: #2c2c2c
+	--LFM-context-border: rgba(255,255,255,0.12)
+	--LFM-context-hover: rgba(255,255,255,0.08)
+	--LFM-context-text: #f0f0f0
+	--LFM-context-divider: rgba(255,255,255,0.1)
 
 html,
 body,
@@ -60,8 +60,8 @@ body
 	margin: 0
 	font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif
 	font-size: 12px
-	color: var(--win-text)
-	background: var(--win-bg)
+	color: var(--LFM-text)
+	background: var(--LFM-bg)
 	transition: background-color 150ms ease, color 150ms ease
 	-webkit-font-smoothing: antialiased
 
@@ -80,8 +80,8 @@ a
 
 /* Selection */
 ::selection
-	background: var(--win-blue-subtle)
-	color: var(--win-text)
+	background: var(--LFM-blue-subtle)
+	color: var(--LFM-text)
 
 /* Win11 thin scrollbar */
 ::-webkit-scrollbar
@@ -121,5 +121,3 @@ a
 
 .tippy-box[data-theme~='lfm'][data-placement^='bottom'] > .tippy-arrow::before
 	border-bottom-color: rgba(50, 50, 50, 0.96)
-
-

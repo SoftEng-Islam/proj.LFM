@@ -9,85 +9,85 @@ import type { FileEntry } from '@/types/file-manager';
 import type { AccentTone, FileStatus } from '@/types/file-manager';
 
 const accentThemeMap: Record<
-	AccentTone,
-	{
-		chip: string;
-		bar: string;
-		surface: string;
-		ring: string;
-		glow: string;
-	}
+    AccentTone,
+    {
+        chip: string;
+        bar: string;
+        surface: string;
+        ring: string;
+        glow: string;
+    }
 > = {
-	sky: {
-		chip: 'bg-sky-500/12 text-sky-700 dark:bg-sky-400/12 dark:text-sky-200',
-		bar: 'bg-sky-500',
-		surface: 'from-sky-500/12 via-sky-500/3 to-transparent',
-		ring: 'ring-sky-300/50',
-		glow: 'shadow-[0_18px_34px_rgba(14,165,233,0.18)]',
-	},
-	emerald: {
-		chip: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-400/12 dark:text-emerald-200',
-		bar: 'bg-emerald-500',
-		surface: 'from-emerald-500/12 via-emerald-500/3 to-transparent',
-		ring: 'ring-emerald-300/50',
-		glow: 'shadow-[0_18px_34px_rgba(16,185,129,0.18)]',
-	},
-	amber: {
-		chip: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/12 dark:text-amber-200',
-		bar: 'bg-amber-500',
-		surface: 'from-amber-500/12 via-amber-500/3 to-transparent',
-		ring: 'ring-amber-300/50',
-		glow: 'shadow-[0_18px_34px_rgba(245,158,11,0.18)]',
-	},
-	violet: {
-		chip: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/12 dark:text-violet-200',
-		bar: 'bg-violet-500',
-		surface: 'from-violet-500/12 via-violet-500/3 to-transparent',
-		ring: 'ring-violet-300/50',
-		glow: 'shadow-[0_18px_34px_rgba(139,92,246,0.18)]',
-	},
-	rose: {
-		chip: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/12 dark:text-rose-200',
-		bar: 'bg-rose-500',
-		surface: 'from-rose-500/12 via-rose-500/3 to-transparent',
-		ring: 'ring-rose-300/50',
-		glow: 'shadow-[0_18px_34px_rgba(244,63,94,0.18)]',
-	},
-	cyan: {
-		chip: 'bg-cyan-500/12 text-cyan-700 dark:bg-cyan-400/12 dark:text-cyan-200',
-		bar: 'bg-cyan-500',
-		surface: 'from-cyan-500/12 via-cyan-500/3 to-transparent',
-		ring: 'ring-cyan-300/50',
-		glow: 'shadow-[0_18px_34px_rgba(6,182,212,0.18)]',
-	},
-	slate: {
-		chip: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/12 dark:text-slate-200',
-		bar: 'bg-slate-500',
-		surface: 'from-slate-500/12 via-slate-500/3 to-transparent',
-		ring: 'ring-slate-300/50',
-		glow: 'shadow-[0_18px_34px_rgba(100,116,139,0.18)]',
-	},
+    sky: {
+        chip: 'bg-sky-500/12 text-sky-700 dark:bg-sky-400/12 dark:text-sky-200',
+        bar: 'bg-sky-500',
+        surface: 'from-sky-500/12 via-sky-500/3 to-transparent',
+        ring: 'ring-sky-300/50',
+        glow: 'shadow-[0_18px_34px_rgba(14,165,233,0.18)]',
+    },
+    emerald: {
+        chip: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-400/12 dark:text-emerald-200',
+        bar: 'bg-emerald-500',
+        surface: 'from-emerald-500/12 via-emerald-500/3 to-transparent',
+        ring: 'ring-emerald-300/50',
+        glow: 'shadow-[0_18px_34px_rgba(16,185,129,0.18)]',
+    },
+    amber: {
+        chip: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/12 dark:text-amber-200',
+        bar: 'bg-amber-500',
+        surface: 'from-amber-500/12 via-amber-500/3 to-transparent',
+        ring: 'ring-amber-300/50',
+        glow: 'shadow-[0_18px_34px_rgba(245,158,11,0.18)]',
+    },
+    violet: {
+        chip: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/12 dark:text-violet-200',
+        bar: 'bg-violet-500',
+        surface: 'from-violet-500/12 via-violet-500/3 to-transparent',
+        ring: 'ring-violet-300/50',
+        glow: 'shadow-[0_18px_34px_rgba(139,92,246,0.18)]',
+    },
+    rose: {
+        chip: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/12 dark:text-rose-200',
+        bar: 'bg-rose-500',
+        surface: 'from-rose-500/12 via-rose-500/3 to-transparent',
+        ring: 'ring-rose-300/50',
+        glow: 'shadow-[0_18px_34px_rgba(244,63,94,0.18)]',
+    },
+    cyan: {
+        chip: 'bg-cyan-500/12 text-cyan-700 dark:bg-cyan-400/12 dark:text-cyan-200',
+        bar: 'bg-cyan-500',
+        surface: 'from-cyan-500/12 via-cyan-500/3 to-transparent',
+        ring: 'ring-cyan-300/50',
+        glow: 'shadow-[0_18px_34px_rgba(6,182,212,0.18)]',
+    },
+    slate: {
+        chip: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/12 dark:text-slate-200',
+        bar: 'bg-slate-500',
+        surface: 'from-slate-500/12 via-slate-500/3 to-transparent',
+        ring: 'ring-slate-300/50',
+        glow: 'shadow-[0_18px_34px_rgba(100,116,139,0.18)]',
+    },
 };
 
 const statusToneMap: Record<FileStatus, string> = {
-	synced: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-400/12 dark:text-emerald-200',
-	shared: 'bg-cyan-500/12 text-cyan-700 dark:bg-cyan-400/12 dark:text-cyan-200',
-	draft: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/12 dark:text-amber-200',
-	favorite: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/12 dark:text-rose-200',
-	local: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/12 dark:text-slate-200',
-	recent: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/12 dark:text-violet-200',
+    synced: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-400/12 dark:text-emerald-200',
+    shared: 'bg-cyan-500/12 text-cyan-700 dark:bg-cyan-400/12 dark:text-cyan-200',
+    draft: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/12 dark:text-amber-200',
+    favorite: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/12 dark:text-rose-200',
+    local: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/12 dark:text-slate-200',
+    recent: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/12 dark:text-violet-200',
 };
 
 const categorySymbolMap: Record<string, string> = {
-	folder: 'F',
-	document: 'D',
-	spreadsheet: 'X',
-	image: 'P',
-	video: 'V',
-	archive: 'Z',
-	code: '</>',
-	pdf: 'PDF',
-	audio: 'A',
+    folder: 'F',
+    document: 'D',
+    spreadsheet: 'X',
+    image: 'P',
+    video: 'V',
+    archive: 'Z',
+    code: '</>',
+    pdf: 'PDF',
+    audio: 'A',
 };
 
 const store = useFileManagerStore();
@@ -96,12 +96,12 @@ const toast = useToast();
 const selectedItem = computed(() => store.selectedItem);
 
 function pinSelection() {
-	if (!selectedItem.value) {
-		return;
-	}
+    if (!selectedItem.value) {
+        return;
+    }
 
-	store.togglePinnedForSelection();
-	toast.success(`${selectedItem.value.name} updated in pinned items.`);
+    store.togglePinnedForSelection();
+    toast.success(`${selectedItem.value.name} updated in pinned items.`);
 }
 </script>
 
@@ -123,7 +123,7 @@ aside(v-if="selectedItem", class="surface-panel h-full rounded-[30px] p-5")
 				p(class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400") {{ selectedItem.typeLabel }}
 				h2(class="mt-2 text-xl font-semibold text-slate-950 dark:text-white") {{ selectedItem.name }}
 				p(class="mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400") {{ selectedItem.typeLabel }}
-		
+
 		span(class="rounded-full px-3 py-1 text-xs font-medium", :class="statusToneMap[selectedItem.status]")
 			| {{ selectedItem.status }}
 
@@ -137,12 +137,15 @@ aside(v-if="selectedItem", class="surface-panel h-full rounded-[30px] p-5")
 
 	.mt-6.grid.gap-3
 		div(class="rounded-[24px] bg-slate-900/[0.03] p-4 dark:bg-white/[0.05]")
-			p(class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400") Details
+			p(class="text-xs font-bold uppercase tracking-[0.24em] text-slate-400") Details
 			.mt-4.space-y-3.text-sm
 				.flex.items-center.justify-between.gap-4
 					span(class="text-slate-500 dark:text-slate-400") Path
-					span(class="text-right text-slate-900 dark:text-white") {{ selectedItem.locationPath.join(' / ') }}
+					span(class="text-xs text-right text-slate-900 dark:text-white") {{ selectedItem.locationPath.join('/') }}
+					<!-- Copy Path Button -->
+					span(class="bg-green-500 w-6 h-6 rounded-sm")
 				.flex.items-center.justify-between.gap-4
+					<!-- Size or items count -->
 					span(class="text-slate-500 dark:text-slate-400") Size
 					span(class="text-slate-900 dark:text-white") {{ selectedItem.sizeLabel }}
 				.flex.items-center.justify-between.gap-4
@@ -181,7 +184,7 @@ aside(v-if="selectedItem", class="surface-panel h-full rounded-[30px] p-5")
 			class="flex-1"
 			@click="pinSelection"
 		) Pin item
-		
+
 		BaseButton(
 			v-tooltip="'Placeholder for a native open action'"
 			variant="quiet"
@@ -191,5 +194,4 @@ aside(v-if="selectedItem", class="surface-panel h-full rounded-[30px] p-5")
 		) Open
 </template>
 
-<style lang="sass">
-</style>
+<style lang="sass"></style>

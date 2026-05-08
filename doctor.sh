@@ -1,258 +1,139 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
+# LFM Project Doctor
+# Checks system dependencies for developing LFM (Tauri + Vue)
 
 set -u
 
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
 NODE_MIN_VERSION="20.19.0"
 PNPM_MIN_VERSION="10.14.0"
-DEFAULT_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/commerce"
+RUST_MIN_VERSION="1.75.0"
 
 pass_count=0
 warn_count=0
 fail_count=0
-env_source=".env"
-database_source=".env"
 
-say() {
-  printf '%s\n' "$*"
-}
+say() { echo -e "$1"; }
+pass() { ((pass_count++)); say "${GREEN}PASS${NC}  $1"; }
+warn() { ((warn_count++)); say "${YELLOW}WARN${NC}  $1"; }
+fail() { ((fail_count++)); say "${RED}FAIL${NC}  $1"; }
 
-pass() {
-  pass_count=$((pass_count + 1))
-  say "PASS  $*"
-}
-
-warn() {
-  warn_count=$((warn_count + 1))
-  say "WARN  $*"
-}
-
-fail() {
-  fail_count=$((fail_count + 1))
-  say "FAIL  $*"
-}
-
-has_cmd() {
-  command -v "$1" >/dev/null 2>&1
-}
+has_cmd() { command -v "$1" >/dev/null 2>&1; }
 
 version_ge() {
-  node -e '
-const [found, needed] = process.argv.slice(1)
-const parse = (value) => value.replace(/^v/, "").split(".").map((part) => Number(part) || 0)
-const left = parse(found)
-const right = parse(needed)
-const length = Math.max(left.length, right.length)
-for (let index = 0; index < length; index += 1) {
-  const leftValue = left[index] ?? 0
-  const rightValue = right[index] ?? 0
-  if (leftValue > rightValue) process.exit(0)
-  if (leftValue < rightValue) process.exit(1)
-}
-process.exit(0)
-' "$1" "$2"
+    local found=$1
+    local needed=$2
+    if [ "$(printf '%s\n' "$needed" "$found" | sort -V | head -n1)" = "$needed" ]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
-mask_connection_url() {
-  if ! has_cmd node; then
-    printf '%s\n' '(connection URL hidden)'
-    return
-  fi
+say "🔍 LFM System Diagnostics"
+say "========================"
 
-  node -e '
-const raw = process.argv[1]
-  try {
-    const url = new URL(raw)
-    if (url.password) url.password = "***"
-    console.log(url.toString())
-  } catch {
-    console.log("(invalid connection URL)")
-  }
-' "$1"
-}
-
-check_tcp_database() {
-  if ! has_cmd node; then
-    return 2
-  fi
-
-  node -e '
-const raw = process.argv[1]
-const net = require("node:net")
-let url
-try {
-  url = new URL(raw)
-} catch {
-  process.exit(2)
-}
-const host = url.hostname || "localhost"
-const port = Number(url.port || 5432)
-const socket = net.createConnection({ host, port })
-socket.setTimeout(3000)
-socket.on("connect", () => {
-  socket.end()
-  process.exit(0)
-})
-socket.on("timeout", () => {
-  socket.destroy()
-  process.exit(1)
-})
-socket.on("error", () => process.exit(1))
-' "$1"
-}
-
-check_mongo_connection() {
-  if ! has_cmd node; then
-    return 2
-  fi
-
-  node -e '
-const raw = process.argv[1]
-
-let mongoose
-try {
-  mongoose = require("mongoose")
-} catch {
-  process.exit(3)
-}
-
-;(async () => {
-  try {
-    await mongoose.connect(raw, { serverSelectionTimeoutMS: 3000 })
-    await mongoose.disconnect()
-    process.exit(0)
-  } catch {
-    process.exit(1)
-  }
-})()
-' "$1"
-}
-
-load_env_file() {
-  if [ -f ./.env ]; then
-    set -a
-    # shellcheck disable=SC1091
-    . ./.env
-    set +a
-    pass ".env file found"
-  else
-    env_source="fallback values"
-    warn ".env file not found. Run: cp .env.example .env"
-  fi
-
-  if [ -n "${DATABASE_URL-}" ]; then
-    database_source="$env_source"
-  else
-    DATABASE_URL="$DEFAULT_DATABASE_URL"
-    database_source="fallback local value"
-    warn "DATABASE_URL is not set. Using the local PostgreSQL fallback value"
-  fi
-
-  if [ -d ./node_modules ]; then
-    pass "node_modules folder found"
-  else
-    warn "node_modules folder not found. Run: pnpm install"
-  fi
-}
-
-say "Project doctor"
-say "-------------"
-
-if has_cmd git; then
-  pass "git is installed: $(git --version | awk '{print $3}')"
-else
-  warn "git is not installed"
-fi
-
+# 1. Node.js & pnpm
 if has_cmd node; then
-  node_version=$(node --version)
-  pass "node is installed: $node_version"
-  if version_ge "$node_version" "$NODE_MIN_VERSION"; then
-    pass "node version is new enough (need >= $NODE_MIN_VERSION)"
-  else
-    fail "node version is too old. Need >= $NODE_MIN_VERSION"
-  fi
+    node_v=$(node -v | sed 's/v//')
+    if version_ge "$node_v" "$NODE_MIN_VERSION"; then
+        pass "Node.js $node_v (>= $NODE_MIN_VERSION)"
+    else
+        fail "Node.js $node_v is too old (need >= $NODE_MIN_VERSION)"
+    fi
 else
-  fail "node is not installed"
+    fail "Node.js is not installed"
 fi
 
 if has_cmd pnpm; then
-  pnpm_version=$(pnpm --version)
-  pass "pnpm is installed: $pnpm_version"
-  if has_cmd node && version_ge "$pnpm_version" "$PNPM_MIN_VERSION"; then
-    pass "pnpm version is new enough (need >= $PNPM_MIN_VERSION)"
-  else
-    fail "pnpm version is too old. Need >= $PNPM_MIN_VERSION"
-  fi
-else
-  fail "pnpm is not installed"
-fi
-
-if has_cmd psql; then
-  pass "psql is installed: $(psql --version | awk '{print $3}')"
-else
-  warn "psql is not installed. Install PostgreSQL client tools if you want local database commands"
-fi
-
-if has_cmd pg_isready; then
-  pass "pg_isready is installed"
-else
-  warn "pg_isready is not installed. The script can still test PostgreSQL with Node.js"
-fi
-
-load_env_file
-
-say ""
-say "Database source: $database_source"
-say "Database target: $(mask_connection_url "$DATABASE_URL")"
-
-if check_tcp_database "$DATABASE_URL"; then
-  pass "PostgreSQL server port is reachable"
-else
-  tcp_status=$?
-  if [ "$tcp_status" -eq 2 ]; then
-    fail "DATABASE_URL is not valid"
-  else
-    fail "PostgreSQL is not reachable on the host and port from DATABASE_URL"
-  fi
-fi
-
-if has_cmd psql; then
-  if PGCONNECT_TIMEOUT=3 psql "$DATABASE_URL" -c "select 1" >/dev/null 2>&1; then
-    pass "PostgreSQL login and database check passed"
-  else
-    fail "Could not log in to PostgreSQL with DATABASE_URL"
-  fi
-else
-  warn "Database login test skipped because psql is not installed"
-fi
-
-if [ -n "${MONGODB_URI-}" ]; then
-  say ""
-  say "MongoDB target: $(mask_connection_url "$MONGODB_URI")"
-
-  if check_mongo_connection "$MONGODB_URI"; then
-    pass "MongoDB connection check passed"
-  else
-    mongo_status=$?
-    if [ "$mongo_status" -eq 3 ]; then
-      fail "mongoose is not installed, so MongoDB support is unavailable"
+    pnpm_v=$(pnpm -v)
+    if version_ge "$pnpm_v" "$PNPM_MIN_VERSION"; then
+        pass "pnpm $pnpm_v (>= $PNPM_MIN_VERSION)"
     else
-      fail "Could not connect to MongoDB with MONGODB_URI"
+        fail "pnpm $pnpm_v is too old (need >= $PNPM_MIN_VERSION)"
     fi
-  fi
 else
-  say ""
-  say "MongoDB check skipped because MONGODB_URI is empty"
+    fail "pnpm is not installed"
 fi
 
-say ""
-say "Summary"
+# 2. Rust Toolchain
+if has_cmd rustc; then
+    rust_v=$(rustc --version | awk '{print $2}')
+    if version_ge "$rust_v" "$RUST_MIN_VERSION"; then
+        pass "Rust $rust_v (>= $RUST_MIN_VERSION)"
+    else
+        fail "Rust $rust_v is too old (need >= $RUST_MIN_VERSION)"
+    fi
+else
+    fail "Rust is not installed. Install via: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+fi
+
+if has_cmd cargo; then
+    pass "Cargo is installed"
+else
+    fail "Cargo is not installed"
+fi
+
+# 3. Tauri CLI
+if has_cmd pnpm; then
+    if pnpm list -g @tauri-apps/cli >/dev/null 2>&1 || [ -f "./node_modules/.bin/tauri" ]; then
+        pass "Tauri CLI is available"
+    else
+        warn "Tauri CLI not found globally. It will run via 'pnpm run tauri'"
+    fi
+fi
+
+# 4. Linux System Dependencies (Tauri 2)
+say "\n📦 Checking Linux System Libraries (for development)..."
+
+check_pkg() {
+    if has_cmd pkg-config && pkg-config --exists "$1"; then
+        pass "Library found: $1"
+    else
+        warn "Library missing or pkg-config cannot find: $1"
+    fi
+}
+
+DEPS=("webkit2gtk-4.1" "gtk+-3.0" "libayatana-appindicator3-0.1" "librsvg-2.0")
+for dep in "${DEPS[@]}"; do
+    check_pkg "$dep"
+done
+
+if ! has_cmd pkg-config; then
+    fail "pkg-config is not installed. Required to find system libraries."
+fi
+
+# 5. Local Setup
+say "\n📂 Checking Project Setup..."
+if [ -d "node_modules" ]; then
+    pass "node_modules found"
+else
+    warn "node_modules missing. Run 'pnpm install'"
+fi
+
+if [ -f ".env" ]; then
+    pass ".env file found"
+else
+    warn ".env file missing. Some features might need configuration."
+fi
+
+# Summary
+say "\n📋 Summary"
+say "----------"
 say "PASS: $pass_count"
 say "WARN: $warn_count"
 say "FAIL: $fail_count"
 
 if [ "$fail_count" -gt 0 ]; then
-  exit 1
+    say "\n${RED}Please fix the failures above to ensure LFM builds correctly.${NC}"
+    exit 1
+else
+    say "\n${GREEN}System is ready for LFM development!${NC}"
+    exit 0
 fi
-
-exit 0

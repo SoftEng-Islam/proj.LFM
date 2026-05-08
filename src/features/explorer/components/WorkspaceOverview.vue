@@ -16,70 +16,70 @@ const selectedId = computed(() => store.selectedItem?.id ?? '');
 
 // Context menu state
 const contextMenu = ref<{ visible: boolean; x: number; y: number; itemId: string }>({
-	visible: false,
-	x: 0,
-	y: 0,
-	itemId: '',
+    visible: false,
+    x: 0,
+    y: 0,
+    itemId: '',
 });
 
 function openContextMenu(e: MouseEvent, itemId: string) {
-	e.preventDefault();
-	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId };
+    e.preventDefault();
+    contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId };
 }
 
 function closeContextMenu() {
-	contextMenu.value.visible = false;
+    contextMenu.value.visible = false;
 }
 
 // Determine icon type for non-folder entries
 function isFolder(entry: { kind: string }) {
-	return entry.kind === 'folder';
+    return entry.kind === 'folder';
 }
 
 function openItem(entry: FileEntry) {
-	if (isFolder(entry)) {
-		router.push(entry.id);
-	} else {
-		openFile(entry.id);
-	}
+    if (isFolder(entry)) {
+        router.push(entry.id);
+    } else {
+        openFile(entry.id);
+    }
 }
 
 // File type icon color map
 const fileIconColors: Record<string, string> = {
-	document: '#2b7cd3',
-	image: '#e07000',
-	video: '#6236cc',
-	audio: '#1db954',
-	archive: '#f1c40f',
-	code: '#34495e',
-	default: '#7f8c8d',
+    document: '#2b7cd3',
+    image: '#e07000',
+    video: '#6236cc',
+    audio: '#1db954',
+    archive: '#f1c40f',
+    code: '#34495e',
+    default: '#7f8c8d',
 };
 
 function getFileIconColor(category: string) {
-	return fileIconColors[category] || fileIconColors.default;
+    return fileIconColors[category] || fileIconColors.default;
 }
 
 // File category → emoji glyph (fallback icon)
 const fileGlyphs: Record<string, string> = {
-	document: '📄',
-	image: '🖼',
-	audio: '🎵',
-	video: '🎬',
-	archive: '📦',
-	code: '📝',
-	data: '📊',
-	default: '📄',
+    document: '📄',
+    image: '🖼',
+    audio: '🎵',
+    video: '🎬',
+    archive: '📦',
+    code: '📝',
+    data: '📊',
+    default: '📄',
 };
 function fileGlyph(category: string): string {
-	return fileGlyphs[category] ?? fileGlyphs['default'] ?? '📄';
+    return fileGlyphs[category] ?? fileGlyphs['default'] ?? '📄';
 }
 
 const formatDate = (dateStr: string) => {
-	return new Intl.DateTimeFormat('en-US', { 
-		month: 'short', 
-		day: 'numeric', 
-		year: 'numeric' 
-	}).format(new Date(dateStr));
+    return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    }).format(new Date(dateStr));
 };
 </script>
 
@@ -129,7 +129,7 @@ const formatDate = (dateStr: string) => {
 						svg(v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
 							path(d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z")
 							polyline(points="13 2 13 9 20 9")
-				
+
 				span(class="LFM-grid-item-name") {{ entry.name }}
 
 		div(v-else, class="LFM-list")
@@ -171,9 +171,9 @@ const formatDate = (dateStr: string) => {
 						svg(v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
 							path(d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z")
 							polyline(points="13 2 13 9 20 9")
-					
+
 					span(class="LFM-list-item-name") {{ row.name }}
-				
+
 				span(class="LFM-list-col") {{ formatDate(row.modifiedAt) }}
 				span(class="LFM-list-col") {{ row.typeLabel }}
 				span(class="LFM-list-col LFM-list-col--right") {{ row.sizeLabel }}
@@ -192,7 +192,7 @@ const formatDate = (dateStr: string) => {
 	display: flex
 	flex-direction: column
 	height: 100%
-	background: var(--win-panel)
+	background: var(--LFM-panel)
 
 .LFM-workspace-content
 	flex: 1
@@ -216,17 +216,17 @@ const formatDate = (dateStr: string) => {
 	border: 2px solid transparent
 	background: transparent
 	cursor: pointer
-	color: var(--win-text)
+	color: var(--LFM-text)
 	transition: background 100ms, border-color 100ms
 	text-align: center
 	outline: none
 
 	&:hover
-		background: var(--win-item-hover)
+		background: var(--LFM-item-hover)
 
 	&--selected
-		background: var(--win-selected)
-		border-color: var(--win-item-selected-border)
+		background: var(--LFM-selected)
+		border-color: var(--LFM-item-selected-border)
 
 .LFM-grid-item-icon
 	display: flex
@@ -294,10 +294,10 @@ const formatDate = (dateStr: string) => {
 	grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr
 	gap: 4px
 	padding: 4px 8px
-	border-bottom: 1px solid var(--win-border)
+	border-bottom: 1px solid var(--LFM-border)
 	font-size: 11px
 	font-weight: 600
-	color: var(--win-text)
+	color: var(--LFM-text)
 	cursor: pointer
 	user-select: none
 
@@ -306,23 +306,23 @@ const formatDate = (dateStr: string) => {
 	grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr
 	gap: 4px
 	padding: 3px 8px
-	border-bottom: 1px solid var(--win-border)
+	border-bottom: 1px solid var(--LFM-border)
 	background: transparent
 	border-left: none
 	border-right: none
 	border-top: none
 	cursor: pointer
-	color: var(--win-text)
+	color: var(--LFM-text)
 	font-size: 12px
 	text-align: left
 	width: 100%
 	transition: background 80ms
 
 	&:hover
-		background: var(--win-hover)
+		background: var(--LFM-hover)
 
 	&--selected
-		background: var(--win-selected)
+		background: var(--LFM-selected)
 
 .LFM-list-col
 	display: flex

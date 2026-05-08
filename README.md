@@ -1,108 +1,76 @@
-# LFM
+# LFM (Linux File Manager)
 
-![LFM icon](src-tauri/icons/icon.png)
+![LFM Banner](src-tauri/icons/icon.png)
 
-LFM is a Linux-first desktop file manager built with Vue, TypeScript, Rust, Tauri, Tailwind CSS, and Sass.
+**LFM** is a premium, Linux-first desktop file manager designed for users who crave the efficiency of Linux with the modern, refined aesthetics of contemporary desktop environments. Built with **Vue 3**, **Tauri 2**, and **Rust**, LFM provides a native-feeling experience that is fast, modular, and beautiful.
 
-> Status: active rewrite. The new Vue frontend is being built in `src/`, while the previous implementation is preserved in `src/legacy/` for migration.
+---
 
-## Goals
+## 🎨 Philosophy: "Linux-Native, Windows-Familiar"
 
-- Build a fast desktop file manager focused on Linux workflows.
-- Keep the UI modular with Vue feature folders instead of one large generic frontend tree.
-- Use Rust and Tauri for native filesystem access and desktop packaging.
-- Migrate old functionality gradually without deleting working reference code too early.
+LFM bridges the gap between the power of the Linux filesystem and the polished user interface patterns familiar to modern Windows 11 users. 
 
-## Stack
+- **Linux-First**: Native integration with Linux workflows, focused on speed and reliability.
+- **Modern Aesthetics**: A curated UI using **Tailwind CSS 4** and **DaisyUI 5**, featuring smooth animations and a refined dark mode.
+- **Modular Architecture**: Features are organized into clean "feature folders" for high maintainability and easy community extension.
 
-- Vue 3
-- TypeScript
-- Rust
-- Tauri
-- Tailwind CSS
-- Sass
-- Vitest
+---
 
-## Project Layout
+## 🛠️ Technical Stack
 
-```text
-src/
-  App.vue
-  main.ts
-  components/
-    layout/
-    ui/
-  features/
-    explorer/
-    navigation/
-  styles/
-  types/
-  legacy/
-src-tauri/
-  src/
-docs/
-```
+- **Frontend**: Vue 3 (Composition API), TypeScript, Pinia (State Management)
+- **Backend**: Rust, Tauri 2 (Native System Access)
+- **Styling**: Tailwind CSS 4, Sass, DaisyUI 5
+- **Tooling**: Vite, Vitest, ESLint, Prettier
 
-Notes:
+---
 
-- `src/` is the active frontend.
-- `src/legacy/` contains the previous app code kept for migration.
-- `src-tauri/` contains the Rust desktop backend and Tauri configuration.
-- `docs/project-structure.md` documents the intended frontend shape.
+## 🚀 Getting Started
 
-## Development
+### Prerequisites
 
-Prerequisites:
+- **Node.js**: >= 20.19.0
+- **pnpm**: >= 10.14.0
+- **Rust Toolchain**: `rustc` and `cargo`
+- **System Dependencies**: See [System Requirements](#system-requirements) for Linux.
 
-- A recent Node.js installation
-- pnpm `10.14.0` or newer
-- A working Rust toolchain with `cargo`
-- Linux system dependencies required by Tauri/WebKit
+### Installation
 
-Install dependencies:
+```bash
+# Clone the repository
+git clone https://github.com/softeng/proj.LFM.git
+cd proj.LFM
 
-```sh
+# Install dependencies
 pnpm install
-```
 
-Run the web frontend only:
-
-```sh
+# Run in development mode
 pnpm run dev
 ```
 
-Run the desktop app with Tauri:
+---
 
-```sh
-pnpm run tauri:dev
-```
+## 🛡️ Forking & Contribution Policy
 
-Useful commands:
+LFM is **Free and Open Source** under the **GPL-v3 License**.
 
-```sh
-pnpm run type-check
-pnpm run lint
-pnpm test
-pnpm run build
-```
+### Centralized Development
+To maintain a high-quality, unified experience for all users, we strongly encourage all developers to contribute directly to this repository rather than creating independent versions. 
 
-## Current Direction
+- **Contribute**: Please submit Pull Requests for features and bug fixes.
+- **Branding**: The name **LFM**, its logo, and its specific design tokens are part of the official project identity. If you fork this project, you **must** rename it and use distinct branding to avoid user confusion.
+- **Upstream First**: We aim to be the best file manager for Linux. Let's build it together here!
 
-- Move file-manager features from `src/legacy/` into `src/features/`
-- Add a typed frontend service layer for Tauri commands
-- Rebuild navigation, explorer panes, operations, and settings as Vue features
-- Keep the repo Linux-first and avoid drifting back into mixed frontend architectures
+---
 
-## Contributing
+## 📜 License
 
-The project is still being reshaped, so contributions should follow the new structure instead of extending the old root-level frontend pattern.
+Distributed under the **GNU GPL v3**. See [LICENSE](LICENSE) for more information.
 
-Before adding new frontend code:
+---
 
-- Prefer `src/features/<feature-name>` for feature work
-- Prefer `src/components/ui` for reusable UI primitives
-- Leave `src/legacy/` as migration reference unless you are explicitly moving code out of it
+## 🤝 Community & Support
 
-## License
-
-Apache-2.0. See [LICENSE](LICENSE).
+- **Code of Conduct**: See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- **Guidelines**: See [CONTRIBUTING_GUIDELINE.md](CONTRIBUTING_GUIDELINE.md)
+- **Author**: Islam Ahmed <softeng.islam@gmail.com>

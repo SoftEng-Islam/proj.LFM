@@ -14,10 +14,37 @@
  * Overwrite the Tailwind CSS theme. Check docs for more information.
  */
 @theme {
-	/* --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; */
-	/* --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif; */
-	/* --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; */
-	/* ... */
+	--font-win: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+
+	--color-win-blue: #0067c0;
+	--color-win-blue-hover: #1975c8;
+	--color-win-blue-active: #005aad;
+	--color-win-blue-subtle: #cce4f7;
+	--color-win-blue-subtle-dark: #1a3a5c;
+	--color-win-bg: #f3f3f3;
+	--color-win-bg-dark: #202020;
+	--color-win-panel: #ffffff;
+	--color-win-panel-dark: #2b2b2b;
+	--color-win-sidebar: #f3f3f3;
+	--color-win-sidebar-dark: #202020;
+	--color-win-sidebar-hover: rgba(0,0,0,0.06);
+	--color-win-sidebar-hover-dark: rgba(255,255,255,0.06);
+	--color-win-sidebar-active: rgba(0,103,192,0.12);
+	--color-win-border: rgba(0,0,0,0.08);
+	--color-win-border-dark: rgba(255,255,255,0.08);
+	--color-win-toolbar: #eeeeee;
+	--color-win-toolbar-dark: #2b2b2b;
+	--color-win-text: #1a1a1a;
+	--color-win-text-muted: #5c5c5c;
+	--color-win-text-dark: #f3f3f3;
+	--color-win-text-muted-dark: #9d9d9d;
+
+	--shadow-win-menu: 0 4px 16px rgba(0,0,0,0.18);
+	--shadow-win-panel: 0 2px 8px rgba(0,0,0,0.10);
+
+	--radius-win: 4px;
+	--radius-win-lg: 8px;
+	--radius-win-menu: 8px;
 }
 
 /**
