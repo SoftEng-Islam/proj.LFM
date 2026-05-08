@@ -3,14 +3,14 @@ image:
     file: Dockerfile
 
 tasks:
-    - name: Yarn install
-      init: yarn install
-      command: sleep 1 && gp sync-done yarn-install
-    - name: Yarn App Server
+    - name: pnpm install
+      init: corepack enable && corepack prepare pnpm@10.14.0 --activate && pnpm install
+      command: gp sync-done pnpm-install
+    - name: LFM App Server
       init: echo "Starting app server"
       command: |
-          gp sync-await yarn-install &&
-          yarn dev
+          gp sync-await pnpm-install &&
+          pnpm run dev
 
 vscode:
     extensions:
@@ -22,7 +22,7 @@ vscode:
 
 # Ports config
 ports:
-    - port: 3000
+    - port: 1420
       onOpen: open-preview
     - port: 6080
       onOpen: open-browser

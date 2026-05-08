@@ -210,6 +210,7 @@ async fn main() {
             extensions::get_cli_args,
             commands::system::check_vscode_installed,
             commands::system::get_available_fonts,
+            commands::thumbnails::get_video_thumbnail,
             enable_shadow_effect,
             change_transparent_effect
         ])

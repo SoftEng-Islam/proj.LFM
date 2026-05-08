@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::errors::AppResult;
 use std::fs;
 use std::path::Path;

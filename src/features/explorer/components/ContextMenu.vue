@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 
-const props = defineProps<{
+defineProps<{
 	x: number;
 	y: number;
 	itemName?: string;
@@ -50,20 +50,20 @@ const commandActions = [
 
 const menuItems = [
 	{ icon: '📂', label: 'Open', action: () => { emit('open'); close(); } },
-	{ icon: '🗂', label: 'Open in new tab', action: () => { emit('openNewTab'); close(); } },
-	{ icon: '🪟', label: 'Open in new window', action: () => close() },
-	{ icon: '▣', label: 'Open in new pane', action: () => close() },
+	{ icon: '🗂', label: 'Open in New Tab', action: () => { emit('openNewTab'); close(); } },
+	{ icon: '🪟', label: 'Open in New Window', action: () => close() },
+	{ icon: '▣', label: 'Open in New Pane', action: () => close() },
 	{ divider: true },
-	{ icon: '🔗', label: 'Copy item path', action: () => { emit('copyPath'); close(); } },
-	{ icon: '📁', label: 'Create folder with selection', action: () => close() },
-	{ icon: '↩', label: 'Create shortcut', action: () => close() },
-	{ icon: '📌', label: 'Pin to sidebar', action: () => close() },
+	{ icon: '🔗', label: 'Copy Item Path', action: () => { emit('copyPath'); close(); } },
+	{ icon: '📁', label: 'Create Folder from Selection', action: () => close() },
+	{ icon: '↩', label: 'Create Shortcut', action: () => close() },
+	{ icon: '📌', label: 'Pin to Sidebar', action: () => close() },
 	{ divider: true },
 	{ icon: '📦', label: 'Compress', hasArrow: true, action: () => close() },
-	{ icon: '📤', label: 'Send to', hasArrow: true, action: () => close() },
+	{ icon: '📤', label: 'Send To', hasArrow: true, action: () => close() },
 	{ divider: true },
-	{ icon: '⬛', label: 'Open in Windows Terminal', action: () => close() },
-	{ icon: '🏷', label: 'Edit tags', hasArrow: true, action: () => close() },
+	{ icon: '$', label: 'Open in Terminal', action: () => close() },
+	{ icon: '🏷', label: 'Edit Tags', hasArrow: true, action: () => close() },
 	{ divider: true },
 	{ icon: '…', label: 'Show more options', hasArrow: true, action: () => close() },
 ];
@@ -73,37 +73,37 @@ const menuItems = [
 	<Teleport to="body">
 		<div
 			ref="menuRef"
-			class="win-context-menu"
+			class="LFM-context-menu"
 			:style="{ left: `${x}px`, top: `${y}px` }"
 			role="menu"
 		>
 			<!-- Mini command toolbar at top -->
-			<div class="win-context-toolbar">
+			<div class="LFM-context-toolbar">
 				<button
 					v-for="cmd in commandActions"
 					:key="cmd.title"
-					class="win-context-cmd"
+					class="LFM-context-cmd"
 					:title="cmd.title"
 					@click="cmd.action"
 				>
-					<span class="win-context-cmd-icon">{{ cmd.icon }}</span>
+					<span class="LFM-context-cmd-icon">{{ cmd.icon }}</span>
 				</button>
 			</div>
 
-			<div class="win-context-divider" />
+			<div class="LFM-context-divider" />
 
 			<!-- Menu items -->
 			<template v-for="(item, i) in menuItems" :key="i">
-				<div v-if="'divider' in item && item.divider" class="win-context-divider" />
+				<div v-if="'divider' in item && item.divider" class="LFM-context-divider" />
 				<button
 					v-else-if="'label' in item"
-					class="win-context-item"
+					class="LFM-context-item"
 					role="menuitem"
 					@click="item.action && item.action()"
 				>
-					<span class="win-context-item-icon">{{ item.icon }}</span>
-					<span class="win-context-item-label">{{ item.label }}</span>
-					<span v-if="'hasArrow' in item && item.hasArrow" class="win-context-item-arrow">›</span>
+					<span class="LFM-context-item-icon">{{ item.icon }}</span>
+					<span class="LFM-context-item-label">{{ item.label }}</span>
+					<span v-if="'hasArrow' in item && item.hasArrow" class="LFM-context-item-arrow">›</span>
 				</button>
 			</template>
 		</div>
@@ -111,7 +111,7 @@ const menuItems = [
 </template>
 
 <style scoped>
-.win-context-menu {
+.LFM-context-menu {
 	position: fixed;
 	z-index: 9999;
 	min-width: 240px;
@@ -125,14 +125,14 @@ const menuItems = [
 	user-select: none;
 }
 
-.win-context-toolbar {
+.LFM-context-toolbar {
 	display: flex;
 	align-items: center;
 	gap: 2px;
 	padding: 4px 6px;
 }
 
-.win-context-cmd {
+.LFM-context-cmd {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -146,21 +146,21 @@ const menuItems = [
 	font-size: 14px;
 	transition: background 100ms;
 }
-.win-context-cmd:hover {
+.LFM-context-cmd:hover {
 	background: var(--win-context-hover);
 }
 
-.win-context-cmd-icon {
+.LFM-context-cmd-icon {
 	font-size: 13px;
 }
 
-.win-context-divider {
+.LFM-context-divider {
 	height: 1px;
 	background: var(--win-context-divider);
 	margin: 3px 4px;
 }
 
-.win-context-item {
+.LFM-context-item {
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -174,11 +174,11 @@ const menuItems = [
 	text-align: left;
 	transition: background 100ms;
 }
-.win-context-item:hover {
+.LFM-context-item:hover {
 	background: var(--win-context-hover);
 }
 
-.win-context-item-icon {
+.LFM-context-item-icon {
 	font-size: 14px;
 	width: 18px;
 	text-align: center;
@@ -186,11 +186,11 @@ const menuItems = [
 	opacity: 0.85;
 }
 
-.win-context-item-label {
+.LFM-context-item-label {
 	flex: 1;
 }
 
-.win-context-item-arrow {
+.LFM-context-item-arrow {
 	opacity: 0.6;
 	font-size: 14px;
 }

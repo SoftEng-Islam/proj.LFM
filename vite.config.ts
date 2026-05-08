@@ -39,6 +39,12 @@ export default defineConfig(async ({ mode }) => {
         },
         css: {
             devSourcemap: mode === 'development',
+            preprocessorOptions: {
+                sass: {
+                    api: 'modern-compiler',
+                    indentedSyntax: true,
+                },
+            },
         },
         resolve: {
             alias: [

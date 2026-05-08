@@ -2,12 +2,13 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { openFile, convertFileSrc } from '@/services/tauri-bridge';
+import { openFile, convertFileSrc, getVideoThumbnail } from '@/services/tauri-bridge';
 
 import ActionToolbar from '@/features/explorer/components/ActionToolbar.vue';
 import ContextMenu from '@/features/explorer/components/ContextMenu.vue';
 import FolderIcon from '@/components/ui/FolderIcon.vue';
 import { useFileManagerStore } from '@/stores/file-manager';
+import type { FileEntry } from '@/types/file-manager';
 
 const store = useFileManagerStore();
 const router = useRouter();
@@ -35,7 +36,7 @@ function isFolder(entry: { kind: string }) {
 	return entry.kind === 'folder';
 }
 
-function openItem(entry: any) {
+function openItem(entry: FileEntry) {
 	if (isFolder(entry)) {
 		router.push(entry.id);
 	} else {
@@ -47,16 +48,15 @@ function openItem(entry: any) {
 const fileIconColors: Record<string, string> = {
 	document: '#2b7cd3',
 	image: '#e07000',
-	audio: '#107c10',
-	video: '#5c2d91',
-	archive: '#ca5010',
-	code: '#0078d4',
-	data: '#217346',
-	default: '#5c5c5c',
+	video: '#6236cc',
+	audio: '#1db954',
+	archive: '#f1c40f',
+	code: '#34495e',
+	default: '#7f8c8d',
 };
 
-function fileIconColor(category: string): string {
-	return fileIconColors[category] ?? fileIconColors['default'] ?? '#5c5c5c';
+function getFileIconColor(category: string) {
+	return fileIconColors[category] || fileIconColors.default;
 }
 
 // File category → emoji glyph (fallback icon)
@@ -73,308 +73,282 @@ const fileGlyphs: Record<string, string> = {
 function fileGlyph(category: string): string {
 	return fileGlyphs[category] ?? fileGlyphs['default'] ?? '📄';
 }
+
+const formatDate = (dateStr: string) => {
+	return new Intl.DateTimeFormat('en-US', { 
+		month: 'short', 
+		day: 'numeric', 
+		year: 'numeric' 
+	}).format(new Date(dateStr));
+};
 </script>
 
-<template>
-	<div class="win-workspace">
-		<ActionToolbar />
+<template lang="pug">
+.LFM-workspace
+	ActionToolbar
 
-		<!-- Content area -->
-		<div class="win-workspace-content">
-			<!-- Grid view (large icons) -->
-			<div v-if="store.viewMode !== 'list'" class="win-grid">
-				<button
-					v-for="(entry, index) in store.currentEntries"
-					:key="entry.id"
-					type="button"
-					class="win-grid-item"
-					:class="{ 'win-grid-item--selected': selectedId === entry.id }"
-					@click="store.selectItem(entry.id)"
-					@dblclick="openItem(entry)"
-					@contextmenu="(e) => openContextMenu(e, entry.id)"
-					:aria-selected="selectedId === entry.id"
-					:title="entry.name"
-				>
-					<!-- Folder or file icon -->
-					<div class="win-grid-item-icon">
-						<FolderIcon v-if="isFolder(entry)" :size="64" />
-						
-						<!-- Image Thumbnail -->
-						<img 
-							v-else-if="entry.category === 'image'" 
-							:src="convertFileSrc(entry.id)" 
-							class="win-media-thumbnail" 
+	.LFM-workspace-content
+		div(v-if="store.viewMode !== 'list'", class="LFM-grid")
+			button(
+				v-for="entry in store.currentEntries"
+				:key="entry.id"
+				type="button"
+				class="LFM-grid-item"
+				:class="{ 'LFM-grid-item--selected': selectedId === entry.id }"
+				:aria-selected="selectedId === entry.id"
+				:title="entry.name"
+				@click="store.selectItem(entry.id)"
+				@dblclick="openItem(entry)"
+				@contextmenu="(e) => openContextMenu(e, entry.id)"
+			)
+				.LFM-grid-item-icon
+					FolderIcon(
+						v-if="isFolder(entry)"
+						:accent="entry.accent"
+						size="lg"
+					)
+					img.LFM-media-thumbnail(
+						v-else-if="entry.preview"
+						:src="entry.preview"
+						loading="lazy"
+					)
+					.LFM-file-icon(
+						v-else
+						:style="{ background: getFileIconColor(entry.category) }"
+					)
+						//- Video icon placeholder
+						svg(v-if="entry.category === 'video'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+							polygon(points="23 7 16 12 23 17 23 7")
+							rect(x="1" y="5" width="15" height="14" rx="2" ry="2")
+						//- Audio icon placeholder
+						svg(v-else-if="entry.category === 'audio'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+							path(d="M9 18V5l12-2v13")
+							circle(cx="6" cy="18" r="3")
+							circle(cx="18" cy="16" r="3")
+						//- Default file icon placeholder
+						svg(v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+							path(d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z")
+							polyline(points="13 2 13 9 20 9")
+				
+				span(class="LFM-grid-item-name") {{ entry.name }}
+
+		div(v-else, class="LFM-list")
+			.LFM-list-header
+				span(class="LFM-list-col LFM-list-col--name") Name
+				span(class="LFM-list-col") Date modified
+				span(class="LFM-list-col") Type
+				span(class="LFM-list-col LFM-list-col--right") Size
+
+			button(
+				v-for="row in store.currentEntries"
+				:key="row.id"
+				type="button"
+				class="LFM-list-row"
+				:class="{ 'LFM-list-row--selected': selectedId === row.id }"
+				@click="store.selectItem(row.id)"
+				@dblclick="openItem(row)"
+				@contextmenu="(e) => openContextMenu(e, row.id)"
+			)
+				div(class="LFM-list-col LFM-list-col--name")
+					.LFM-list-file-icon(
+						:style="{ background: getFileIconColor(row.category) }"
+					)
+						span(v-if="isFolder(row)")
+							svg(width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+								path(d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z")
+						img.LFM-list-media-thumbnail(
+							v-else-if="row.preview"
+							:src="row.preview"
 							loading="lazy"
-						/>
-						
-						<!-- Video Thumbnail -->
-						<video 
-							v-else-if="entry.category === 'video'" 
-							:src="convertFileSrc(entry.id) + '#t=0.1'" 
-							class="win-media-thumbnail"
-							preload="metadata"
-							muted
-						></video>
+						)
+						svg(v-else-if="row.category === 'video'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+							polygon(points="23 7 16 12 23 17 23 7")
+							rect(x="1" y="5" width="15" height="14" rx="2" ry="2")
+						svg(v-else-if="row.category === 'audio'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+							path(d="M9 18V5l12-2v13")
+							circle(cx="6" cy="18" r="3")
+							circle(cx="18" cy="16" r="3")
+						svg(v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+							path(d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z")
+							polyline(points="13 2 13 9 20 9")
+					
+					span(class="LFM-list-item-name") {{ row.name }}
+				
+				span(class="LFM-list-col") {{ formatDate(row.modifiedAt) }}
+				span(class="LFM-list-col") {{ row.typeLabel }}
+				span(class="LFM-list-col LFM-list-col--right") {{ row.sizeLabel }}
 
-						<div
-							v-else
-							class="win-file-icon"
-							:style="{ background: fileIconColor(entry.category) }"
-						>
-							<span class="win-file-icon-glyph">{{ fileGlyph(entry.category) }}</span>
-						</div>
-					</div>
-					<span class="win-grid-item-name">{{ entry.name }}</span>
-				</button>
-			</div>
-
-			<!-- List / Details view -->
-			<div v-else class="win-list">
-				<!-- Column headers -->
-				<div class="win-list-header">
-					<span class="win-list-col win-list-col--name">Name</span>
-					<span class="win-list-col">Date modified</span>
-					<span class="win-list-col">Type</span>
-					<span class="win-list-col win-list-col--right">Size</span>
-				</div>
-
-				<button
-					v-for="entry in store.currentEntries"
-					:key="entry.id"
-					type="button"
-					class="win-list-row"
-					:class="{ 'win-list-row--selected': selectedId === entry.id }"
-					@click="store.selectItem(entry.id)"
-					@dblclick="openItem(entry)"
-					@contextmenu="(e) => openContextMenu(e, entry.id)"
-				>
-					<div class="win-list-col win-list-col--name">
-						<FolderIcon v-if="isFolder(entry)" :size="16" />
-						
-						<img 
-							v-else-if="entry.category === 'image'" 
-							:src="convertFileSrc(entry.id)" 
-							class="win-list-media-thumbnail" 
-							loading="lazy"
-						/>
-						
-						<video 
-							v-else-if="entry.category === 'video'" 
-							:src="convertFileSrc(entry.id) + '#t=0.1'" 
-							class="win-list-media-thumbnail"
-							preload="metadata"
-							muted
-						></video>
-
-						<div
-							v-else
-							class="win-list-file-icon"
-							:style="{ background: fileIconColor(entry.category) }"
-						>
-							<span style="font-size:9px;">{{ fileGlyph(entry.category) }}</span>
-						</div>
-						<span class="win-list-item-name">{{ entry.name }}</span>
-					</div>
-					<span class="win-list-col">
-						{{ new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(entry.modifiedAt)) }}
-					</span>
-					<span class="win-list-col">{{ entry.typeLabel }}</span>
-					<span class="win-list-col win-list-col--right">{{ entry.sizeLabel }}</span>
-				</button>
-			</div>
-		</div>
-
-		<!-- Context menu -->
-		<ContextMenu
-			v-if="contextMenu.visible"
-			:x="contextMenu.x"
-			:y="contextMenu.y"
-			:item-name="contextMenu.itemId"
-			@close="closeContextMenu"
-		/>
-	</div>
+	ContextMenu(
+		v-if="contextMenu.visible"
+		:x="contextMenu.x"
+		:y="contextMenu.y"
+		:item-name="contextMenu.itemId"
+		@close="closeContextMenu"
+	)
 </template>
 
-<style scoped>
-.win-workspace {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	background: var(--win-panel);
-}
+<style lang="sass" scoped>
+.LFM-workspace
+	display: flex
+	flex-direction: column
+	height: 100%
+	background: var(--win-panel)
 
-.win-workspace-content {
-	flex: 1;
-	overflow-y: auto;
-	overflow-x: hidden;
-	padding: 8px;
-}
+.LFM-workspace-content
+	flex: 1
+	overflow-y: auto
+	overflow-x: hidden
+	padding: 8px
 
-/* ── Grid (large icons) ──────────────────────────── */
-.win-grid {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px;
-	align-content: flex-start;
-}
+.LFM-grid
+	display: flex
+	flex-wrap: wrap
+	gap: 4px
+	align-content: flex-start
 
-.win-grid-item {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	width: 100px;
-	padding: 8px 4px 6px;
-	border-radius: 4px;
-	border: 2px solid transparent;
-	background: transparent;
-	cursor: pointer;
-	color: var(--win-text);
-	transition: background 100ms, border-color 100ms;
-	text-align: center;
-	outline: none;
-}
-.win-grid-item:hover {
-	background: var(--win-item-hover);
-}
-.win-grid-item--selected {
-	background: var(--win-selected);
-	border-color: var(--win-item-selected-border);
-}
+.LFM-grid-item
+	display: flex
+	flex-direction: column
+	align-items: center
+	width: 100px
+	padding: 8px 4px 6px
+	border-radius: 4px
+	border: 2px solid transparent
+	background: transparent
+	cursor: pointer
+	color: var(--win-text)
+	transition: background 100ms, border-color 100ms
+	text-align: center
+	outline: none
 
-.win-grid-item-icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: 64px;
-	width: 64px;
-}
+	&:hover
+		background: var(--win-item-hover)
 
-.win-file-icon {
-	width: 52px;
-	height: 64px;
-	border-radius: 3px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	position: relative;
-}
-.win-file-icon::before {
-	content: '';
-	position: absolute;
-	top: 0;
-	right: 0;
-	width: 0;
-	height: 0;
-	border-style: solid;
-	border-width: 0 12px 12px 0;
-	border-color: transparent rgba(255,255,255,0.3) transparent transparent;
-}
+	&--selected
+		background: var(--win-selected)
+		border-color: var(--win-item-selected-border)
 
-.win-file-icon-glyph {
-	font-size: 20px;
-	filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-}
+.LFM-grid-item-icon
+	display: flex
+	align-items: center
+	justify-content: center
+	height: 64px
+	width: 64px
 
-.win-media-thumbnail {
-	max-width: 64px;
-	max-height: 64px;
-	object-fit: cover;
-	border-radius: 4px;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
+.LFM-file-icon
+	width: 52px
+	height: 64px
+	border-radius: 3px
+	display: flex
+	flex-direction: column
+	align-items: center
+	justify-content: center
+	position: relative
 
-.win-list-media-thumbnail {
-	width: 16px;
-	height: 16px;
-	object-fit: cover;
-	border-radius: 2px;
-	margin-right: 8px;
-}
+	&::before
+		content: ''
+		position: absolute
+		top: 0
+		right: 0
+		width: 0
+		height: 0
+		border-style: solid
+		border-width: 0 12px 12px 0
+		border-color: transparent rgba(255, 255, 255, 0.3) transparent transparent
 
-.win-grid-item-name {
-	margin-top: 6px;
-	font-size: 11px;
-	line-height: 1.3;
-	max-width: 92px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
-	word-break: break-word;
-}
+.LFM-file-icon-glyph
+	font-size: 20px
+	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))
 
-/* ── List (details) ──────────────────────────────── */
-.win-list {
-	width: 100%;
-}
+.LFM-media-thumbnail
+	max-width: 64px
+	max-height: 64px
+	object-fit: cover
+	border-radius: 4px
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2)
 
-.win-list-header {
-	display: grid;
-	grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr;
-	gap: 4px;
-	padding: 4px 8px;
-	border-bottom: 1px solid var(--win-border);
-	font-size: 11px;
-	font-weight: 600;
-	color: var(--win-text);
-	cursor: pointer;
-	user-select: none;
-}
+.LFM-list-media-thumbnail
+	width: 16px
+	height: 16px
+	object-fit: cover
+	border-radius: 2px
+	margin-right: 8px
 
-.win-list-row {
-	display: grid;
-	grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr;
-	gap: 4px;
-	padding: 3px 8px;
-	border-bottom: 1px solid var(--win-border);
-	background: transparent;
-	border-left: none;
-	border-right: none;
-	border-top: none;
-	cursor: pointer;
-	color: var(--win-text);
-	font-size: 12px;
-	text-align: left;
-	width: 100%;
-	transition: background 80ms;
-}
-.win-list-row:hover {
-	background: var(--win-hover);
-}
-.win-list-row--selected {
-	background: var(--win-selected);
-}
+.LFM-grid-item-name
+	margin-top: 6px
+	font-size: 11px
+	line-height: 1.3
+	max-width: 92px
+	overflow: hidden
+	text-overflow: ellipsis
+	display: -webkit-box
+	-webkit-line-clamp: 2
+	-webkit-box-orient: vertical
+	word-break: break-word
 
-.win-list-col {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-}
-.win-list-col--name {
-	gap: 6px;
-}
-.win-list-col--right {
-	justify-content: flex-end;
-}
+.LFM-list
+	width: 100%
 
-.win-list-file-icon {
-	width: 16px;
-	height: 16px;
-	border-radius: 2px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-}
+.LFM-list-header
+	display: grid
+	grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr
+	gap: 4px
+	padding: 4px 8px
+	border-bottom: 1px solid var(--win-border)
+	font-size: 11px
+	font-weight: 600
+	color: var(--win-text)
+	cursor: pointer
+	user-select: none
 
-.win-list-item-name {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
+.LFM-list-row
+	display: grid
+	grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr
+	gap: 4px
+	padding: 3px 8px
+	border-bottom: 1px solid var(--win-border)
+	background: transparent
+	border-left: none
+	border-right: none
+	border-top: none
+	cursor: pointer
+	color: var(--win-text)
+	font-size: 12px
+	text-align: left
+	width: 100%
+	transition: background 80ms
+
+	&:hover
+		background: var(--win-hover)
+
+	&--selected
+		background: var(--win-selected)
+
+.LFM-list-col
+	display: flex
+	align-items: center
+	gap: 6px
+	overflow: hidden
+	white-space: nowrap
+	text-overflow: ellipsis
+
+	&--name
+		gap: 6px
+
+	&--right
+		justify-content: flex-end
+
+.LFM-list-file-icon
+	width: 16px
+	height: 16px
+	border-radius: 2px
+	display: flex
+	align-items: center
+	justify-content: center
+	flex-shrink: 0
+
+.LFM-list-item-name
+	overflow: hidden
+	text-overflow: ellipsis
+	white-space: nowrap
 </style>

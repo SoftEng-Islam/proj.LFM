@@ -1,9 +1,9 @@
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, reactive } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { acceptHMRUpdate, defineStore } from 'pinia';
 
 import { defaultPath, driveCards, navigationGroups, windowTabs } from '@/features/navigation/navigation';
-import { readDirectory } from '@/services/tauri-bridge';
+import { readDirectory, getVideoThumbnail, convertFileSrc, getDrives } from '@/services/tauri-bridge';
 import type { FileMetaData } from '@/services/tauri-bridge';
 import type {
 	ActivityEntry,
@@ -38,6 +38,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	const sortMode = useStorage<SortMode>(sortModeKey, 'modified');
 	const previewOpen = useStorage(previewPaneKey, true);
 	const isLoading = ref(false);
+	const driveCards = ref<DriveCard[]>([]);
 
 	const navigationGroupsWithCounts = computed<NavigationGroup[]>(() =>
 		navigationGroups.map((group) => ({
@@ -157,29 +158,49 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 						modifiedDate = new Date(file.last_modified.secs_since_epoch * 1000).toISOString();
 					} else if (typeof file.last_modified === 'number') {
 						modifiedDate = new Date(file.last_modified * 1000).toISOString();
-					} else if (file.last_modified && (file.last_modified as any).secs_since_epoch === undefined) {
-						// Catch cases where SystemTime serialized differently
-						console.warn('Unknown SystemTime format:', file.last_modified);
 					}
 
 					const fileTypeStr = file.file_type || '';
-					return {
-						id: file.file_path || `unknown-${Math.random()}`,
+					let category = fileTypeStr.toLowerCase();
+					const id = file.file_path || `unknown-${Math.random()}`;
+
+					// Robust extension-based override
+					const lowerBasename = (file.basename || '').toLowerCase();
+					if (lowerBasename.endsWith('.mp4') || lowerBasename.endsWith('.mkv') || lowerBasename.endsWith('.avi') || lowerBasename.endsWith('.mov') || lowerBasename.endsWith('.webm')) {
+						category = 'video';
+					} else if (lowerBasename.endsWith('.jpg') || lowerBasename.endsWith('.jpeg') || lowerBasename.endsWith('.png') || lowerBasename.endsWith('.gif') || lowerBasename.endsWith('.webp')) {
+						category = 'image';
+					}
+
+					const entry = reactive<FileEntry>({
+						id,
 						name: file.basename || 'Unknown',
 						kind: file.is_dir ? 'folder' : 'file',
-						category: fileTypeStr.toLowerCase() || 'default',
+						category,
 						typeLabel: fileTypeStr || (file.is_dir ? 'Directory' : 'File'),
 						sizeLabel: file.is_dir ? '' : formatSize(file.size || 0),
 						sortSize: file.size || 0,
 						modifiedAt: modifiedDate,
-						preview: '',
+						preview: category === 'image' ? convertFileSrc(id) : '',
 						status: 'local',
 						accent: file.is_dir ? 'sky' : 'slate',
 						locationPath: [path, file.basename || ''],
 						tags: [],
 						collaborators: [],
 						pinned: false,
-					};
+					});
+
+					// If video, fetch thumbnail in background
+					if (category === 'video') {
+						getVideoThumbnail(id).then(thumbPath => {
+							console.log(`Generated thumbnail for ${file.basename}: ${thumbPath}`);
+							entry.preview = convertFileSrc(thumbPath);
+						}).catch((err) => {
+							console.error(`Failed to generate thumbnail for ${file.basename}:`, err);
+						});
+					}
+
+					return entry;
 				});
 			} catch (e) {
 				import('vue-toastification').then(m => m.useToast().error(`Mapping failed: ${e}`));
@@ -214,6 +235,40 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	function togglePreviewPane() {
 		previewOpen.value = !previewOpen.value;
+	}
+
+	async function fetchDrives() {
+		try {
+			const res = await getDrives();
+			driveCards.value = res.array_of_drives.map(drive => {
+				const used = drive.total_space - drive.available_space;
+				const usedPercent = Math.round((used / drive.total_space) * 100);
+				
+				// Improve labels: use the last segment of the mount point
+				let label = drive.name;
+				const mountParts = drive.mount_point.split('/').filter(Boolean);
+				
+				if (drive.mount_point === '/') {
+					label = 'System';
+				} else if (mountParts.length > 0) {
+					// Use the last part of the mount point (e.g. /mnt/data -> data)
+					label = mountParts[mountParts.length - 1];
+					// Capitalize first letter for better UI
+					label = label.charAt(0).toUpperCase() + label.slice(1);
+				}
+
+				return {
+					id: drive.mount_point,
+					label: label || 'Disk',
+					usedLabel: formatSize(used) + ' used',
+					freeLabel: formatSize(drive.available_space) + ' free',
+					usedPercent,
+					accent: drive.is_removable ? 'amber' : (drive.mount_point === '/' ? 'sky' : 'emerald')
+				};
+			});
+		} catch (e) {
+			console.error('Failed to fetch drives:', e);
+		}
 	}
 
 	function cycleSortMode() {
@@ -268,8 +323,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		activityFeed,
 		navigationGroups: navigationGroupsWithCounts,
 		windowTabs: tabsWithAccent,
-		driveCards: computed<DriveCard[]>(() => driveCards),
+		driveCards,
 		fetchDirectory,
+		fetchDrives,
 		openSection,
 		selectItem,
 		setSearchQuery,

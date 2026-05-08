@@ -12,17 +12,17 @@ const selectedLabel = computed(() =>
 </script>
 
 <template>
-	<footer class="win-status-bar" role="status" aria-label="Status bar">
-		<span class="win-status-count">{{ itemCount }} items</span>
+	<footer class="LFM-status-bar" role="status" aria-label="Status bar">
+		<span class="LFM-status-count">{{ itemCount }} items</span>
 		<template v-if="selectedLabel">
-			<span class="win-status-sep">|</span>
-			<span class="win-status-selected">{{ selectedLabel }}</span>
+			<span class="LFM-status-sep">|</span>
+			<span class="LFM-status-selected">{{ selectedLabel }}</span>
 		</template>
 	</footer>
 </template>
 
 <style scoped>
-.win-status-bar {
+.LFM-status-bar {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -36,11 +36,11 @@ const selectedLabel = computed(() =>
 	user-select: none;
 }
 
-.win-status-sep {
+.LFM-status-sep {
 	opacity: 0.35;
 }
 
-.win-status-selected {
+.LFM-status-selected {
 	color: var(--win-text);
 }
 </style>

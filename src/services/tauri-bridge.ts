@@ -329,6 +329,14 @@ export function extractIcon(filePath: string): Promise<string> {
     return invoke('extract_icon', { filePath });
 }
 
+/**
+ * Generate or retrieve a cached thumbnail image for a video file.
+ * Returns the absolute path to the generated .jpg thumbnail.
+ */
+export function getVideoThumbnail(videoPath: string): Promise<string> {
+    return invoke('get_video_thumbnail', { videoPath });
+}
+
 // ─── Window effects (Windows / macOS only — no-op on Linux) ──────────────────
 
 /** Apply a transparency effect to the window. No-op on Linux. */

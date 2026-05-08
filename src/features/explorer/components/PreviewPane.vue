@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useToast } from 'vue-toastification';
 
 import BaseButton from '@/components/ui/BaseButton.vue';
+import { convertFileSrc, getVideoThumbnail } from '@/services/tauri-bridge';
 import { useFileManagerStore } from '@/stores/file-manager';
+import type { FileEntry } from '@/types/file-manager';
 import type { AccentTone, FileStatus } from '@/types/file-manager';
 
-export const accentThemeMap: Record<
+const accentThemeMap: Record<
 	AccentTone,
 	{
 		chip: string;
@@ -67,7 +69,7 @@ export const accentThemeMap: Record<
 	},
 };
 
-export const statusToneMap: Record<FileStatus, string> = {
+const statusToneMap: Record<FileStatus, string> = {
 	synced: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-400/12 dark:text-emerald-200',
 	shared: 'bg-cyan-500/12 text-cyan-700 dark:bg-cyan-400/12 dark:text-cyan-200',
 	draft: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/12 dark:text-amber-200',
@@ -76,7 +78,7 @@ export const statusToneMap: Record<FileStatus, string> = {
 	recent: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/12 dark:text-violet-200',
 };
 
-export const categorySymbolMap: Record<string, string> = {
+const categorySymbolMap: Record<string, string> = {
 	folder: 'F',
 	document: 'D',
 	spreadsheet: 'X',
@@ -103,100 +105,91 @@ function pinSelection() {
 }
 </script>
 
-<template>
-	<aside v-if="selectedItem" class="surface-panel h-full rounded-[30px] p-5">
-		<div class="flex items-start justify-between gap-4">
-			<div class="flex items-start gap-4">
-				<div
-					class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] text-sm font-semibold"
-					:class="accentThemeMap[selectedItem.accent].chip"
-				>
-					{{ categorySymbolMap[selectedItem.category] || '?' }}
-				</div>
-				<div>
-					<p class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">{{ selectedItem.typeLabel }}</p>
-					<h2 class="mt-2 text-xl font-semibold text-slate-950 dark:text-white">{{ selectedItem.name }}</h2>
-					<p class="mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400">
-						{{ selectedItem.preview }}
-					</p>
-				</div>
-			</div>
-			<span class="rounded-full px-3 py-1 text-xs font-medium" :class="statusToneMap[selectedItem.status]">
-				{{ selectedItem.status }}
-			</span>
-		</div>
+<template lang="pug">
+aside(v-if="selectedItem", class="surface-panel h-full rounded-[30px] p-5")
+	.flex.items-start.justify-between.gap-4
+		.flex.items-start.gap-4
+			div(
+				class="relative inline-flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[22px] text-sm font-semibold",
+				:class="accentThemeMap[selectedItem.accent].chip"
+			)
+				img(
+					v-if="selectedItem.preview"
+					:src="selectedItem.preview"
+					class="h-full w-full object-cover"
+				)
+				span(v-else) {{ categorySymbolMap[selectedItem.category] || '?' }}
+			div
+				p(class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400") {{ selectedItem.typeLabel }}
+				h2(class="mt-2 text-xl font-semibold text-slate-950 dark:text-white") {{ selectedItem.name }}
+				p(class="mt-2 max-w-sm text-sm leading-6 text-slate-500 dark:text-slate-400") {{ selectedItem.typeLabel }}
+		
+		span(class="rounded-full px-3 py-1 text-xs font-medium", :class="statusToneMap[selectedItem.status]")
+			| {{ selectedItem.status }}
 
-		<div class="mt-5 flex flex-wrap gap-2">
-			<span
-				v-for="tag in selectedItem.tags"
-				:key="tag"
-				class="rounded-full bg-slate-900/[0.05] px-3 py-1 text-xs text-slate-600 dark:bg-white/[0.08] dark:text-slate-300"
-			>
-				{{ tag }}
-			</span>
-		</div>
+	.mt-5.flex.flex-wrap.gap-2
+		span(
+			v-for="tag in selectedItem.tags"
+			:key="tag"
+			class="rounded-full bg-slate-900/[0.05] px-3 py-1 text-xs text-slate-600 dark:bg-white/[0.08] dark:text-slate-300"
+		)
+			| {{ tag }}
 
-		<div class="mt-6 grid gap-3">
-			<div class="rounded-[24px] bg-slate-900/[0.03] p-4 dark:bg-white/[0.05]">
-				<p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Details</p>
-				<div class="mt-4 space-y-3 text-sm">
-					<div class="flex items-center justify-between gap-4">
-						<span class="text-slate-500 dark:text-slate-400">Path</span>
-						<span class="text-right text-slate-900 dark:text-white">{{ selectedItem.locationPath.join(' / ') }}</span>
-					</div>
-					<div class="flex items-center justify-between gap-4">
-						<span class="text-slate-500 dark:text-slate-400">Size</span>
-						<span class="text-slate-900 dark:text-white">{{ selectedItem.sizeLabel }}</span>
-					</div>
-					<div class="flex items-center justify-between gap-4">
-						<span class="text-slate-500 dark:text-slate-400">Modified</span>
-						<span class="text-slate-900 dark:text-white">
-							{{ new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(selectedItem.modifiedAt)) }}
-						</span>
-					</div>
-				</div>
-			</div>
+	.mt-6.grid.gap-3
+		div(class="rounded-[24px] bg-slate-900/[0.03] p-4 dark:bg-white/[0.05]")
+			p(class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400") Details
+			.mt-4.space-y-3.text-sm
+				.flex.items-center.justify-between.gap-4
+					span(class="text-slate-500 dark:text-slate-400") Path
+					span(class="text-right text-slate-900 dark:text-white") {{ selectedItem.locationPath.join(' / ') }}
+				.flex.items-center.justify-between.gap-4
+					span(class="text-slate-500 dark:text-slate-400") Size
+					span(class="text-slate-900 dark:text-white") {{ selectedItem.sizeLabel }}
+				.flex.items-center.justify-between.gap-4
+					span(class="text-slate-500 dark:text-slate-400") Modified
+					span(class="text-slate-900 dark:text-white")
+						| {{ new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(selectedItem.modifiedAt)) }}
 
-			<div class="rounded-[24px] bg-slate-900/[0.03] p-4 dark:bg-white/[0.05]">
-				<p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Collaborators</p>
-				<div class="mt-4 flex flex-wrap gap-2">
-					<span
-						v-for="person in selectedItem.collaborators"
-						:key="person"
-						class="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-white/10 dark:text-slate-100"
-					>
-						{{ person }}
-					</span>
-				</div>
-			</div>
+		div(class="rounded-[24px] bg-slate-900/[0.03] p-4 dark:bg-white/[0.05]")
+			p(class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400") Collaborators
+			.mt-4.flex.flex-wrap.gap-2
+				span(
+					v-for="person in selectedItem.collaborators"
+					:key="person"
+					class="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm dark:bg-white/10 dark:text-slate-100"
+				)
+					| {{ person }}
 
-			<div class="rounded-[24px] bg-slate-900/[0.03] p-4 dark:bg-white/[0.05]">
-				<p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Activity</p>
-				<div class="mt-4 space-y-3">
-					<div v-for="activity in store.activityFeed" :key="activity.id" class="rounded-2xl bg-white/80 p-3 dark:bg-white/8">
-						<div class="flex items-center justify-between gap-4">
-							<p class="font-medium text-slate-900 dark:text-white">{{ activity.title }}</p>
-							<span class="text-xs text-slate-400">{{ activity.timeLabel }}</span>
-						</div>
-						<p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ activity.summary }}</p>
-					</div>
-				</div>
-			</div>
-		</div>
+		div(class="rounded-[24px] bg-slate-900/[0.03] p-4 dark:bg-white/[0.05]")
+			p(class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400") Activity
+			.mt-4.space-y-3
+				div(
+					v-for="activity in store.activityFeed"
+					:key="activity.id"
+					class="rounded-2xl bg-white/80 p-3 dark:bg-white/8"
+				)
+					.flex.items-center.justify-between.gap-4
+						p(class="font-medium text-slate-900 dark:text-white") {{ activity.title }}
+						span(class="text-xs text-slate-400") {{ activity.timeLabel }}
+					p(class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400") {{ activity.summary }}
 
-		<div class="mt-6 flex gap-2">
-			<BaseButton v-tooltip="'Pin or unpin the current selection'" variant="secondary" size="sm" class="flex-1" @click="pinSelection">
-				Pin item
-			</BaseButton>
-			<BaseButton
-				v-tooltip="'Placeholder for a native open action'"
-				variant="quiet"
-				size="sm"
-				class="flex-1"
-				@click="toast('Connect this action to a Tauri open command when backend wiring is ready.')"
-			>
-				Open
-			</BaseButton>
-		</div>
-	</aside>
+	.mt-6.flex.gap-2
+		BaseButton(
+			v-tooltip="'Pin or unpin the current selection'"
+			variant="secondary"
+			size="sm"
+			class="flex-1"
+			@click="pinSelection"
+		) Pin item
+		
+		BaseButton(
+			v-tooltip="'Placeholder for a native open action'"
+			variant="quiet"
+			size="sm"
+			class="flex-1"
+			@click="toast('Connect this action to a Tauri open command when backend wiring is ready.')"
+		) Open
 </template>
+
+<style lang="sass">
+</style>

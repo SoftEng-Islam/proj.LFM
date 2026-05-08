@@ -44,8 +44,10 @@ watch(
 );
 </script>
 
-<template>
-	<AppLayout>
-		<WorkspaceOverview />
-	</AppLayout>
+<template lang="pug">
+AppLayout
+	WorkspaceOverview
 </template>
+
+<style lang="sass">
+</style>
