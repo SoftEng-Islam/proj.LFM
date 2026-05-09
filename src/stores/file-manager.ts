@@ -2,8 +2,8 @@ import { computed, ref, watch, reactive } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { acceptHMRUpdate, defineStore } from 'pinia';
 
-import { defaultPath, driveCards, navigationGroups, windowTabs } from '@/features/navigation/navigation';
-import { readDirectory, getVideoThumbnail, convertFileSrc, getDrives } from '@/services/tauri-bridge';
+import { defaultPath, driveCards as staticDrives, navigationGroups } from '@/features/navigation/navigation';
+import { readDirectory, getVideoThumbnail, getImageThumbnail, convertFileSrc, getDrives } from '@/services/tauri-bridge';
 import type { FileMetaData } from '@/services/tauri-bridge';
 import type {
 	ActivityEntry,
@@ -36,9 +36,13 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	const selectedItemId = ref<string | null>(null);
 	const viewMode = useStorage<ViewMode>(viewModeKey, 'grid');
 	const sortMode = useStorage<SortMode>(sortModeKey, 'modified');
-	const previewOpen = useStorage(previewPaneKey, true);
+	const detailsOpen = useStorage('lfm-details-pane', true);
+	const aiChatOpen = useStorage('lfm-ai-chat-pane', false);
 	const isLoading = ref(false);
 	const driveCards = ref<DriveCard[]>([]);
+	const windowTabs = ref<WindowTab[]>([
+		{ id: 'tab-home', label: 'Home', path: defaultPath, sectionId: defaultPath, subtitle: 'Recent workspace' },
+	]);
 
 	const navigationGroupsWithCounts = computed<NavigationGroup[]>(() =>
 		navigationGroups.map((group) => ({
@@ -51,7 +55,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	);
 
 	const tabsWithAccent = computed<WindowTab[]>(() =>
-		windowTabs.map((tab) => ({
+		windowTabs.value.map((tab) => ({
 			...tab,
 			accent: 'slate'
 		}))
@@ -190,13 +194,18 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 						pinned: false,
 					});
 
-					// If video, fetch thumbnail in background
+					// If video or image, fetch thumbnail in background
 					if (category === 'video') {
 						getVideoThumbnail(id).then(thumbPath => {
-							console.log(`Generated thumbnail for ${file.basename}: ${thumbPath}`);
 							entry.preview = convertFileSrc(thumbPath);
 						}).catch((err) => {
-							console.error(`Failed to generate thumbnail for ${file.basename}:`, err);
+							console.error(`Failed to generate video thumbnail for ${file.basename}:`, err);
+						});
+					} else if (category === 'image') {
+						getImageThumbnail(id).then(thumbPath => {
+							entry.preview = convertFileSrc(thumbPath);
+						}).catch((err) => {
+							console.error(`Failed to generate image thumbnail for ${file.basename}:`, err);
 						});
 					}
 
@@ -233,9 +242,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		viewMode.value = nextMode;
 	}
 
-	function togglePreviewPane() {
-		previewOpen.value = !previewOpen.value;
-	}
+
 
 	async function fetchDrives() {
 		try {
@@ -252,7 +259,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 					label = 'System';
 				} else if (mountParts.length > 0) {
 					// Use the last part of the mount point (e.g. /mnt/data -> data)
-					label = mountParts[mountParts.length - 1];
+					label = mountParts[mountParts.length - 1] || 'Disk';
 					// Capitalize first letter for better UI
 					label = label.charAt(0).toUpperCase() + label.slice(1);
 				}
@@ -308,6 +315,66 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		}
 	}
 
+	function addTab(path: string = defaultPath) {
+		const id = `tab-${Date.now()}`;
+		const label = path === defaultPath ? 'Home' : path.split('/').pop() || 'New Tab';
+		windowTabs.value.push({
+			id,
+			label,
+			path,
+			sectionId: path,
+			subtitle: path
+		});
+		return id;
+	}
+
+	function closeTab(tabId: string) {
+		if (windowTabs.value.length <= 1) return;
+		const idx = windowTabs.value.findIndex(t => t.id === tabId);
+		if (idx !== -1) {
+			windowTabs.value.splice(idx, 1);
+		}
+	}
+
+	function toggleDetails() {
+		detailsOpen.value = !detailsOpen.value;
+	}
+
+	function toggleAiChat() {
+		aiChatOpen.value = !aiChatOpen.value;
+	}
+
+	async function openItem(filePath: string) {
+		try {
+			const { openFile } = await import('@/services/tauri-bridge');
+			await openFile(filePath);
+		} catch (e) {
+			console.error('Failed to open item:', e);
+		}
+	}
+
+	async function deleteSelection() {
+		if (!selectedItemId.value) return;
+		try {
+			const { deleteFile } = await import('@/services/tauri-bridge');
+			const success = await deleteFile([selectedItemId.value]);
+			if (success) {
+				await fetchDirectory(currentPath.value);
+			}
+		} catch (e) {
+			console.error('Failed to delete selection:', e);
+		}
+	}
+
+	async function openInTerminal(path: string) {
+		try {
+			const { openInTerminal: tauriOpenTerminal } = await import('@/services/tauri-bridge');
+			await tauriOpenTerminal(path);
+		} catch (e) {
+			console.error('Failed to open terminal:', e);
+		}
+	}
+
 	return {
 		currentPath,
 		currentEntries: sortedAndFilteredEntries,
@@ -315,7 +382,8 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		searchQuery,
 		viewMode,
 		sortMode,
-		previewOpen,
+		detailsOpen,
+		aiChatOpen,
 		favoriteItems,
 		spotlightItems,
 		breadcrumbs,
@@ -330,10 +398,16 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		selectItem,
 		setSearchQuery,
 		setViewMode,
-		togglePreviewPane,
+		toggleDetails,
+		toggleAiChat,
 		cycleSortMode,
 		createFolder,
 		togglePinnedForSelection,
+		addTab,
+		closeTab,
+		openItem,
+		deleteSelection,
+		openInTerminal,
 	};
 });
 

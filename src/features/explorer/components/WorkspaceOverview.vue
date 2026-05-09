@@ -182,8 +182,10 @@ const formatDate = (dateStr: string) => {
 		v-if="contextMenu.visible"
 		:x="contextMenu.x"
 		:y="contextMenu.y"
-		:item-name="contextMenu.itemId"
+		:item-name="contextMenu.itemId.split('/').pop()"
+		:file-path="contextMenu.itemId"
 		@close="closeContextMenu"
+		@rename="() => import('vue-toastification').then(m => m.useToast().info('Rename dialog coming soon!'))"
 	)
 </template>
 

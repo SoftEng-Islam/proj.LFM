@@ -23,7 +23,10 @@
 			"DOM",
 			"DOM.Iterable"
 		],
-		"noEmit": true
+		"noEmit": true,
+		"types": [
+			"unplugin-icons/types/vue"
+		]
 	},
 	"include": [
 		"src/**/*.ts",

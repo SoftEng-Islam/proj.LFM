@@ -66,10 +66,10 @@
         ],
         "security": {
             "assetProtocol": {
-                "scope": ["*"],
+                "scope": ["$CACHE/**", "$HOME/**", "/"],
                 "enable": true
             },
-            "csp": null
+            "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost http://asset.localhost blob: data:; media-src 'self' asset: https://asset.localhost http://asset.localhost blob: data:; connect-src 'self' ipc: http://ipc.localhost"
         },
         "withGlobalTauri": true
     }

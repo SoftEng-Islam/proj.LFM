@@ -37,6 +37,7 @@ tauri-plugin-os = "2"
 tauri-plugin-clipboard-manager = "2"
 sha2 = "0.11.0"
 hex = "0.4.3"
+image = "0.25"
 
 [target."cfg(any(target_os = \"windows\", target_os = \"macos\"))".dependencies]
 window-vibrancy = { git = "https://github.com/tauri-apps/window-vibrancy" }

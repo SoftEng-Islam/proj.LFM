@@ -337,6 +337,14 @@ export function getVideoThumbnail(videoPath: string): Promise<string> {
     return invoke('get_video_thumbnail', { videoPath });
 }
 
+/**
+ * Generate or retrieve a cached thumbnail image for an image file using Rust.
+ * Returns the absolute path to the generated .jpg thumbnail.
+ */
+export function getImageThumbnail(imagePath: string): Promise<string> {
+    return invoke('get_image_thumbnail', { imagePath });
+}
+
 // ─── Window effects (Windows / macOS only — no-op on Linux) ──────────────────
 
 /** Apply a transparency effect to the window. No-op on Linux. */

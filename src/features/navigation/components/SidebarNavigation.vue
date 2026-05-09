@@ -6,6 +6,18 @@ import { storeToRefs } from 'pinia';
 import { navigationGroups, defaultPath } from '@/features/navigation/navigation';
 import { useFileManagerStore } from '@/stores/file-manager';
 
+// Icons
+import IconHome from '~icons/material-symbols/home';
+import IconChevronRight from '~icons/material-symbols/chevron-right';
+import IconFolder from '~icons/material-symbols/folder';
+import IconPushPin from '~icons/material-symbols/push-pin';
+import IconHardDrive from '~icons/material-symbols/hard-drive';
+import IconCloud from '~icons/material-symbols/cloud';
+import IconNetwork from '~icons/material-symbols/network-node';
+import IconLabel from '~icons/material-symbols/label';
+import IconSettings from '~icons/material-symbols/settings';
+import IconLinux from '~icons/material-symbols/terminal';
+
 const store = useFileManagerStore();
 const { driveCards } = storeToRefs(store);
 const route = useRoute();
@@ -31,16 +43,8 @@ const cloudItems = [
     <nav class="LFM-sidebar-nav" aria-label="Navigation pane">
         <!-- Home -->
         <RouterLink :to="defaultPath" class="LFM-sbar-item LFM-sbar-item--home" :class="{ 'LFM-sbar-item--active': isActive(defaultPath) }">
-            <span class="LFM-sbar-icon LFM-sbar-icon--home">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path
-                        d="M1.5 7.5L8 2L14.5 7.5V14H10.5V10H5.5V14H1.5V7.5Z"
-                        fill="#0067c0"
-                        stroke="#0067c0"
-                        stroke-width="0.5"
-                        stroke-linejoin="round"
-                    />
-                </svg>
+            <span class="LFM-sbar-icon">
+                <IconHome class="text-blue-500 text-lg" />
             </span>
             <span class="LFM-sbar-label">Home</span>
         </RouterLink>
@@ -48,7 +52,7 @@ const cloudItems = [
         <!-- Pinned Section -->
         <div class="LFM-sbar-section">
             <button class="LFM-sbar-section-header" :aria-expanded="!collapsed['pinned']" @click="toggleSection('pinned')">
-                <span class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['pinned'] }">›</span>
+                <IconChevronRight class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['pinned'] }" />
                 <span>Pinned</span>
             </button>
 
@@ -61,14 +65,10 @@ const cloudItems = [
                     :class="{ 'LFM-sbar-item--active': isActive(item.path) }"
                 >
                     <span class="LFM-sbar-icon">
-                        <svg width="16" height="16" viewBox="0 0 64 64" fill="none">
-                            <rect x="4" y="18" width="56" height="38" rx="4" fill="#E3A416" />
-                            <rect x="4" y="24" width="56" height="32" rx="4" fill="#FFC83D" />
-                            <path d="M4 22C4 19.8 5.8 18 8 18h12l4 6H4V22z" fill="#E3A416" />
-                        </svg>
+                        <IconFolder class="text-amber-500" />
                     </span>
                     <span class="LFM-sbar-label">{{ item.label }}</span>
-                    <span class="LFM-sbar-pin">📌</span>
+                    <IconPushPin class="LFM-sbar-pin" />
                 </RouterLink>
             </template>
         </div>
@@ -76,7 +76,7 @@ const cloudItems = [
         <!-- Drives Section -->
         <div class="LFM-sbar-section">
             <button class="LFM-sbar-section-header" :aria-expanded="!collapsed['drives']" @click="toggleSection('drives')">
-                <span class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['drives'] }">›</span>
+                <IconChevronRight class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['drives'] }" />
                 <span>Drives</span>
             </button>
             <template v-if="!collapsed['drives']">
@@ -88,17 +88,7 @@ const cloudItems = [
                     :class="{ 'LFM-sbar-item--active': isActive(drive.id) }"
                 >
                     <span class="LFM-sbar-icon">
-                        <svg v-if="drive.id === '/'" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                            <rect x="1.5" y="3.5" width="13" height="9" rx="2" fill="#edf7ed" stroke="#107c10" stroke-width="1.2" />
-                            <path d="M6.2 11.2L9.8 4.8" stroke="#107c10" stroke-width="1.4" stroke-linecap="round" />
-                            <circle cx="12" cy="8.5" r="1" fill="#107c10" />
-                            <rect x="3" y="11" width="3" height="1" rx="0.5" fill="#107c10" />
-                        </svg>
-                        <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                            <rect x="1" y="4" width="14" height="9" rx="2" stroke="#5c5c5c" stroke-width="1.2" />
-                            <circle cx="12" cy="8.5" r="1" fill="#5c5c5c" />
-                            <rect x="3" y="11" width="4" height="1" rx="0.5" fill="#5c5c5c" />
-                        </svg>
+                        <IconHardDrive :class="drive.id === '/' ? 'text-emerald-500' : 'text-slate-500'" />
                     </span>
                     <span class="LFM-sbar-label">{{ drive.label }}</span>
                 </RouterLink>
@@ -108,15 +98,13 @@ const cloudItems = [
         <!-- Cloud Storage Section -->
         <div class="LFM-sbar-section">
             <button class="LFM-sbar-section-header" :aria-expanded="!collapsed['cloud']" @click="toggleSection('cloud')">
-                <span class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['cloud'] }">›</span>
+                <IconChevronRight class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['cloud'] }" />
                 <span>Cloud Storage</span>
             </button>
             <template v-if="!collapsed['cloud']">
                 <div v-for="cloud in cloudItems" :key="cloud.id" class="LFM-sbar-item">
                     <span class="LFM-sbar-icon">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M12 10H4a3 3 0 1 1 .52-5.95A4 4 0 1 1 12 10z" :stroke="cloud.iconColor" stroke-width="1.3" fill="none" />
-                        </svg>
+                        <IconCloud :style="{ color: cloud.iconColor }" />
                     </span>
                     <span class="LFM-sbar-label">{{ cloud.label }}</span>
                 </div>
@@ -126,23 +114,26 @@ const cloudItems = [
         <!-- Network Section -->
         <div class="LFM-sbar-section">
             <button class="LFM-sbar-section-header" :aria-expanded="!collapsed['network']" @click="toggleSection('network')">
-                <span class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['network'] }">›</span>
+                <IconChevronRight class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['network'] }" />
+                <IconNetwork class="mr-2 text-xs" />
                 <span>Network</span>
             </button>
         </div>
 
-        <!-- WSL Section -->
+        <!-- WSL/Linux Section -->
         <div class="LFM-sbar-section">
             <button class="LFM-sbar-section-header" :aria-expanded="!collapsed['wsl']" @click="toggleSection('wsl')">
-                <span class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['wsl'] }">›</span>
-                <span>WSL</span>
+                <IconChevronRight class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['wsl'] }" />
+                <IconLinux class="mr-2 text-xs" />
+                <span>Linux Containers</span>
             </button>
         </div>
 
         <!-- Tags Section -->
         <div class="LFM-sbar-section">
             <button class="LFM-sbar-section-header" :aria-expanded="!collapsed['tags']" @click="toggleSection('tags')">
-                <span class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['tags'] }">›</span>
+                <IconChevronRight class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['tags'] }" />
+                <IconLabel class="mr-2 text-xs" />
                 <span>Tags</span>
             </button>
         </div>
@@ -151,15 +142,7 @@ const cloudItems = [
         <div class="LFM-sbar-settings">
             <button class="LFM-sbar-item LFM-sbar-item--settings">
                 <span class="LFM-sbar-icon">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3" />
-                        <path
-                            d="M8 1v2M8 13v2M1 8h2M13 8h2M2.93 2.93l1.41 1.41M11.66 11.66l1.41 1.41M2.93 13.07l1.41-1.41M11.66 4.34l1.41-1.41"
-                            stroke="currentColor"
-                            stroke-width="1.2"
-                            stroke-linecap="round"
-                        />
-                    </svg>
+                    <IconSettings />
                 </span>
                 <span class="LFM-sbar-label">Settings</span>
             </button>
@@ -167,13 +150,14 @@ const cloudItems = [
     </nav>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@reference "tailwindcss";
 .LFM-sidebar-nav {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 4px 0;
-    font-size: 12px;
+    padding: 8px 0;
+    font-size: 13px;
     color: var(--LFM-text);
     overflow-y: auto;
     overflow-x: hidden;
@@ -182,49 +166,46 @@ const cloudItems = [
 .LFM-sbar-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    height: 32px;
-    padding: 0 6px 0 16px;
-    border-radius: 4px;
+    gap: 12px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
     cursor: pointer;
     text-decoration: none;
     color: var(--LFM-text);
-    transition: background 100ms;
+    transition: all 150ms ease;
     position: relative;
-    margin: 0 4px;
-}
-.LFM-sbar-item:hover {
-    background: var(--LFM-hover);
-}
-.LFM-sbar-item--active {
-    background: var(--LFM-selected);
-}
-.LFM-sbar-item--active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 6px;
-    bottom: 6px;
-    width: 3px;
-    background: var(--LFM-blue);
-    border-radius: 0 2px 2px 0;
-}
+    margin: 1px 8px;
 
-.LFM-sbar-item--home {
-    margin-bottom: 4px;
+    &:hover {
+        background: var(--LFM-hover);
+    }
+
+    &--active {
+        background: var(--LFM-blue-subtle);
+        color: var(--LFM-blue);
+        font-weight: 500;
+        
+        &::before {
+            content: '';
+            position: absolute;
+            left: -4px;
+            top: 8px;
+            bottom: 8px;
+            width: 4px;
+            background: var(--LFM-blue);
+            border-radius: 0 4px 4px 0;
+        }
+    }
 }
 
 .LFM-sbar-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 16px;
+    width: 20px;
     flex-shrink: 0;
-}
-
-.LFM-sbar-icon--home svg path {
-    fill: var(--LFM-blue);
-    stroke: var(--LFM-blue);
+    font-size: 18px;
 }
 
 .LFM-sbar-label {
@@ -236,63 +217,64 @@ const cloudItems = [
 
 .LFM-sbar-pin {
     opacity: 0;
-    font-size: 10px;
-    transition: opacity 100ms;
+    font-size: 14px;
+    transition: opacity 150ms;
+    color: var(--LFM-text);
 }
+
 .LFM-sbar-item:hover .LFM-sbar-pin {
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 .LFM-sbar-section {
-    margin-bottom: 2px;
+    margin-top: 8px;
 }
 
 .LFM-sbar-section-header {
     display: flex;
     align-items: center;
-    gap: 4px;
-    width: 100%;
-    height: 24px;
-    padding: 0 6px 0 8px;
+    gap: 6px;
+    width: calc(100% - 16px);
+    height: 28px;
+    padding: 0 8px;
     background: transparent;
     border: none;
     cursor: pointer;
-    color: var(--LFM-text-muted, #5c5c5c);
+    color: var(--LFM-text-muted);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     text-align: left;
-    transition: background 100ms;
-    border-radius: 4px;
-    margin: 0 4px;
-    width: calc(100% - 8px);
-}
-.LFM-sbar-section-header:hover {
-    background: var(--LFM-hover);
-    color: var(--LFM-text);
+    transition: all 150ms ease;
+    border-radius: 6px;
+    margin: 0 8px;
+
+    &:hover {
+        background: var(--LFM-hover);
+        color: var(--LFM-text);
+    }
 }
 
 .LFM-sbar-chevron {
     font-size: 14px;
-    display: inline-block;
+    transition: transform 150ms ease;
     transform: rotate(90deg);
-    transition: transform 150ms;
-    line-height: 1;
-    flex-shrink: 0;
-}
-.LFM-sbar-chevron--collapsed {
-    transform: rotate(0deg);
+    
+    &--collapsed {
+        transform: rotate(0deg);
+    }
 }
 
 .LFM-sbar-settings {
     margin-top: auto;
-    padding-top: 4px;
+    padding-top: 8px;
     border-top: 1px solid var(--LFM-border);
 }
 
 .LFM-sbar-item--settings {
     background: transparent;
     border: none;
-    width: calc(100% - 8px);
-    font-size: 12px;
+    width: calc(100% - 16px);
 }
 </style>

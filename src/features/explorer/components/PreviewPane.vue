@@ -194,4 +194,6 @@ aside(v-if="selectedItem", class="surface-panel h-full rounded-[30px] p-5")
 		) Open
 </template>
 
-<style lang="sass"></style>
+<style lang="sass">
+@reference "tailwindcss"
+</style>

@@ -1,134 +1,148 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useToast } from 'vue-toastification';
-
 import { useFileManagerStore } from '@/stores/file-manager';
+
+// Icons
+import IconAdd from '~icons/material-symbols/add';
+import IconContentCut from '~icons/material-symbols/content-cut';
+import IconContentCopy from '~icons/material-symbols/content-copy';
+import IconContentPaste from '~icons/material-symbols/content-paste';
+import IconShortcut from '~icons/material-symbols/open-in-new';
+import IconEdit from '~icons/material-symbols/edit';
+import IconSettings from '~icons/material-symbols/settings';
+import IconDelete from '~icons/material-symbols/delete';
+import IconMoreHoriz from '~icons/material-symbols/more-horiz';
+import IconFilterAlt from '~icons/material-symbols/filter-alt';
+import IconSort from '~icons/material-symbols/sort';
+import IconGridView from '~icons/material-symbols/grid-view';
+import IconTableRows from '~icons/material-symbols/table-rows';
+import IconSideNavigation from '~icons/material-symbols/side-navigation';
+import IconFolder from '~icons/material-symbols/folder';
+import IconDescription from '~icons/material-symbols/description';
+import IconTerminal from '~icons/material-symbols/terminal';
 
 const store = useFileManagerStore();
 const toast = useToast();
 
+const showNewDropdown = ref(false);
+
 const sortLabel = computed(() => {
     switch (store.sortMode) {
-        case 'name':
-            return 'Name';
-        case 'size':
-            return 'Size';
-        case 'kind':
-            return 'Type';
+        case 'name': return 'Name';
+        case 'size': return 'Size';
+        case 'kind': return 'Type';
         case 'modified':
-        default:
-            return 'Modified';
+        default: return 'Modified';
     }
 });
 
 function createFolder() {
     const folder = store.createFolder();
     toast.success(`${folder.name} created.`);
+    showNewDropdown.value = false;
 }
 
-function cycleSort() {
-    store.cycleSortMode();
+function createFile(type: string) {
+    toast.info(`Creating new ${type}...`);
+    showNewDropdown.value = false;
+    // Implementation for specific file types would go here
 }
 
-function setView(mode: 'grid' | 'list') {
-    store.setViewMode(mode);
-}
-
-function togglePreview() {
-    store.togglePreviewPane();
-}
+function cycleSort() { store.cycleSortMode(); }
+function setView(mode: 'grid' | 'list') { store.setViewMode(mode); }
 </script>
 
 <template>
     <div class="LFM-toolbar">
-        <!-- Row 1: Command ribbon -->
         <div class="LFM-ribbon" role="toolbar" aria-label="Command bar">
-            <!-- Left command group -->
             <div class="LFM-ribbon-group">
-                <!-- New (with label + dropdown) -->
-                <button class="LFM-ribbon-btn LFM-ribbon-btn--new" title="New" @click="createFolder">
-                    <span class="LFM-ribbon-btn-icon">＋</span>
-                    <span class="LFM-ribbon-btn-label">New</span>
-                    <span class="LFM-ribbon-btn-arrow">▾</span>
-                </button>
+                <!-- New Dropdown -->
+                <div class="relative">
+                    <button 
+                        class="LFM-ribbon-btn LFM-ribbon-btn--new" 
+                        title="New" 
+                        @click="showNewDropdown = !showNewDropdown"
+                    >
+                        <IconAdd class="LFM-ribbon-btn-icon text-blue-500" />
+                        <span class="LFM-ribbon-btn-label">New</span>
+                        <span class="LFM-ribbon-btn-arrow">▾</span>
+                    </button>
+
+                    <div v-if="showNewDropdown" class="LFM-dropdown-menu">
+                        <button class="LFM-dropdown-item" @click="createFolder">
+                            <IconFolder class="text-amber-500" />
+                            <span>Folder</span>
+                        </button>
+                        <div class="LFM-dropdown-divider" />
+                        <button class="LFM-dropdown-item" @click="createFile('Document')">
+                            <IconDescription class="text-blue-400" />
+                            <span>Text Document</span>
+                        </button>
+                        <button class="LFM-dropdown-item" @click="createFile('Script')">
+                            <IconTerminal class="text-emerald-500" />
+                            <span>Bash Script</span>
+                        </button>
+                    </div>
+                </div>
 
                 <div class="LFM-ribbon-sep" />
 
-                <!-- Icon-only commands -->
-                <button class="LFM-ribbon-btn" title="Cut"><span>✂</span></button>
-                <button class="LFM-ribbon-btn" title="Copy to clipboard"><span>⧉</span></button>
-                <button class="LFM-ribbon-btn" title="Paste"><span>📋</span></button>
-                <button class="LFM-ribbon-btn" title="Create shortcut / Send to"><span>↩</span></button>
-                <button class="LFM-ribbon-btn" title="Rename" @click="() => {}"><span>✏</span></button>
-                <button class="LFM-ribbon-btn" title="Properties"><span>🔧</span></button>
-                <button class="LFM-ribbon-btn" title="Delete"><span>🗑</span></button>
-                <button class="LFM-ribbon-btn" title="More options"><span>…</span></button>
+                <button class="LFM-ribbon-btn" title="Cut"><IconContentCut /></button>
+                <button class="LFM-ribbon-btn" title="Copy"><IconContentCopy /></button>
+                <button class="LFM-ribbon-btn" title="Paste"><IconContentPaste /></button>
+                <button class="LFM-ribbon-btn" title="Shortcut"><IconShortcut /></button>
+                <button class="LFM-ribbon-btn" title="Rename"><IconEdit /></button>
+                <button class="LFM-ribbon-btn" title="Properties"><IconSettings /></button>
+                <button class="LFM-ribbon-btn" title="Delete"><IconDelete /></button>
+                <button class="LFM-ribbon-btn" title="More"><IconMoreHoriz /></button>
             </div>
 
-            <!-- Right side controls -->
             <div class="LFM-ribbon-right">
-                <!-- Filter icon -->
-                <button class="LFM-ribbon-btn" title="Filter">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M1 2h12l-5 6v4l-2-1V8L1 2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" fill="none" />
-                    </svg>
-                </button>
+                <button class="LFM-ribbon-btn" title="Filter"><IconFilterAlt /></button>
 
-                <!-- Gallery/Group sort dropdown -->
                 <button class="LFM-ribbon-btn LFM-ribbon-btn--dropdown" title="Sort by" @click="cycleSort">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M2 4h10M2 7h7M2 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
-                        <path d="M11 8l2 2-2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
+                    <IconSort />
                     <span class="LFM-ribbon-btn-label">{{ sortLabel }}</span>
                     <span class="LFM-ribbon-btn-arrow">▾</span>
                 </button>
 
                 <div class="LFM-ribbon-sep" />
 
-                <!-- View mode buttons -->
                 <button
                     class="LFM-ribbon-btn"
                     :class="{ 'LFM-ribbon-btn--active': store.viewMode !== 'list' }"
-                    title="Icon view"
+                    title="Grid View"
                     @click="setView('grid')"
                 >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.2" />
-                        <rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.2" />
-                        <rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.2" />
-                        <rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.2" />
-                    </svg>
+                    <IconGridView />
                 </button>
                 <button
                     class="LFM-ribbon-btn"
                     :class="{ 'LFM-ribbon-btn--active': store.viewMode === 'list' }"
-                    title="Details view"
+                    title="List View"
                     @click="setView('list')"
                 >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <rect x="1" y="2" width="3" height="3" rx="0.5" stroke="currentColor" stroke-width="1.2" />
-                        <path d="M6 3.5h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
-                        <rect x="1" y="7.5" width="3" height="3" rx="0.5" stroke="currentColor" stroke-width="1.2" />
-                        <path d="M6 9h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
-                    </svg>
+                    <IconTableRows />
                 </button>
 
                 <div class="LFM-ribbon-sep" />
 
-                <!-- Preview pane toggle -->
-                <button class="LFM-ribbon-btn" :class="{ 'LFM-ribbon-btn--active': store.previewOpen }" title="Preview pane" @click="togglePreview">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <rect x="1" y="1" width="8" height="12" rx="1" stroke="currentColor" stroke-width="1.2" />
-                        <rect x="11" y="1" width="2" height="12" rx="0.5" stroke="currentColor" stroke-width="1.2" />
-                    </svg>
+                <button 
+                    class="LFM-ribbon-btn" 
+                    :class="{ 'LFM-ribbon-btn--active': store.detailsOpen }" 
+                    title="Details Pane" 
+                    @click="store.toggleDetails"
+                >
+                    <IconSideNavigation />
                 </button>
             </div>
         </div>
     </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@reference "tailwindcss";
 .LFM-toolbar {
     border-bottom: 1px solid var(--LFM-border);
     background: var(--LFM-toolbar);
@@ -139,76 +153,119 @@ function togglePreview() {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 40px;
-    padding: 0 8px;
+    height: 44px;
+    padding: 0 12px;
     gap: 4px;
 }
 
-.LFM-ribbon-group {
+.LFM-ribbon-group, .LFM-ribbon-right {
     display: flex;
     align-items: center;
-    gap: 1px;
-}
-
-.LFM-ribbon-right {
-    display: flex;
-    align-items: center;
-    gap: 1px;
+    gap: 2px;
 }
 
 .LFM-ribbon-sep {
     width: 1px;
-    height: 20px;
+    height: 24px;
     background: var(--LFM-border);
-    margin: 0 4px;
+    margin: 0 6px;
+    opacity: 0.5;
 }
 
 .LFM-ribbon-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    height: 30px;
+    justify-content: center;
+    gap: 6px;
+    height: 34px;
     padding: 0 8px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--LFM-text);
+    font-size: 18px;
+    transition: all 150ms ease;
+    white-space: nowrap;
+
+    &:hover {
+        background: var(--LFM-hover);
+    }
+
+    &:active {
+        background: var(--LFM-active);
+    }
+
+    &--active {
+        background: var(--LFM-blue-subtle);
+        color: var(--LFM-blue);
+    }
+
+    &--new {
+        font-weight: 600;
+        background: var(--LFM-panel);
+        border: 1px solid var(--LFM-border);
+        padding: 0 12px;
+        @apply shadow-sm;
+    }
+
+    &--dropdown {
+        border: 1px solid var(--LFM-border);
+        font-size: 16px;
+    }
+}
+
+.LFM-ribbon-btn-icon {
+    font-size: 20px;
+}
+
+.LFM-ribbon-btn-label {
+    font-size: 13px;
+}
+
+.LFM-ribbon-btn-arrow {
+    font-size: 10px;
+    opacity: 0.5;
+}
+
+/* Dropdown */
+.LFM-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    background: var(--LFM-panel);
+    border: 1px solid var(--LFM-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 4px;
+    z-index: 100;
+    min-width: 160px;
+}
+
+.LFM-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
     border-radius: 4px;
     background: transparent;
     border: none;
     cursor: pointer;
     color: var(--LFM-text);
-    font-size: 12px;
-    transition: background 100ms;
-    white-space: nowrap;
-}
-.LFM-ribbon-btn:hover {
-    background: var(--LFM-hover);
-}
-.LFM-ribbon-btn:active {
-    background: var(--LFM-active);
-}
-.LFM-ribbon-btn--active {
-    background: var(--LFM-selected);
-}
-.LFM-ribbon-btn--new {
-    font-weight: 600;
-    border: 1px solid var(--LFM-border);
-    background: var(--LFM-panel);
-}
-.LFM-ribbon-btn--new:hover {
-    background: var(--LFM-hover);
-}
-.LFM-ribbon-btn--dropdown {
-    border: 1px solid var(--LFM-border);
+    font-size: 13px;
+    text-align: left;
+    transition: background 150ms;
+
+    &:hover {
+        background: var(--LFM-hover);
+    }
 }
 
-.LFM-ribbon-btn-icon {
-    font-size: 14px;
-}
-
-.LFM-ribbon-btn-label {
-    font-size: 12px;
-}
-
-.LFM-ribbon-btn-arrow {
-    font-size: 8px;
-    opacity: 0.6;
+.LFM-dropdown-divider {
+    height: 1px;
+    background: var(--LFM-border);
+    margin: 4px;
 }
 </style>
