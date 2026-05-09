@@ -13,8 +13,9 @@ import AppBreadcrumb from './AppBreadcrumb.vue';
 
 const store = useFileManagerStore();
 const router = useRouter();
+const searchRef = ref<HTMLInputElement>();
 
-// Nav history simulation (could be improved with a real stack in the future)
+// Nav history simulation
 const canGoBack = computed(() => true); 
 const canGoForward = computed(() => false);
 
@@ -28,6 +29,17 @@ function goUp() {
     }
 }
 function refresh() { location.reload(); }
+
+function handleGlobalKeydown(e: KeyboardEvent) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        searchRef.value?.focus();
+    }
+}
+
+import { onMounted, onUnmounted, ref } from 'vue';
+onMounted(() => window.addEventListener('keydown', handleGlobalKeydown));
+onUnmounted(() => window.removeEventListener('keydown', handleGlobalKeydown));
 </script>
 
 <template>
@@ -56,6 +68,8 @@ function refresh() { location.reload(); }
             <div class="LFM-search-box hidden md:flex items-center">
                 <IconSearch class="ml-2 opacity-50" />
                 <input 
+                    ref="searchRef"
+                    v-model="store.searchQuery"
                     type="text" 
                     placeholder="Search" 
                     class="bg-transparent border-none outline-none px-2 py-1 w-32 focus:w-48 transition-all duration-300"

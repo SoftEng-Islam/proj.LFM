@@ -6,12 +6,16 @@ import { openFile, convertFileSrc, getVideoThumbnail } from '@/services/tauri-br
 
 import ActionToolbar from '@/features/explorer/components/ActionToolbar.vue';
 import ContextMenu from '@/features/explorer/components/ContextMenu.vue';
+import RenameModal from '@/components/ui/RenameModal.vue';
+import PropertiesModal from '@/components/ui/PropertiesModal.vue';
 import FolderIcon from '@/components/ui/FolderIcon.vue';
 import { useFileManagerStore } from '@/stores/file-manager';
 import type { FileEntry } from '@/types/file-manager';
+import { useToast } from 'vue-toastification';
 
 const store = useFileManagerStore();
 const router = useRouter();
+const toast = useToast();
 const selectedId = computed(() => store.selectedItem?.id ?? '');
 
 // Context menu state
@@ -22,13 +26,59 @@ const contextMenu = ref<{ visible: boolean; x: number; y: number; itemId: string
     itemId: '',
 });
 
+// Rename modal state
+const renameDialog = ref<{ visible: boolean; path: string; currentName: string }>({
+    visible: false,
+    path: '',
+    currentName: '',
+});
+
+// Properties modal state
+const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null }>({
+    visible: false,
+    item: null,
+});
+
 function openContextMenu(e: MouseEvent, itemId: string) {
     e.preventDefault();
+    store.selectItem(itemId);
     contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId };
 }
 
 function closeContextMenu() {
     contextMenu.value.visible = false;
+}
+
+function openEmptyContextMenu(e: MouseEvent) {
+    e.preventDefault();
+    store.selectItem('');
+    contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId: '' };
+}
+
+function openRenameDialog(path: string) {
+    const name = path.split('/').pop() || '';
+    renameDialog.value = { visible: true, path, currentName: name };
+    closeContextMenu();
+}
+
+function openPropertiesDialog(itemId?: string) {
+    const targetId = itemId || selectedId.value;
+    if (!targetId) return;
+    const item = store.currentEntries.find(e => e.id === targetId);
+    if (item) {
+        propertiesDialog.value = { visible: true, item };
+    }
+    closeContextMenu();
+}
+
+async function handleRename(newName: string) {
+    const success = await store.renameItem(renameDialog.value.path, newName);
+    if (success) {
+        toast.success('Renamed successfully');
+    } else {
+        toast.error('Failed to rename');
+    }
+    renameDialog.value.visible = false;
 }
 
 // Determine icon type for non-folder entries
@@ -76,19 +126,120 @@ function fileGlyph(category: string): string {
 
 const formatDate = (dateStr: string) => {
     return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
+        month: 'short', day: 'numeric', year: 'numeric',
     }).format(new Date(dateStr));
 };
+
+const workspaceRef = ref<HTMLElement>();
+
+// Keyboard Shortcuts
+function handleKeydown(e: KeyboardEvent) {
+    // Don't trigger shortcuts if user is typing in an input
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+    const selected = store.selectedItem;
+    if (!selected && e.key !== 'v') return;
+
+    // Navigation
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        const items = store.currentEntries;
+        const idx = items.findIndex(it => it.id === selectedId.value);
+        let nextIdx = idx;
+
+        if (e.key === 'ArrowRight') nextIdx = Math.min(idx + 1, items.length - 1);
+        if (e.key === 'ArrowLeft') nextIdx = Math.max(idx - 1, 0);
+        
+        // Grid vertical navigation
+        if (store.viewMode === 'grid') {
+            const containerWidth = workspaceRef.value?.offsetWidth || window.innerWidth;
+            // Each item is 100px + 4px gap roughly. Let's be more precise if possible.
+            // But 104 is a good estimate.
+            const itemsPerRow = Math.floor(containerWidth / 104) || 1;
+            
+            if (e.key === 'ArrowDown') nextIdx = Math.min(idx + itemsPerRow, items.length - 1);
+            if (e.key === 'ArrowUp') nextIdx = Math.max(idx - itemsPerRow, 0);
+        } else {
+            // List view
+            if (e.key === 'ArrowDown') nextIdx = Math.min(idx + 1, items.length - 1);
+            if (e.key === 'ArrowUp') nextIdx = Math.max(idx - 1, 0);
+        }
+
+        const nextItem = items[nextIdx];
+        if (nextItem) {
+            store.selectItem(nextItem.id);
+        }
+        return;
+    }
+
+    // Actions
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        if (selected) openItem(selected);
+    }
+    
+    if (e.key === 'F2') {
+        e.preventDefault();
+        if (selected) openRenameDialog(selected.id);
+    }
+
+    if (e.key === 'Delete') {
+        e.preventDefault();
+        store.deleteSelection();
+    }
+
+    if (e.key === 'Backspace') {
+        // Go to parent directory
+        const parts = store.currentPath.split('/').filter(Boolean);
+        if (parts.length > 0) {
+            parts.pop();
+            const parent = '/' + parts.join('/');
+            store.openSection(parent || '/');
+        }
+    }
+
+    // Ctrl Shortcuts
+    if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'c') {
+            e.preventDefault();
+            if (selected) {
+                store.setClipboard([selected.id], 'copy');
+                toast.info('Copied to clipboard');
+            }
+        }
+        if (e.key === 'x') {
+            e.preventDefault();
+            if (selected) {
+                store.setClipboard([selected.id], 'cut');
+                toast.info('Cut to clipboard');
+            }
+        }
+        if (e.key === 'v') {
+            e.preventDefault();
+            store.paste().then(() => toast.success('Pasted'));
+        }
+        if (e.key === 'a') {
+            e.preventDefault();
+            // Select all could be implemented here
+        }
+    }
+}
+
+import { onMounted, onUnmounted } from 'vue';
+onMounted(() => {
+    window.addEventListener('keydown', handleKeydown);
+});
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <template lang="pug">
-.LFM-workspace
-	ActionToolbar
+.LFM-workspace(ref="workspaceRef")
+	ActionToolbar(@rename="openRenameDialog" @properties="openPropertiesDialog")
 
-	.LFM-workspace-content
-		div(v-if="store.viewMode !== 'list'", class="LFM-grid")
+	.LFM-workspace-content(@contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
+		div(v-if="store.viewMode !== 'list'", class="LFM-grid" @contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
 			button(
 				v-for="entry in store.currentEntries"
 				:key="entry.id"
@@ -132,7 +283,7 @@ const formatDate = (dateStr: string) => {
 
 				span(class="LFM-grid-item-name") {{ entry.name }}
 
-		div(v-else, class="LFM-list")
+		div(v-else, class="LFM-list" @contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
 			.LFM-list-header
 				span(class="LFM-list-col LFM-list-col--name") Name
 				span(class="LFM-list-col") Date modified
@@ -185,7 +336,21 @@ const formatDate = (dateStr: string) => {
 		:item-name="contextMenu.itemId.split('/').pop()"
 		:file-path="contextMenu.itemId"
 		@close="closeContextMenu"
-		@rename="() => import('vue-toastification').then(m => m.useToast().info('Rename dialog coming soon!'))"
+		@rename="openRenameDialog(contextMenu.itemId)"
+		@properties="openPropertiesDialog(contextMenu.itemId)"
+	)
+	RenameModal(
+		v-if="renameDialog.visible"
+		:show="renameDialog.visible"
+		:current-name="renameDialog.currentName"
+		@close="renameDialog.visible = false"
+		@submit="handleRename"
+	)
+	PropertiesModal(
+		v-if="propertiesDialog.visible && propertiesDialog.item"
+		:show="propertiesDialog.visible"
+		:item="propertiesDialog.item"
+		@close="propertiesDialog.visible = false"
 	)
 </template>
 

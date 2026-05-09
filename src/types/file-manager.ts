@@ -52,6 +52,9 @@ export interface FileEntry {
 	sizeLabel: string;
 	sortSize: number;
 	modifiedAt: string;
+	createdAt?: string;
+	accessedAt?: string;
+	readonly?: boolean;
 	preview: string;
 	status: FileStatus;
 	accent: AccentTone;

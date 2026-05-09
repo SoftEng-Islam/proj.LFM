@@ -118,6 +118,7 @@
         "@tauri-apps/plugin-os": "^2.3.2",
         "@vueuse/core": "^14.2.1",
         "@vueuse/motion": "^3.0.3",
+        "@xterm/xterm": "^6.0.0",
         "animate.css": "^4.1.1",
         "highlight.js": "^11.11.1",
         "mammoth": "^1.12.0",

@@ -3,7 +3,7 @@ import { useStorage } from '@vueuse/core';
 import { acceptHMRUpdate, defineStore } from 'pinia';
 
 import { defaultPath, driveCards as staticDrives, navigationGroups } from '@/features/navigation/navigation';
-import { readDirectory, getVideoThumbnail, getImageThumbnail, convertFileSrc, getDrives } from '@/services/tauri-bridge';
+import { readDirectory, getVideoThumbnail, getImageThumbnail, convertFileSrc, getDrives, openFile, deleteFile, openInTerminal as tauriOpenTerminal, copy as tauriCopy, rename as tauriMove, isDir } from '@/services/tauri-bridge';
 import type { FileMetaData } from '@/services/tauri-bridge';
 import type {
 	ActivityEntry,
@@ -19,7 +19,6 @@ import type {
 
 const viewModeKey = 'lfm-view-mode';
 const sortModeKey = 'lfm-sort-mode';
-const previewPaneKey = 'lfm-preview-pane';
 
 function formatSize(bytes: number): string {
 	if (bytes === 0) return '0 B';
@@ -34,10 +33,21 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	const currentEntries = ref<FileEntry[]>([]);
 	const searchQuery = ref('');
 	const selectedItemId = ref<string | null>(null);
-	const viewMode = useStorage<ViewMode>(viewModeKey, 'grid');
-	const sortMode = useStorage<SortMode>(sortModeKey, 'modified');
-	const detailsOpen = useStorage('lfm-details-pane', true);
-	const aiChatOpen = useStorage('lfm-ai-chat-pane', false);
+	const viewMode = ref<ViewMode>('grid');
+	const sortMode = ref<SortMode>('modified');
+	const detailsOpen = ref(true);
+	const aiChatOpen = ref(false);
+
+    watch([detailsOpen, aiChatOpen], () => {
+        console.log('AppLayout: State changed', { details: detailsOpen.value, ai: aiChatOpen.value });
+    });
+
+	// Clipboard state
+	const clipboard = ref<{
+		paths: string[];
+		mode: 'copy' | 'cut' | null;
+	}>({ paths: [], mode: null });
+
 	const isLoading = ref(false);
 	const driveCards = ref<DriveCard[]>([]);
 	const windowTabs = ref<WindowTab[]>([
@@ -100,7 +110,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		return sortedAndFilteredEntries.value[0] ?? null;
 	});
 
-	const favoriteItems = computed(() => []);
+	const favoriteItems = ref<string[]>([]);
 
 	const spotlightItems = computed(() => {
 		const spotlight = sortedAndFilteredEntries.value.filter((entry) => entry.kind === 'folder').slice(0, 3);
@@ -155,25 +165,37 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		try {
 			const res = await readDirectory(path);
 			try {
-				currentEntries.value = res.files.map((file: FileMetaData) => {
-					// Safely parse the last_modified time, fallback to current time if missing
-					let modifiedDate = new Date().toISOString();
-					if (file.last_modified && typeof file.last_modified.secs_since_epoch === 'number') {
-						modifiedDate = new Date(file.last_modified.secs_since_epoch * 1000).toISOString();
-					} else if (typeof file.last_modified === 'number') {
-						modifiedDate = new Date(file.last_modified * 1000).toISOString();
-					}
+				currentEntries.value = res.files.map((file: any) => {
+					const parseTime = (t: any) => {
+						if (t && typeof t.secs_since_epoch === 'number') return new Date(t.secs_since_epoch * 1000).toISOString();
+						if (typeof t === 'number') return new Date(t * 1000).toISOString();
+						return new Date().toISOString();
+					};
+
+					const modifiedAt = parseTime(file.last_modified);
+					const createdAt = parseTime(file.created);
+					const accessedAt = parseTime(file.last_accessed);
 
 					const fileTypeStr = file.file_type || '';
-					let category = fileTypeStr.toLowerCase();
+					let category = 'document';
 					const id = file.file_path || `unknown-${Math.random()}`;
-
-					// Robust extension-based override
 					const lowerBasename = (file.basename || '').toLowerCase();
-					if (lowerBasename.endsWith('.mp4') || lowerBasename.endsWith('.mkv') || lowerBasename.endsWith('.avi') || lowerBasename.endsWith('.mov') || lowerBasename.endsWith('.webm')) {
+					const ext = lowerBasename.split('.').pop() || '';
+
+					if (file.is_dir) {
+						category = 'folder';
+					} else if (['mp4', 'mkv', 'avi', 'mov', 'webm'].includes(ext)) {
 						category = 'video';
-					} else if (lowerBasename.endsWith('.jpg') || lowerBasename.endsWith('.jpeg') || lowerBasename.endsWith('.png') || lowerBasename.endsWith('.gif') || lowerBasename.endsWith('.webp')) {
+					} else if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) {
 						category = 'image';
+					} else if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) {
+						category = 'archive';
+					} else if (['mp3', 'wav', 'ogg', 'flac', 'm4a'].includes(ext)) {
+						category = 'audio';
+					} else if (['pdf'].includes(ext)) {
+						category = 'pdf';
+					} else if (['js', 'ts', 'vue', 'py', 'rs', 'cpp', 'h', 'html', 'css', 'json', 'sh'].includes(ext)) {
+						category = 'code';
 					}
 
 					const entry = reactive<FileEntry>({
@@ -184,7 +206,10 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 						typeLabel: fileTypeStr || (file.is_dir ? 'Directory' : 'File'),
 						sizeLabel: file.is_dir ? '' : formatSize(file.size || 0),
 						sortSize: file.size || 0,
-						modifiedAt: modifiedDate,
+						modifiedAt,
+						createdAt,
+						accessedAt,
+						readonly: file.readonly,
 						preview: category === 'image' ? convertFileSrc(id) : '',
 						status: 'local',
 						accent: file.is_dir ? 'sky' : 'slate',
@@ -194,7 +219,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 						pinned: false,
 					});
 
-					// If video or image, fetch thumbnail in background
 					if (category === 'video') {
 						getVideoThumbnail(id).then(thumbPath => {
 							entry.preview = convertFileSrc(thumbPath);
@@ -242,8 +266,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		viewMode.value = nextMode;
 	}
 
-
-
 	async function fetchDrives() {
 		try {
 			const res = await getDrives();
@@ -251,16 +273,13 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 				const used = drive.total_space - drive.available_space;
 				const usedPercent = Math.round((used / drive.total_space) * 100);
 				
-				// Improve labels: use the last segment of the mount point
 				let label = drive.name;
 				const mountParts = drive.mount_point.split('/').filter(Boolean);
 				
 				if (drive.mount_point === '/') {
 					label = 'System';
 				} else if (mountParts.length > 0) {
-					// Use the last part of the mount point (e.g. /mnt/data -> data)
 					label = mountParts[mountParts.length - 1] || 'Disk';
-					// Capitalize first letter for better UI
 					label = label.charAt(0).toUpperCase() + label.slice(1);
 				}
 
@@ -285,7 +304,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	function createFolder() {
-		// Mock implementation, will need to be hooked to Tauri API
 		const folder: FileEntry = {
 			id: `folder-${Date.now()}`,
 			name: 'New Folder',
@@ -308,8 +326,8 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	function togglePinnedForSelection() {
-		if (!selectedItem.value) return;
-		const match = currentEntries.value.find((entry) => entry.id === selectedItem.value?.id);
+		if (!selectedItemId.value) return;
+		const match = currentEntries.value.find((entry) => entry.id === selectedItemId.value);
 		if (match) {
 			match.pinned = !match.pinned;
 		}
@@ -346,32 +364,78 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	async function openItem(filePath: string) {
 		try {
-			const { openFile } = await import('@/services/tauri-bridge');
-			await openFile(filePath);
+			if (await isDir(filePath)) {
+				openSection(filePath);
+			} else {
+				await openFile(filePath);
+			}
 		} catch (e) {
 			console.error('Failed to open item:', e);
 		}
 	}
 
 	async function deleteSelection() {
-		if (!selectedItemId.value) return;
+		if (!selectedItemId.value) return false;
 		try {
-			const { deleteFile } = await import('@/services/tauri-bridge');
 			const success = await deleteFile([selectedItemId.value]);
 			if (success) {
 				await fetchDirectory(currentPath.value);
 			}
+			return success;
 		} catch (e) {
 			console.error('Failed to delete selection:', e);
+			return false;
 		}
 	}
 
 	async function openInTerminal(path: string) {
 		try {
-			const { openInTerminal: tauriOpenTerminal } = await import('@/services/tauri-bridge');
 			await tauriOpenTerminal(path);
 		} catch (e) {
 			console.error('Failed to open terminal:', e);
+		}
+	}
+
+	async function renameItem(oldPath: string, newName: string) {
+		try {
+			const parentDir = oldPath.substring(0, oldPath.lastIndexOf('/') + 1);
+			const newPath = parentDir + newName;
+			const success = await tauriMove(oldPath, newPath);
+			if (success) {
+				await fetchDirectory(currentPath.value);
+			}
+			return success;
+		} catch (e) {
+			console.error('Failed to rename item:', e);
+			return false;
+		}
+	}
+
+	function setClipboard(paths: string[], mode: 'copy' | 'cut') {
+		clipboard.value = { paths, mode };
+	}
+
+	async function paste() {
+		if (!clipboard.value.paths.length || !clipboard.value.mode) return;
+		try {
+			for (const src of clipboard.value.paths) {
+				const name = src.split('/').pop() || '';
+				const dest = currentPath.value.endsWith('/') 
+					? currentPath.value + name 
+					: currentPath.value + '/' + name;
+				
+				if (clipboard.value.mode === 'copy') {
+					await tauriCopy(src, dest);
+				} else {
+					await tauriMove(src, dest);
+				}
+			}
+			if (clipboard.value.mode === 'cut') {
+				clipboard.value = { paths: [], mode: null };
+			}
+			await fetchDirectory(currentPath.value);
+		} catch (e) {
+			console.error('Paste failed:', e);
 		}
 	}
 
@@ -384,6 +448,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		sortMode,
 		detailsOpen,
 		aiChatOpen,
+		clipboard,
 		favoriteItems,
 		spotlightItems,
 		breadcrumbs,
@@ -408,6 +473,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		openItem,
 		deleteSelection,
 		openInTerminal,
+		renameItem,
+		setClipboard,
+		paste,
 	};
 });
 

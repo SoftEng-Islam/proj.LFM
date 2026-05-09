@@ -17,6 +17,7 @@ import IconSend from '~icons/material-symbols/send';
 import IconTerminal from '~icons/material-symbols/terminal';
 import IconLabel from '~icons/material-symbols/label';
 import IconMore from '~icons/material-symbols/more-horiz';
+import IconAdd from '~icons/material-symbols/add';
 
 import IconCut from '~icons/material-symbols/content-cut';
 import IconCopy from '~icons/material-symbols/content-copy';
@@ -35,6 +36,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     close: [];
     rename: [];
+    properties: [];
 }>();
 
 const store = useFileManagerStore();
@@ -59,7 +61,12 @@ onBeforeUnmount(() => {
 // Actions
 async function handleOpen() {
     if (props.filePath) {
-        await store.openItem(props.filePath);
+        const isFolder = !props.filePath.includes('.') || props.filePath.endsWith('/');
+        if (isFolder) {
+            store.openSection(props.filePath);
+        } else {
+            await store.openItem(props.filePath);
+        }
     }
     close();
 }
@@ -83,55 +90,105 @@ async function handleCopyPath() {
     close();
 }
 
-function handleDelete() {
-    store.deleteSelection();
-    close();
-}
-
-function handleOpenTerminal() {
+async function handleDelete() {
     if (props.filePath) {
-        // If it's a file, we might want the parent dir. 
-        // For now, just pass the path.
-        store.openInTerminal(props.filePath);
+        try {
+            const success = await store.deleteSelection();
+            if (success) {
+                toast.success('Deleted');
+            }
+        } catch (e) {
+            toast.error('Delete failed');
+        }
     }
     close();
 }
 
+async function handleOpenTerminal() {
+    const path = props.filePath || store.currentPath;
+    store.openInTerminal(path);
+    close();
+}
+
+function handleCut() {
+    if (props.filePath) {
+        store.setClipboard([props.filePath], 'cut');
+        toast.info('Item cut to clipboard');
+    }
+    close();
+}
+
+function handleCopy() {
+    if (props.filePath) {
+        store.setClipboard([props.filePath], 'copy');
+        toast.info('Item copied to clipboard');
+    }
+    close();
+}
+
+async function handlePaste() {
+    await store.paste();
+    toast.success('Pasted');
+    close();
+}
+
 const commandActions = computed(() => [
-    { icon: IconCut, title: 'Cut', action: () => { toast.info('Cut not implemented yet'); close(); } },
-    { icon: IconCopy, title: 'Copy', action: () => { toast.info('Copy not implemented yet'); close(); } },
-    { icon: IconPaste, title: 'Paste', action: () => { toast.info('Paste not implemented yet'); close(); } },
-    { icon: IconEdit, title: 'Rename', action: () => { emit('rename'); close(); } },
-    { icon: IconDelete, title: 'Delete', action: handleDelete },
-    { icon: IconSettings, title: 'Properties', action: () => { toast.info('Properties not implemented yet'); close(); } },
+    { icon: IconCut, title: 'Cut', action: handleCut, disabled: !props.filePath },
+    { icon: IconCopy, title: 'Copy', action: handleCopy, disabled: !props.filePath },
+    { icon: IconPaste, title: 'Paste', action: handlePaste, disabled: !store.clipboard.paths.length },
+    { icon: IconEdit, title: 'Rename', action: () => { emit('rename'); close(); }, disabled: !props.filePath },
+    { icon: IconDelete, title: 'Delete', action: handleDelete, disabled: !props.filePath },
+    { icon: IconSettings, title: 'Properties', action: () => { emit('properties'); close(); }, disabled: !props.filePath },
 ]);
 
-const menuItems = computed(() => [
-    { icon: IconOpen, label: 'Open', action: handleOpen },
-    { icon: IconTab, label: 'Open in New Tab', action: handleOpenNewTab },
-    { icon: IconWindow, label: 'Open in New Window', action: () => close() },
-    { icon: IconPane, label: 'Open in New Pane', action: () => close() },
-    { divider: true },
-    { icon: IconLink, label: 'Copy Item Path', action: handleCopyPath },
-    { icon: IconFolder, label: 'Create Folder from Selection', action: () => close() },
-    { icon: IconShortcut, label: 'Create Shortcut', action: () => close() },
-    { icon: IconPushPin, label: 'Pin to Sidebar', action: () => { store.togglePinnedForSelection(); close(); } },
-    { divider: true },
-    { icon: IconArchive, label: 'Compress', hasArrow: true, action: () => close() },
-    { icon: IconSend, label: 'Send To', hasArrow: true, action: () => close() },
-    { divider: true },
-    { icon: IconTerminal, label: 'Open in Terminal', action: handleOpenTerminal },
-    { icon: IconLabel, label: 'Edit Tags', hasArrow: true, action: () => close() },
-    { divider: true },
-    { icon: IconMore, label: 'Show more options', hasArrow: true, action: () => close() },
-]);
+const menuItems = computed(() => {
+    if (!props.filePath) {
+        return [
+            { icon: IconAdd, label: 'New Folder', action: () => { store.createFolder(); close(); } },
+            { icon: IconPaste, label: 'Paste', action: handlePaste, disabled: !store.clipboard.paths.length },
+            { divider: true },
+            { icon: IconTerminal, label: 'Open in Terminal', action: handleOpenTerminal },
+            { icon: IconSettings, label: 'Properties', action: () => { emit('properties'); close(); } },
+        ];
+    }
+
+    return [
+        { icon: IconOpen, label: 'Open', action: handleOpen },
+        { icon: IconTab, label: 'Open in New Tab', action: handleOpenNewTab },
+        { icon: IconWindow, label: 'Open in New Window', action: () => close() },
+        { icon: IconPane, label: 'Open in New Pane', action: () => close() },
+        { divider: true },
+        { icon: IconPaste, label: 'Paste', action: handlePaste, disabled: !store.clipboard.paths.length },
+        { divider: true },
+        { icon: IconLink, label: 'Copy Item Path', action: handleCopyPath },
+        { icon: IconFolder, label: 'Create Folder from Selection', action: () => close() },
+        { icon: IconShortcut, label: 'Create Shortcut', action: () => close() },
+        { icon: IconPushPin, label: 'Pin to Sidebar', action: () => { store.togglePinnedForSelection(); close(); } },
+        { divider: true },
+        { icon: IconArchive, label: 'Compress', hasArrow: true, action: () => close() },
+        { icon: IconSend, label: 'Send To', hasArrow: true, action: () => close() },
+        { divider: true },
+        { icon: IconTerminal, label: 'Open in Terminal', action: handleOpenTerminal },
+        { icon: IconLabel, label: 'Edit Tags', hasArrow: true, action: () => close() },
+        { divider: true },
+        { icon: IconMore, label: 'Show more options', hasArrow: true, action: () => close() },
+    ];
+});
 </script>
 
 <template>
     <Teleport to="body">
         <div ref="menuRef" class="LFM-context-menu" :style="{ left: `${x}px`, top: `${y}px` }" role="menu">
             <div class="LFM-context-toolbar">
-                <button v-for="cmd in commandActions" :key="cmd.title" class="LFM-context-cmd" :title="cmd.title" @click="cmd.action">
+                <button 
+                    v-for="cmd in commandActions" 
+                    :key="cmd.title" 
+                    class="LFM-context-cmd" 
+                    :class="{ 'LFM-context-cmd--disabled': cmd.disabled }"
+                    :title="cmd.title" 
+                    :disabled="cmd.disabled"
+                    @click="cmd.action"
+                >
                     <component :is="cmd.icon" class="LFM-context-cmd-icon" />
                 </button>
             </div>
@@ -140,7 +197,14 @@ const menuItems = computed(() => [
 
             <template v-for="(item, i) in menuItems" :key="i">
                 <div v-if="'divider' in item && item.divider" class="LFM-context-divider" />
-                <button v-else-if="'label' in item" class="LFM-context-item" role="menuitem" @click="item.action && item.action()">
+                <button 
+                    v-else-if="'label' in item" 
+                    class="LFM-context-item" 
+                    :class="{ 'LFM-context-item--disabled': item.disabled }"
+                    role="menuitem" 
+                    :disabled="item.disabled"
+                    @click="item.action && item.action()"
+                >
                     <component :is="item.icon" class="LFM-context-item-icon" />
                     <span class="LFM-context-item-label">{{ item.label }}</span>
                     <span v-if="'hasArrow' in item && item.hasArrow" class="LFM-context-item-arrow">›</span>
@@ -193,9 +257,14 @@ const menuItems = computed(() => [
     color: var(--LFM-context-text);
     transition: all 150ms ease;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background: var(--LFM-context-hover);
         color: var(--LFM-blue);
+    }
+
+    &--disabled {
+        opacity: 0.3;
+        cursor: default;
     }
 }
 
@@ -224,8 +293,13 @@ const menuItems = computed(() => [
     text-align: left;
     transition: all 150ms ease;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background: var(--LFM-context-hover);
+    }
+
+    &--disabled {
+        opacity: 0.4;
+        cursor: default;
     }
 }
 

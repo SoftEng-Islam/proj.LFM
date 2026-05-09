@@ -1,1 +1,1 @@
-{"migrated":{"identifier":"migrated","description":"permissions that were migrated from v1","local":true,"windows":["main"],"permissions":["core:default"]}}
+{"migrated":{"identifier":"migrated","description":"permissions that were migrated from v1","local":true,"windows":["main"],"permissions":["core:default","core:path:default","core:event:default","core:window:default","core:webview:default","dialog:default","os:default","clipboard-manager:default","window-state:default"]}}

@@ -26,6 +26,9 @@ importers:
       '@vueuse/motion':
         specifier: ^3.0.3
         version: 3.0.3(magicast@0.5.2)(vue@3.5.33(typescript@6.0.3))
+      '@xterm/xterm':
+        specifier: ^6.0.0
+        version: 6.0.0
       animate.css:
         specifier: ^4.1.1
         version: 4.1.1
@@ -2776,6 +2779,9 @@ packages:
   '@xmldom/xmldom@0.8.13':
     resolution: {integrity: sha512-KRYzxepc14G/CEpEGc3Yn+JKaAeT63smlDr+vjB8jRfgTBBI9wRj/nkQEO+ucV8p8I9bfKLWp37uHgFrbntPvw==}
     engines: {node: '>=10.0.0'}
+
+  '@xterm/xterm@6.0.0':
+    resolution: {integrity: sha512-TQwDdQGtwwDt+2cgKDLn0IRaSxYu1tSUjgKarSDkUM0ZNiSRXFpjxEsvc/Zgc5kq5omJ+V0a8/kIM2WD3sMOYg==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -13306,6 +13312,8 @@ snapshots:
       '@xtuc/long': 4.2.2
 
   '@xmldom/xmldom@0.8.13': {}
+
+  '@xterm/xterm@6.0.0': {}
 
   '@xtuc/ieee754@1.2.0': {}
 

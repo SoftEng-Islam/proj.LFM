@@ -1,20 +1,43 @@
 <script setup lang="ts">
-import { watch, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 
 import WorkspaceOverview from '@/features/explorer/components/WorkspaceOverview.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import RenameModal from '@/components/ui/RenameModal.vue';
+import PropertiesModal from '@/components/ui/PropertiesModal.vue';
 import { useFileManagerStore } from '@/stores/file-manager';
-import type { SectionId } from '@/types/file-manager';
+import type { FileEntry } from '@/types/file-manager';
 
 const route = useRoute();
+const router = useRouter();
 const store = useFileManagerStore();
+const toast = useToast();
+
+const renameDialog = ref<{ visible: boolean; path: string; currentName: string }>({
+    visible: false,
+    path: '',
+    currentName: '',
+});
+
+const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null }>({
+    visible: false,
+    item: null,
+});
 
 function handleKeydown(e: KeyboardEvent) {
 	if (e.key === 'F5') {
 		e.preventDefault();
 		store.openSection(store.currentPath);
 	}
+}
+
+function openPropertiesDialog(item?: FileEntry) {
+    const target = item || store.selectedItem;
+    if (target) {
+        propertiesDialog.value = { visible: true, item: target };
+    }
 }
 
 onMounted(() => {
@@ -46,7 +69,12 @@ watch(
 
 <template lang="pug">
 AppLayout
-	WorkspaceOverview
+	WorkspaceOverview(@open-properties="openPropertiesDialog")
+	PropertiesModal(
+		v-if="propertiesDialog.visible"
+		v-model="propertiesDialog.visible"
+		:item="propertiesDialog.item"
+	)
 </template>
 
 <style lang="sass">

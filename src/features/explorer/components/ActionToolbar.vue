@@ -20,6 +20,7 @@ import IconTableRows from '~icons/material-symbols/table-rows';
 import IconSideNavigation from '~icons/material-symbols/side-navigation';
 import IconFolder from '~icons/material-symbols/folder';
 import IconDescription from '~icons/material-symbols/description';
+import IconRobot from '~icons/material-symbols/smart-toy';
 import IconTerminal from '~icons/material-symbols/terminal';
 
 const store = useFileManagerStore();
@@ -51,6 +52,59 @@ function createFile(type: string) {
 
 function cycleSort() { store.cycleSortMode(); }
 function setView(mode: 'grid' | 'list') { store.setViewMode(mode); }
+
+const emit = defineEmits<{
+    rename: [path: string];
+    delete: [];
+    properties: [];
+}>();
+
+function triggerRename() {
+    if (store.selectedItem) {
+        emit('rename', store.selectedItem.id);
+    } else {
+        toast.info('Select an item to rename');
+    }
+}
+
+function triggerProperties() {
+    if (store.selectedItem) {
+        emit('properties');
+    } else {
+        toast.info('Select an item to view properties');
+    }
+}
+
+function triggerDelete() {
+    if (store.selectedItem) {
+        store.deleteSelection();
+    } else {
+        toast.info('Select an item to delete');
+    }
+}
+
+function triggerCut() {
+    if (store.selectedItem) {
+        store.setClipboard([store.selectedItem.id], 'cut');
+        toast.info('Item cut to clipboard');
+    } else {
+        toast.info('Select an item to cut');
+    }
+}
+
+function triggerCopy() {
+    if (store.selectedItem) {
+        store.setClipboard([store.selectedItem.id], 'copy');
+        toast.info('Item copied to clipboard');
+    } else {
+        toast.info('Select an item to copy');
+    }
+}
+
+async function triggerPaste() {
+    await store.paste();
+    toast.success('Pasted');
+}
 </script>
 
 <template>
@@ -88,13 +142,13 @@ function setView(mode: 'grid' | 'list') { store.setViewMode(mode); }
 
                 <div class="LFM-ribbon-sep" />
 
-                <button class="LFM-ribbon-btn" title="Cut"><IconContentCut /></button>
-                <button class="LFM-ribbon-btn" title="Copy"><IconContentCopy /></button>
-                <button class="LFM-ribbon-btn" title="Paste"><IconContentPaste /></button>
+                <button class="LFM-ribbon-btn" title="Cut" @click="triggerCut"><IconContentCut /></button>
+                <button class="LFM-ribbon-btn" title="Copy" @click="triggerCopy"><IconContentCopy /></button>
+                <button class="LFM-ribbon-btn" title="Paste" @click="triggerPaste"><IconContentPaste /></button>
                 <button class="LFM-ribbon-btn" title="Shortcut"><IconShortcut /></button>
-                <button class="LFM-ribbon-btn" title="Rename"><IconEdit /></button>
-                <button class="LFM-ribbon-btn" title="Properties"><IconSettings /></button>
-                <button class="LFM-ribbon-btn" title="Delete"><IconDelete /></button>
+                <button class="LFM-ribbon-btn" title="Rename" @click="triggerRename"><IconEdit /></button>
+                <button class="LFM-ribbon-btn" title="Properties" @click="triggerProperties"><IconSettings /></button>
+                <button class="LFM-ribbon-btn" title="Delete" @click="triggerDelete"><IconDelete /></button>
                 <button class="LFM-ribbon-btn" title="More"><IconMoreHoriz /></button>
             </div>
 
@@ -130,9 +184,18 @@ function setView(mode: 'grid' | 'list') { store.setViewMode(mode); }
 
                 <button 
                     class="LFM-ribbon-btn" 
+                    :class="{ 'LFM-ribbon-btn--active': store.aiChatOpen }" 
+                    title="AI Assistant" 
+                    @click="() => { console.log('Toggling AI Chat'); store.toggleAiChat(); }"
+                >
+                    <IconRobot />
+                </button>
+
+                <button 
+                    class="LFM-ribbon-btn" 
                     :class="{ 'LFM-ribbon-btn--active': store.detailsOpen }" 
                     title="Details Pane" 
-                    @click="store.toggleDetails"
+                    @click="() => { console.log('Toggling Details'); store.toggleDetails(); }"
                 >
                     <IconSideNavigation />
                 </button>
