@@ -294,6 +294,15 @@ pub fn get_file_permissions(file_path: &str) -> Result<FilePermissions, String> 
 }
 
 #[tauri::command]
+pub fn set_file_permissions(file_path: String, mode: u32) -> Result<bool, String> {
+    use std::os::unix::fs::PermissionsExt;
+    let mut permissions = fs::metadata(&file_path).map_err(|e| e.to_string())?.permissions();
+    permissions.set_mode(mode);
+    fs::set_permissions(file_path, permissions).map_err(|e| e.to_string())?;
+    Ok(true)
+}
+
+#[tauri::command]
 pub async fn get_media_info(file_path: String) -> Result<MediaInfo, String> {
     let path = Path::new(&file_path);
     let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
@@ -373,6 +382,13 @@ pub async fn get_media_info(file_path: String) -> Result<MediaInfo, String> {
 }
 
 
+
+#[tauri::command]
+#[inline]
+pub async fn get_directory_count(dir: String) -> Result<u32, String> {
+    let paths = fs::read_dir(dir).map_err(|e| e.to_string())?;
+    Ok(paths.count() as u32)
+}
 
 /// Get size of a directory
 ///

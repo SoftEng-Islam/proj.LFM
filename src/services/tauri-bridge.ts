@@ -146,7 +146,11 @@ export function getFileProperties(filePath: string): Promise<FileMetaData> {
 
 /** Get detailed Unix file permissions (mode, owner, group). */
 export function getFilePermissions(filePath: string): Promise<FilePermissions> {
-	return invoke('get_file_permissions', { filePath });
+	return invoke('get_file_permissions', { file_path: filePath });
+}
+
+export function setFilePermissions(filePath: string, mode: number): Promise<boolean> {
+	return invoke('set_file_permissions', { file_path: filePath, mode });
 }
 
 /** Get technical media info (dimensions, duration, codecs). */
@@ -175,6 +179,10 @@ export function fileExist(filePath: string): Promise<boolean> {
 /** Get the total size (bytes) of a directory recursively. */
 export function getDirSize(dir: string): Promise<number> {
 	return invoke('get_dir_size', { dir });
+}
+
+export function getDirectoryCount(dir: string): Promise<number> {
+	return invoke('get_directory_count', { dir });
 }
 
 /** Sum sizes of multiple files/directories. */

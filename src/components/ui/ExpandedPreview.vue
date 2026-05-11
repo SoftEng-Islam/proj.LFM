@@ -22,6 +22,7 @@ import IconBrush from '~icons/material-symbols/brush';
 import CodePreview from './CodePreview.vue';
 import MarkdownPreview from './MarkdownPreview.vue';
 import PDFPreview from './PDFPreview.vue';
+import OfficePreview from './OfficePreview.vue';
 
 const store = useFileManagerStore();
 const { expandedPreviewId, currentEntries } = storeToRefs(store);
@@ -37,6 +38,7 @@ const isVideo = computed(() => item.value?.category === 'video');
 const isCode = computed(() => item.value?.category === 'code');
 const isMarkdown = computed(() => item.value?.category === 'markdown');
 const isPDF = computed(() => item.value?.category === 'pdf');
+const isOffice = computed(() => ['document', 'spreadsheet'].includes(item.value?.category || ''));
 
 const isFullscreen = ref(false);
 const isEditing = ref(false);
@@ -198,6 +200,7 @@ Teleport(to="body")
 							CodePreview(v-else-if="isCode" :src="item.preview" :title="item.name")
 							MarkdownPreview(v-else-if="isMarkdown" :src="item.preview" :title="item.name")
 							PDFPreview(v-else-if="isPDF" :src="item.preview" :filename="item.name")
+							OfficePreview(v-else-if="isOffice" :src="item.preview" :filename="item.name")
 							.LFM-expanded-fallback(v-else)
 								span No expanded preview available for this file type.
 						

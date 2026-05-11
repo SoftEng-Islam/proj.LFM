@@ -42,6 +42,8 @@ import CodePreview from '@/components/ui/CodePreview.vue';
 import MarkdownPreview from '@/components/ui/MarkdownPreview.vue';
 import PDFPreview from '@/components/ui/PDFPreview.vue';
 import FontPreview from '@/components/ui/FontPreview.vue';
+import OfficePreview from '@/components/ui/OfficePreview.vue';
+import { getDirectoryCount, setFilePermissions } from '@/services/tauri-bridge';
 
 // Accent theme mapping for file type colors
 const accentThemeMap: Record<
@@ -137,13 +139,15 @@ const isCode = computed(() => selectedItem.value?.category === 'code');
 const isMarkdown = computed(() => selectedItem.value?.category === 'markdown');
 const isPDF = computed(() => selectedItem.value?.category === 'pdf');
 const isFont = computed(() => selectedItem.value?.category === 'font');
-const isPreviewable = computed(() => !!selectedItem.value?.preview);
+const isOffice = computed(() => ['document', 'spreadsheet'].includes(selectedItem.value?.category || ''));
+const isPreviewable = computed(() => !!selectedItem.value?.preview || isOffice.value);
 const previewSrc = computed(() => selectedItem.value?.preview || '');
 const imageError = ref(false);
 
 // File content for text-based previews
 const fileContent = ref('');
 const isLoadingContent = ref(false);
+const directoryItemCount = ref<number | null>(null);
 
 // ── Preview Mode Logic ────────────────────────────────────────────────────────
 const modes: Array<'automatic' | 'full' | 'compact' | 'sticky'> = ['automatic', 'full', 'compact', 'sticky'];
@@ -188,6 +192,9 @@ function cyclePreviewMode() {
 
 const isEditingName = ref(false);
 const editedName = ref('');
+const isEditingPermissions = ref(false);
+const permissionMode = ref(0);
+const initialPermissionMode = ref(0);
 const expandedSections = ref<Record<string, boolean>>({
 	info: true,
 	dates: false,
@@ -199,18 +206,35 @@ const expandedSections = ref<Record<string, boolean>>({
 watch(selectedItem, async () => {
 	imageError.value = false;
 	isEditingName.value = false;
+	isEditingPermissions.value = false;
 	fileContent.value = '';
 	isLoadingContent.value = false;
+	directoryItemCount.value = null;
 
-	if (selectedItem.value && (isCode.value || isMarkdown.value)) {
-		try {
-			isLoadingContent.value = true;
-			fileContent.value = await readTextFile(selectedItem.value.id);
-		} catch (err) {
-			console.error('Failed to load file content:', err);
-			fileContent.value = 'Failed to load file content';
-		} finally {
-			isLoadingContent.value = false;
+	if (selectedItem.value) {
+		if (isCode.value || isMarkdown.value) {
+			try {
+				isLoadingContent.value = true;
+				fileContent.value = await readTextFile(selectedItem.value.id);
+			} catch (err) {
+				console.error('Failed to load file content:', err);
+				fileContent.value = 'Failed to load file content';
+			} finally {
+				isLoadingContent.value = false;
+			}
+		}
+		
+		if (selectedItem.value.category === 'folder') {
+			try {
+				directoryItemCount.value = await getDirectoryCount(selectedItem.value.id);
+			} catch (err) {
+				console.warn('Failed to get directory count:', err);
+			}
+		}
+
+		if (selectedItemPermissions.value) {
+			permissionMode.value = selectedItemPermissions.value.mode;
+			initialPermissionMode.value = selectedItemPermissions.value.mode;
 		}
 	}
 });
@@ -240,7 +264,12 @@ const decodeMode = (mode: number) => {
 	const owner = (mode >> 6) & 7;
 	const group = (mode >> 3) & 7;
 	const other = mode & 7;
-	const rwx = (p: number) => `${p & 4 ? 'r' : '-'}${p & 2 ? 'w' : '-'}${p & 1 ? 'x' : '-'}`;
+	const rwx = (p: number) => ({
+		read: !!(p & 4),
+		write: !!(p & 2),
+		exec: !!(p & 1),
+		label: `${p & 4 ? 'r' : '-'}${p & 2 ? 'w' : '-'}${p & 1 ? 'x' : '-'}`
+	});
 	return {
 		octal: (mode & 0o777).toString(8).padStart(3, '0'),
 		owner: rwx(owner),
@@ -248,6 +277,31 @@ const decodeMode = (mode: number) => {
 		other: rwx(other)
 	};
 };
+
+function togglePermission(bit: number) {
+	permissionMode.value ^= bit;
+}
+
+async function savePermissions() {
+	if (!selectedItem.value) return;
+	try {
+		const success = await setFilePermissions(selectedItem.value.id, permissionMode.value);
+		if (success) {
+			toast.success('Permissions updated');
+			isEditingPermissions.value = false;
+			initialPermissionMode.value = permissionMode.value;
+			// Refresh metadata
+			store.updateSelectedItemMetadata();
+		}
+	} catch (err) {
+		toast.error('Failed to update permissions');
+	}
+}
+
+function resetPermissions() {
+	permissionMode.value = initialPermissionMode.value;
+	isEditingPermissions.value = false;
+}
 
 const getLanguageFromFilename = (filename: string): string => {
 	const ext = filename.split('.').pop()?.toLowerCase() || '';
@@ -338,6 +392,7 @@ aside.LFM-preview-pane
 								MarkdownPreview(v-else-if="isMarkdown && !isLoadingContent" :markdown="fileContent" :filename="selectedItem.name")
 								PDFPreview(v-else-if="isPDF" :src="previewSrc" :filename="selectedItem.name")
 								FontPreview(v-else-if="isFont" :src="previewSrc" :filename="selectedItem.name" :fileSize="selectedItem.sortSize")
+								OfficePreview(v-else-if="isOffice" :src="previewSrc" :filename="selectedItem.name")
 
 							.LFM-loading-wrapper(v-else-if="isLoadingContent")
 								.LFM-loading-spinner
@@ -394,6 +449,9 @@ aside.LFM-preview-pane
 						.LFM-prop-row(v-if="selectedItemMediaInfo?.duration")
 							span.LFM-prop-label Duration
 							span.LFM-prop-value {{ formatDuration(selectedItemMediaInfo.duration) }}
+						.LFM-prop-row(v-if="directoryItemCount !== null")
+							span.LFM-prop-label Items
+							span.LFM-prop-value {{ directoryItemCount }} items
 						.LFM-prop-row
 							span.LFM-prop-label Path
 							button.LFM-prop-copy(@click="copyPath") {{ selectedItem.id }}
@@ -447,25 +505,46 @@ aside.LFM-preview-pane
 					.LFM-accordion-body
 						.LFM-perm-grid(v-if="selectedItemPermissions")
 							.LFM-perm-header
-								span Mode
-								span.font-mono.text-blue-500 {{ decodeMode(selectedItemPermissions.mode).octal }}
+								span Access Code
+								.flex.gap-2
+									input.LFM-octal-input(
+										:value="decodeMode(permissionMode).octal"
+										@input="e => { const val = (e.target as HTMLInputElement).value; if (/^[0-7]{3}$/.test(val)) permissionMode = parseInt(val, 8); }"
+										maxlength="3"
+									)
+									button.LFM-edit-toggle(@click="isEditingPermissions = !isEditingPermissions")
+										IconEdit(:class="{ 'text-blue-500': isEditingPermissions }")
 
-							.LFM-prop-row
-								span.LFM-prop-label Owner
-								span.LFM-prop-value {{ selectedItemPermissions.owner }}
-								span.font-mono.text-xs.ml-2.opacity-60 {{ decodeMode(selectedItemPermissions.mode).owner }}
-							.LFM-prop-row
-								span.LFM-prop-label Group
-								span.LFM-prop-value {{ selectedItemPermissions.group }}
-								span.font-mono.text-xs.ml-2.opacity-60 {{ decodeMode(selectedItemPermissions.mode).group }}
-							.LFM-prop-row
-								span.LFM-prop-label Others
-								span.LFM-prop-value —
-								span.font-mono.text-xs.ml-2.opacity-60 {{ decodeMode(selectedItemPermissions.mode).other }}
+							//- Interactive Toggles
+							.LFM-perm-toggles(v-if="isEditingPermissions")
+								.LFM-perm-group-row(v-for="g in ['owner', 'group', 'other']" :key="g")
+									span.LFM-perm-group-label {{ g }}
+									.LFM-toggle-group
+										button.LFM-perm-toggle(
+											v-for="p in [{ b: 4, l: 'R' }, { b: 2, l: 'W' }, { b: 1, l: 'X' }]"
+											:key="p.l"
+											:class="{ 'is-active': decodeMode(permissionMode)[g].label.includes(p.l.toLowerCase()) }"
+											@click="togglePermission(p.b << (g === 'owner' ? 6 : g === 'group' ? 3 : 0))"
+										) {{ p.l }}
 
-						.LFM-prop-row
-							span.LFM-prop-label Writeable
-							span.LFM-prop-value {{ selectedItem.readonly ? 'No' : 'Yes' }}
+							//- Read-only View
+							template(v-else)
+								.LFM-prop-row
+									span.LFM-prop-label Owner
+									span.LFM-prop-value {{ selectedItemPermissions.owner }}
+									span.font-mono.text-xs.ml-2.opacity-60 {{ decodeMode(permissionMode).owner.label }}
+								.LFM-prop-row
+									span.LFM-prop-label Group
+									span.LFM-prop-value {{ selectedItemPermissions.group }}
+									span.font-mono.text-xs.ml-2.opacity-60 {{ decodeMode(permissionMode).group.label }}
+								.LFM-prop-row
+									span.LFM-prop-label Others
+									span.LFM-prop-value —
+									span.font-mono.text-xs.ml-2.opacity-60 {{ decodeMode(permissionMode).other.label }}
+
+							.LFM-perm-actions(v-if="isEditingPermissions")
+								button.LFM-btn.LFM-btn--reset(@click="resetPermissions") Reset
+								button.LFM-btn.LFM-btn--submit(@click="savePermissions") Submit
 
 				//- Tags Section
 				.LFM-accordion-item(v-if="selectedItem.tags?.length" :class="{ 'is-expanded': expandedSections.tags }")
@@ -909,6 +988,103 @@ $lfm-ease: cubic-bezier(0.2, 1, 0.3, 1)
 	transition: opacity 200ms ease
 .fade-enter-from, .fade-leave-to
 	opacity: 0
+
+.LFM-octal-input
+	width: 48px
+	height: 24px
+	background: var(--LFM-bg)
+	border: 1px solid var(--LFM-border)
+	border-radius: 4px
+	color: var(--LFM-blue)
+	font-family: monospace
+	font-size: 11px
+	font-weight: 700
+	text-align: center
+	outline: none
+
+.LFM-edit-toggle
+	color: var(--LFM-text-muted)
+	cursor: pointer
+	display: flex
+	align-items: center
+	justify-content: center
+	&:hover
+		color: var(--LFM-text)
+
+.LFM-perm-toggles
+	display: flex
+	flex-direction: column
+	gap: 10px
+	padding: 12px 0
+	border-bottom: 1px solid var(--LFM-border)
+
+.LFM-perm-group-row
+	display: flex
+	justify-content: space-between
+	align-items: center
+
+.LFM-perm-group-label
+	font-size: 11px
+	font-weight: 600
+	text-transform: capitalize
+	color: var(--LFM-text-muted)
+
+.LFM-toggle-group
+	display: flex
+	gap: 4px
+
+.LFM-perm-toggle
+	width: 28px
+	height: 24px
+	border-radius: 4px
+	background: var(--LFM-hover)
+	color: var(--LFM-text-muted)
+	font-size: 10px
+	font-weight: 800
+	display: flex
+	align-items: center
+	justify-content: center
+	cursor: pointer
+	transition: all 200ms ease
+	border: 1px solid transparent
+
+	&:hover
+		background: var(--LFM-bg-secondary)
+		color: var(--LFM-text)
+
+	&.is-active
+		background: var(--LFM-blue-subtle)
+		color: var(--LFM-blue)
+		border-color: var(--LFM-blue-subtle)
+
+.LFM-perm-actions
+	display: flex
+	gap: 8px
+	padding-top: 12px
+
+.LFM-btn
+	flex: 1
+	height: 28px
+	border-radius: 6px
+	font-size: 11px
+	font-weight: 700
+	cursor: pointer
+	transition: all 200ms ease
+
+	&--reset
+		background: transparent
+		border: 1px solid var(--LFM-border)
+		color: var(--LFM-text-muted)
+		&:hover
+			background: var(--LFM-hover)
+			color: var(--LFM-text)
+
+	&--submit
+		background: var(--LFM-blue)
+		color: white
+		border: none
+		&:hover
+			filter: brightness(1.1)
 
 .scale-fade-enter-active, .scale-fade-leave-active
 	transition: all 300ms $lfm-ease

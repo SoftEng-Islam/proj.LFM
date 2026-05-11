@@ -220,6 +220,21 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		{ immediate: true }
 	);
 
+	async function updateSelectedItemMetadata() {
+		if (selectedItemId.value) {
+			try {
+				const [perms, media] = await Promise.all([
+					getFilePermissions(selectedItemId.value).catch(() => null),
+					getMediaInfo(selectedItemId.value).catch(() => null),
+				]);
+				selectedItemPermissions.value = perms;
+				selectedItemMediaInfo.value = media;
+			} catch (err) {
+				console.error('[FileManagerStore] Failed to update metadata:', err);
+			}
+		}
+	}
+
 	// ── Actions ───────────────────────────────────────────────────────────────
 
 	async function fetchDirectory(path: string) {
@@ -581,6 +596,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		setPreviewMode,
 		setPreferredModeForCategory,
 		getPreferredModeForCategory,
+		updateSelectedItemMetadata,
 		expandedPreviewId,
 		setExpandedPreviewId: (id: string | null) => { expandedPreviewId.value = id; },
 		async saveFileContent(path: string, content: string) {
