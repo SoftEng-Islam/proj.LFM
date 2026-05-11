@@ -29,7 +29,7 @@ export class Themes {
 	}
 
 	// Aplikuje danú tému a uloží ju do localStorage
-	static apply(newTheme) {
+	static apply(newTheme: string) {
 		if (newTheme === this.defaultTheme) {
 			// Uloží "system", ale vzhled na stránce nastaví podle preferencí
 			localStorage.setItem(this.#storageKey, 'system');

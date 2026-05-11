@@ -1080,3 +1080,18 @@ pub async fn decompress_from_zip(zip_path: String, target_dir: String) {
         }
     }
 }
+
+/// Read a text file and return its contents
+#[tauri::command]
+pub async fn read_text_file(file_path: String) -> Result<String, String> {
+    fs::read_to_string(&file_path)
+        .map_err(|error| format!("Failed to read file {}: {}", file_path, error))
+}
+
+/// Write content to a text file
+#[tauri::command]
+pub async fn write_text_file(file_path: String, content: String) -> Result<bool, String> {
+    fs::write(&file_path, content)
+        .map_err(|error| format!("Failed to write file {}: {}", file_path, error))?;
+    Ok(true)
+}

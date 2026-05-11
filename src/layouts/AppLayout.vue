@@ -7,6 +7,7 @@ import AppHeader from './components/AppHeader/AppHeader.vue';
 import AppNavigationBar from './components/AppNavigationBar.vue';
 import AiChatSidebar from './components/AiChatSidebar.vue';
 import PreviewPane from '@/features/explorer/components/PreviewPane.vue';
+import ExpandedPreview from '@/components/ui/ExpandedPreview.vue';
 
 const store = useFileManagerStore();
 
@@ -112,6 +113,7 @@ onUnmounted(() => {
 		</div>
 
 		<StatusBar />
+		<ExpandedPreview />
 	</div>
 </template>
 

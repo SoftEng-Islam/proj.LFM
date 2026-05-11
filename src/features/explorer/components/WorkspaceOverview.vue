@@ -8,7 +8,7 @@ import ActionToolbar from '@/features/explorer/components/ActionToolbar.vue';
 import ContextMenu from '@/features/explorer/components/ContextMenu.vue';
 import RenameModal from '@/components/ui/RenameModal.vue';
 import PropertiesModal from '@/components/ui/PropertiesModal.vue';
-import FolderIcon from '@/components/ui/FolderIcon.vue';
+import FolderIcon from '@/components/ui/VueIcons/FolderIcon.vue';
 
 import { useFileManagerStore } from '@/stores/file-manager';
 import type { FileEntry } from '@/types/file-manager';
@@ -104,12 +104,12 @@ function openItem(entry: FileEntry) {
 
 const fileIconColors: Record<string, string> = {
 	document: '#2b7cd3',
-	image:    '#e07000',
-	video:    '#6236cc',
-	audio:    '#1db954',
-	archive:  '#f1c40f',
-	code:     '#34495e',
-	default:  '#7f8c8d',
+	image: '#e07000',
+	video: '#6236cc',
+	audio: '#1db954',
+	archive: '#f1c40f',
+	code: '#34495e',
+	default: '#7f8c8d',
 };
 
 function getFileIconColor(category: string) {
@@ -141,16 +141,16 @@ function handleKeydown(e: KeyboardEvent) {
 		let nextIdx = idx;
 
 		if (e.key === 'ArrowRight') nextIdx = Math.min(idx + 1, items.length - 1);
-		if (e.key === 'ArrowLeft')  nextIdx = Math.max(idx - 1, 0);
+		if (e.key === 'ArrowLeft') nextIdx = Math.max(idx - 1, 0);
 
 		if (store.viewMode === 'grid') {
 			const containerWidth = workspaceRef.value?.offsetWidth || window.innerWidth;
 			const itemsPerRow = Math.floor(containerWidth / 104) || 1;
 			if (e.key === 'ArrowDown') nextIdx = Math.min(idx + itemsPerRow, items.length - 1);
-			if (e.key === 'ArrowUp')   nextIdx = Math.max(idx - itemsPerRow, 0);
+			if (e.key === 'ArrowUp') nextIdx = Math.max(idx - itemsPerRow, 0);
 		} else {
 			if (e.key === 'ArrowDown') nextIdx = Math.min(idx + 1, items.length - 1);
-			if (e.key === 'ArrowUp')   nextIdx = Math.max(idx - 1, 0);
+			if (e.key === 'ArrowUp') nextIdx = Math.max(idx - 1, 0);
 		}
 
 		const nextItem = items[nextIdx];

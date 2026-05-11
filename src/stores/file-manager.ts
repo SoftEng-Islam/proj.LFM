@@ -33,7 +33,9 @@ import {
 	openFile,
 	openInTerminal as tauriOpenTerminal,
 	readDirectory,
+	readTextFile,
 	rename as tauriMove,
+	writeTextFile,
 } from '@/services/tauri-bridge';
 import { usePanelResize } from '@/composables/usePanelResize';
 import { formatBytes } from '@/utils/format';
@@ -93,6 +95,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	// ── Preview Pane State ────────────────────────────────────────────────────
 	const previewMode = useStorage<'automatic' | 'full' | 'compact' | 'sticky'>('lfm-preview-mode', 'automatic');
 	const categoryPreferredMode = useStorage<Record<string, 'automatic' | 'full' | 'compact' | 'sticky'>>('lfm-category-preview-modes', {});
+	const expandedPreviewId = ref<string | null>(null);
 
 	/**
 	 * Initialize the home directory and update navigation state.
@@ -578,6 +581,22 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		setPreviewMode,
 		setPreferredModeForCategory,
 		getPreferredModeForCategory,
+		expandedPreviewId,
+		setExpandedPreviewId: (id: string | null) => { expandedPreviewId.value = id; },
+		async saveFileContent(path: string, content: string) {
+			try {
+				const success = await writeTextFile(path, content);
+				if (success) {
+					// Refresh entries if needed, or just update the entry in state
+					// For now, let's just return success
+					return true;
+				}
+				return false;
+			} catch (e) {
+				console.error('Failed to save file content:', e);
+				return false;
+			}
+		},
 	};
 });
 

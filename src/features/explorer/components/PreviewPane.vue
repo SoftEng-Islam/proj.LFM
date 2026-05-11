@@ -32,10 +32,16 @@ import IconViewAgenda from '~icons/material-symbols/view-agenda';
 import IconViewWeek from '~icons/material-symbols/view-week';
 import IconViewDay from '~icons/material-symbols/view-day';
 import IconDown from '~icons/material-symbols/arrow-drop-down';
+import IconFullscreen from '~icons/material-symbols/fullscreen';
 
 import { useFileManagerStore } from '@/stores/file-manager';
 import type { AccentTone, FileStatus } from '@/types/file-manager';
+import { readTextFile } from '@/services/tauri-bridge';
 import AudioPlayer from '@/components/ui/AudioPlayer.vue';
+import CodePreview from '@/components/ui/CodePreview.vue';
+import MarkdownPreview from '@/components/ui/MarkdownPreview.vue';
+import PDFPreview from '@/components/ui/PDFPreview.vue';
+import FontPreview from '@/components/ui/FontPreview.vue';
 
 // Accent theme mapping for file type colors
 const accentThemeMap: Record<
@@ -130,9 +136,14 @@ const isAudio = computed(() => selectedItem.value?.category === 'audio');
 const isCode = computed(() => selectedItem.value?.category === 'code');
 const isMarkdown = computed(() => selectedItem.value?.category === 'markdown');
 const isPDF = computed(() => selectedItem.value?.category === 'pdf');
+const isFont = computed(() => selectedItem.value?.category === 'font');
 const isPreviewable = computed(() => !!selectedItem.value?.preview);
 const previewSrc = computed(() => selectedItem.value?.preview || '');
 const imageError = ref(false);
+
+// File content for text-based previews
+const fileContent = ref('');
+const isLoadingContent = ref(false);
 
 // ── Preview Mode Logic ────────────────────────────────────────────────────────
 const modes: Array<'automatic' | 'full' | 'compact' | 'sticky'> = ['automatic', 'full', 'compact', 'sticky'];
@@ -165,12 +176,13 @@ const showSectionThree = computed(() => currentMode.value === 'full');
 const showSectionFour = computed(() => true); // Always show permissions
 
 function cyclePreviewMode() {
-	const currentIndex = modes.indexOf(previewMode.value);
+	const currentIndex = modes.indexOf(previewMode.value || 'automatic');
 	const nextIndex = (currentIndex + 1) % modes.length;
-	store.setPreviewMode(modes[nextIndex]);
+	const nextMode = modes[nextIndex];
+	store.setPreviewMode(nextMode);
 	if (selectedItem.value) {
 		const category = selectedItem.value.category || 'default';
-		store.setPreferredModeForCategory(category, modes[nextIndex]);
+		store.setPreferredModeForCategory(category, nextMode);
 	}
 }
 
@@ -184,9 +196,23 @@ const expandedSections = ref<Record<string, boolean>>({
 	tags: false
 });
 
-watch(selectedItem, () => {
+watch(selectedItem, async () => {
 	imageError.value = false;
 	isEditingName.value = false;
+	fileContent.value = '';
+	isLoadingContent.value = false;
+
+	if (selectedItem.value && (isCode.value || isMarkdown.value)) {
+		try {
+			isLoadingContent.value = true;
+			fileContent.value = await readTextFile(selectedItem.value.id);
+		} catch (err) {
+			console.error('Failed to load file content:', err);
+			fileContent.value = 'Failed to load file content';
+		} finally {
+			isLoadingContent.value = false;
+		}
+	}
 });
 
 const formatDate = (dateStr?: string) => {
@@ -223,6 +249,38 @@ const decodeMode = (mode: number) => {
 	};
 };
 
+const getLanguageFromFilename = (filename: string): string => {
+	const ext = filename.split('.').pop()?.toLowerCase() || '';
+	const langMap: Record<string, string> = {
+		js: 'javascript',
+		ts: 'typescript',
+		vue: 'html',
+		html: 'html',
+		css: 'css',
+		sass: 'scss',
+		scss: 'scss',
+		json: 'json',
+		md: 'markdown',
+		py: 'python',
+		rs: 'rust',
+		go: 'go',
+		c: 'c',
+		cpp: 'cpp',
+		cxx: 'cpp',
+		h: 'c',
+		hpp: 'cpp',
+		java: 'java',
+		php: 'php',
+		rb: 'ruby',
+		sh: 'bash',
+		yaml: 'yaml',
+		yml: 'yaml',
+		xml: 'xml',
+		sql: 'sql',
+	};
+	return langMap[ext] || 'plaintext';
+};
+
 const toggleSection = (id: string) => { expandedSections.value[id] = !expandedSections.value[id]; };
 
 // Action handlers
@@ -232,6 +290,7 @@ function openInTerminal() { if (selectedItem.value) { store.openInTerminal(selec
 function pinSelection() { if (selectedItem.value) { store.togglePinnedForSelection(); toast.success(store.isPinned(selectedItem.value.id) ? 'Pinned' : 'Unpinned'); } }
 function startEditingName() { if (selectedItem.value) { editedName.value = selectedItem.value.name; isEditingName.value = true; } }
 function saveName() { if (selectedItem.value && editedName.value.trim()) { store.renameItem(selectedItem.value.id, editedName.value.trim()); isEditingName.value = false; } }
+function handleExpand() { if (selectedItem.value) store.setExpandedPreviewId(selectedItem.value.id); }
 </script>
 
 <template lang="pug">
@@ -263,6 +322,9 @@ aside.LFM-preview-pane
 				.LFM-hero(:class="accentThemeMap[selectedItem.accent]?.glow" :style="{ height: currentMode === 'compact' ? '128px' : '220px' }")
 					.LFM-hero-bg(:class="accentThemeMap[selectedItem.accent]?.surface")
 
+					button.LFM-expand-btn(@click="handleExpand" title="Expand preview")
+						IconFullscreen
+
 					.LFM-preview-frame
 						transition(name="scale-fade" mode="out-in")
 							.LFM-media-wrapper(v-if="isPreviewable && !imageError" :key="previewSrc")
@@ -272,6 +334,14 @@ aside.LFM-preview-pane
 									button.LFM-play-overlay(@click="handleOpen")
 										IconPlayArrow(size="32")
 								AudioPlayer(v-else-if="isAudio" :src="previewSrc" :title="selectedItem.name")
+								CodePreview(v-else-if="isCode && !isLoadingContent" :code="fileContent" :language="getLanguageFromFilename(selectedItem.name)" :filename="selectedItem.name")
+								MarkdownPreview(v-else-if="isMarkdown && !isLoadingContent" :markdown="fileContent" :filename="selectedItem.name")
+								PDFPreview(v-else-if="isPDF" :src="previewSrc" :filename="selectedItem.name")
+								FontPreview(v-else-if="isFont" :src="previewSrc" :filename="selectedItem.name" :fileSize="selectedItem.sortSize")
+
+							.LFM-loading-wrapper(v-else-if="isLoadingContent")
+								.LFM-loading-spinner
+								span Loading content...
 
 							.LFM-fallback-wrapper(v-else :key="'fallback-' + selectedItem.id")
 								.LFM-fallback-blob(:class="accentThemeMap[selectedItem.accent]?.ring")
@@ -545,6 +615,29 @@ $lfm-ease: cubic-bezier(0.2, 1, 0.3, 1)
 	inset: 0
 	opacity: 0.5
 
+.LFM-expand-btn
+	position: absolute
+	top: 12px
+	right: 12px
+	width: 32px
+	height: 32px
+	border-radius: 8px
+	background: rgba(0,0,0,0.3)
+	backdrop-filter: blur(8px)
+	border: 1px solid rgba(255,255,255,0.1)
+	color: white
+	display: flex
+	align-items: center
+	justify-content: center
+	cursor: pointer
+	z-index: 10
+	transition: all 200ms ease
+
+	&:hover
+		background: rgba(0,0,0,0.5)
+		transform: scale(1.1)
+		color: var(--LFM-blue)
+
 .LFM-preview-frame
 	position: relative
 	z-index: 1
@@ -780,6 +873,29 @@ $lfm-ease: cubic-bezier(0.2, 1, 0.3, 1)
 	color: var(--LFM-blue)
 	font-size: 10px
 	font-weight: 600
+
+// --- Loading States ---
+.LFM-loading-wrapper
+	display: flex
+	flex-direction: column
+	align-items: center
+	justify-content: center
+	gap: 12px
+	color: var(--LFM-text-muted)
+
+.LFM-loading-spinner
+	width: 24px
+	height: 24px
+	border: 2px solid var(--LFM-border)
+	border-top: 2px solid var(--LFM-blue)
+	border-radius: 50%
+	animation: spin 1s linear infinite
+
+@keyframes spin
+	from
+		transform: rotate(0deg)
+	to
+		transform: rotate(360deg)
 
 @keyframes slideDown
 	from

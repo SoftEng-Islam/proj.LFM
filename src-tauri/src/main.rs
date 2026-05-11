@@ -202,6 +202,8 @@ async fn main() {
             files_api::get_media_info,
             files_api::compress_to_zip,
             files_api::decompress_from_zip,
+            files_api::read_text_file,
+            files_api::write_text_file,
             commands::files::read_directory_paginated,
             commands::watchers::watch_directory,
             drives::get_drives,
