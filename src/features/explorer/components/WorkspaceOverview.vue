@@ -9,6 +9,8 @@ import ContextMenu from '@/features/explorer/components/ContextMenu.vue';
 import RenameModal from '@/components/ui/RenameModal.vue';
 import PropertiesModal from '@/components/ui/PropertiesModal.vue';
 import FolderIcon from '@/components/ui/FolderIcon.vue';
+
+
 import { useFileManagerStore } from '@/stores/file-manager';
 import type { FileEntry } from '@/types/file-manager';
 import { useToast } from 'vue-toastification';
@@ -19,218 +21,218 @@ const toast = useToast();
 const selectedId = computed(() => store.selectedItem?.id ?? '');
 
 // Context menu state
-const contextMenu = ref<{ visible: boolean; x: number; y: number; itemId: string }>({
-    visible: false,
-    x: 0,
-    y: 0,
-    itemId: '',
+const contextMenu = ref<{ visible: boolean; x: number; y: number; itemId: string; }>({
+	visible: false,
+	x: 0,
+	y: 0,
+	itemId: '',
 });
 
 // Rename modal state
-const renameDialog = ref<{ visible: boolean; path: string; currentName: string }>({
-    visible: false,
-    path: '',
-    currentName: '',
+const renameDialog = ref<{ visible: boolean; path: string; currentName: string; }>({
+	visible: false,
+	path: '',
+	currentName: '',
 });
 
 // Properties modal state
-const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null }>({
-    visible: false,
-    item: null,
+const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null; }>({
+	visible: false,
+	item: null,
 });
 
 function openContextMenu(e: MouseEvent, itemId: string) {
-    e.preventDefault();
-    store.selectItem(itemId);
-    contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId };
+	e.preventDefault();
+	store.selectItem(itemId);
+	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId };
 }
 
 function closeContextMenu() {
-    contextMenu.value.visible = false;
+	contextMenu.value.visible = false;
 }
 
 function openEmptyContextMenu(e: MouseEvent) {
-    e.preventDefault();
-    store.selectItem('');
-    contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId: '' };
+	e.preventDefault();
+	store.selectItem('');
+	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId: '' };
 }
 
 function openRenameDialog(path: string) {
-    const name = path.split('/').pop() || '';
-    renameDialog.value = { visible: true, path, currentName: name };
-    closeContextMenu();
+	const name = path.split('/').pop() || '';
+	renameDialog.value = { visible: true, path, currentName: name };
+	closeContextMenu();
 }
 
 function openPropertiesDialog(itemId?: string) {
-    const targetId = itemId || selectedId.value;
-    if (!targetId) return;
-    const item = store.currentEntries.find(e => e.id === targetId);
-    if (item) {
-        propertiesDialog.value = { visible: true, item };
-    }
-    closeContextMenu();
+	const targetId = itemId || selectedId.value;
+	if (!targetId) return;
+	const item = store.currentEntries.find(e => e.id === targetId);
+	if (item) {
+		propertiesDialog.value = { visible: true, item };
+	}
+	closeContextMenu();
 }
 
 async function handleRename(newName: string) {
-    const success = await store.renameItem(renameDialog.value.path, newName);
-    if (success) {
-        toast.success('Renamed successfully');
-    } else {
-        toast.error('Failed to rename');
-    }
-    renameDialog.value.visible = false;
+	const success = await store.renameItem(renameDialog.value.path, newName);
+	if (success) {
+		toast.success('Renamed successfully');
+	} else {
+		toast.error('Failed to rename');
+	}
+	renameDialog.value.visible = false;
 }
 
 // Determine icon type for non-folder entries
-function isFolder(entry: { kind: string }) {
-    return entry.kind === 'folder';
+function isFolder(entry: { kind: string; }) {
+	return entry.kind === 'folder';
 }
 
 function openItem(entry: FileEntry) {
-    if (isFolder(entry)) {
-        router.push(entry.id);
-    } else {
-        openFile(entry.id);
-    }
+	if (isFolder(entry)) {
+		router.push(entry.id);
+	} else {
+		openFile(entry.id);
+	}
 }
 
 // File type icon color map
 const fileIconColors: Record<string, string> = {
-    document: '#2b7cd3',
-    image: '#e07000',
-    video: '#6236cc',
-    audio: '#1db954',
-    archive: '#f1c40f',
-    code: '#34495e',
-    default: '#7f8c8d',
+	document: '#2b7cd3',
+	image: '#e07000',
+	video: '#6236cc',
+	audio: '#1db954',
+	archive: '#f1c40f',
+	code: '#34495e',
+	default: '#7f8c8d',
 };
 
 function getFileIconColor(category: string) {
-    return fileIconColors[category] || fileIconColors.default;
+	return fileIconColors[category] || fileIconColors.default;
 }
 
 // File category → emoji glyph (fallback icon)
 const fileGlyphs: Record<string, string> = {
-    document: '📄',
-    image: '🖼',
-    audio: '🎵',
-    video: '🎬',
-    archive: '📦',
-    code: '📝',
-    data: '📊',
-    default: '📄',
+	document: '📄',
+	image: '🖼',
+	audio: '🎵',
+	video: '🎬',
+	archive: '📦',
+	code: '📝',
+	data: '📊',
+	default: '📄',
 };
 function fileGlyph(category: string): string {
-    return fileGlyphs[category] ?? fileGlyphs['default'] ?? '📄';
+	return fileGlyphs[category] ?? fileGlyphs['default'] ?? '📄';
 }
 
 const formatDate = (dateStr: string) => {
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
-    }).format(new Date(dateStr));
+	return new Intl.DateTimeFormat('en-US', {
+		month: 'short', day: 'numeric', year: 'numeric',
+	}).format(new Date(dateStr));
 };
 
 const workspaceRef = ref<HTMLElement>();
 
 // Keyboard Shortcuts
 function handleKeydown(e: KeyboardEvent) {
-    // Don't trigger shortcuts if user is typing in an input
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+	// Don't trigger shortcuts if user is typing in an input
+	if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
-    const selected = store.selectedItem;
-    if (!selected && e.key !== 'v') return;
+	const selected = store.selectedItem;
+	if (!selected && e.key !== 'v') return;
 
-    // Navigation
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault();
-        const items = store.currentEntries;
-        const idx = items.findIndex(it => it.id === selectedId.value);
-        let nextIdx = idx;
+	// Navigation
+	if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+		e.preventDefault();
+		const items = store.currentEntries;
+		const idx = items.findIndex(it => it.id === selectedId.value);
+		let nextIdx = idx;
 
-        if (e.key === 'ArrowRight') nextIdx = Math.min(idx + 1, items.length - 1);
-        if (e.key === 'ArrowLeft') nextIdx = Math.max(idx - 1, 0);
-        
-        // Grid vertical navigation
-        if (store.viewMode === 'grid') {
-            const containerWidth = workspaceRef.value?.offsetWidth || window.innerWidth;
-            // Each item is 100px + 4px gap roughly. Let's be more precise if possible.
-            // But 104 is a good estimate.
-            const itemsPerRow = Math.floor(containerWidth / 104) || 1;
-            
-            if (e.key === 'ArrowDown') nextIdx = Math.min(idx + itemsPerRow, items.length - 1);
-            if (e.key === 'ArrowUp') nextIdx = Math.max(idx - itemsPerRow, 0);
-        } else {
-            // List view
-            if (e.key === 'ArrowDown') nextIdx = Math.min(idx + 1, items.length - 1);
-            if (e.key === 'ArrowUp') nextIdx = Math.max(idx - 1, 0);
-        }
+		if (e.key === 'ArrowRight') nextIdx = Math.min(idx + 1, items.length - 1);
+		if (e.key === 'ArrowLeft') nextIdx = Math.max(idx - 1, 0);
 
-        const nextItem = items[nextIdx];
-        if (nextItem) {
-            store.selectItem(nextItem.id);
-        }
-        return;
-    }
+		// Grid vertical navigation
+		if (store.viewMode === 'grid') {
+			const containerWidth = workspaceRef.value?.offsetWidth || window.innerWidth;
+			// Each item is 100px + 4px gap roughly. Let's be more precise if possible.
+			// But 104 is a good estimate.
+			const itemsPerRow = Math.floor(containerWidth / 104) || 1;
 
-    // Actions
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        if (selected) openItem(selected);
-    }
-    
-    if (e.key === 'F2') {
-        e.preventDefault();
-        if (selected) openRenameDialog(selected.id);
-    }
+			if (e.key === 'ArrowDown') nextIdx = Math.min(idx + itemsPerRow, items.length - 1);
+			if (e.key === 'ArrowUp') nextIdx = Math.max(idx - itemsPerRow, 0);
+		} else {
+			// List view
+			if (e.key === 'ArrowDown') nextIdx = Math.min(idx + 1, items.length - 1);
+			if (e.key === 'ArrowUp') nextIdx = Math.max(idx - 1, 0);
+		}
 
-    if (e.key === 'Delete') {
-        e.preventDefault();
-        store.deleteSelection();
-    }
+		const nextItem = items[nextIdx];
+		if (nextItem) {
+			store.selectItem(nextItem.id);
+		}
+		return;
+	}
 
-    if (e.key === 'Backspace') {
-        // Go to parent directory
-        const parts = store.currentPath.split('/').filter(Boolean);
-        if (parts.length > 0) {
-            parts.pop();
-            const parent = '/' + parts.join('/');
-            store.openSection(parent || '/');
-        }
-    }
+	// Actions
+	if (e.key === 'Enter') {
+		e.preventDefault();
+		if (selected) openItem(selected);
+	}
 
-    // Ctrl Shortcuts
-    if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'c') {
-            e.preventDefault();
-            if (selected) {
-                store.setClipboard([selected.id], 'copy');
-                toast.info('Copied to clipboard');
-            }
-        }
-        if (e.key === 'x') {
-            e.preventDefault();
-            if (selected) {
-                store.setClipboard([selected.id], 'cut');
-                toast.info('Cut to clipboard');
-            }
-        }
-        if (e.key === 'v') {
-            e.preventDefault();
-            store.paste().then(() => toast.success('Pasted'));
-        }
-        if (e.key === 'a') {
-            e.preventDefault();
-            // Select all could be implemented here
-        }
-    }
+	if (e.key === 'F2') {
+		e.preventDefault();
+		if (selected) openRenameDialog(selected.id);
+	}
+
+	if (e.key === 'Delete') {
+		e.preventDefault();
+		store.deleteSelection();
+	}
+
+	if (e.key === 'Backspace') {
+		// Go to parent directory
+		const parts = store.currentPath.split('/').filter(Boolean);
+		if (parts.length > 0) {
+			parts.pop();
+			const parent = '/' + parts.join('/');
+			store.openSection(parent || '/');
+		}
+	}
+
+	// Ctrl Shortcuts
+	if (e.ctrlKey || e.metaKey) {
+		if (e.key === 'c') {
+			e.preventDefault();
+			if (selected) {
+				store.setClipboard([selected.id], 'copy');
+				toast.info('Copied to clipboard');
+			}
+		}
+		if (e.key === 'x') {
+			e.preventDefault();
+			if (selected) {
+				store.setClipboard([selected.id], 'cut');
+				toast.info('Cut to clipboard');
+			}
+		}
+		if (e.key === 'v') {
+			e.preventDefault();
+			store.paste().then(() => toast.success('Pasted'));
+		}
+		if (e.key === 'a') {
+			e.preventDefault();
+			// Select all could be implemented here
+		}
+	}
 }
 
 import { onMounted, onUnmounted } from 'vue';
 onMounted(() => {
-    window.addEventListener('keydown', handleKeydown);
+	window.addEventListener('keydown', handleKeydown);
 });
 onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown);
+	window.removeEventListener('keydown', handleKeydown);
 });
 </script>
 
@@ -253,10 +255,11 @@ onUnmounted(() => {
 				@contextmenu="(e) => openContextMenu(e, entry.id)"
 			)
 				.LFM-grid-item-icon
+					// FolderIcon component expects size as a number, not a string
 					FolderIcon(
 						v-if="isFolder(entry)"
-						:accent="entry.accent"
-						size="lg"
+						:size="164"
+						class="text-amber-500"
 					)
 					img.LFM-media-thumbnail(
 						v-else-if="entry.preview"

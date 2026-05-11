@@ -144,7 +144,7 @@ const commandActions = computed(() => [
 const menuItems = computed(() => {
     if (!props.filePath) {
         return [
-            { icon: IconAdd, label: 'New Folder', action: () => { store.createFolder(); close(); } },
+            { icon: IconAdd, label: 'New Directory', action: () => { store.createDirectory(); close(); } },
             { icon: IconPaste, label: 'Paste', action: handlePaste, disabled: !store.clipboard.paths.length },
             { divider: true },
             { icon: IconTerminal, label: 'Open in Terminal', action: handleOpenTerminal },
@@ -161,7 +161,7 @@ const menuItems = computed(() => {
         { icon: IconPaste, label: 'Paste', action: handlePaste, disabled: !store.clipboard.paths.length },
         { divider: true },
         { icon: IconLink, label: 'Copy Item Path', action: handleCopyPath },
-        { icon: IconFolder, label: 'Create Folder from Selection', action: () => close() },
+        { icon: IconFolder, label: 'Create Directory from Selection', action: () => close() },
         { icon: IconShortcut, label: 'Create Shortcut', action: () => close() },
         { icon: IconPushPin, label: 'Pin to Sidebar', action: () => { store.togglePinnedForSelection(); close(); } },
         { divider: true },

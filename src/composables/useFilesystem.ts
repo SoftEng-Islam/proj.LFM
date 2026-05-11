@@ -3,10 +3,15 @@
  * to the Vue UI layer.
  *
  * Responsibilities:
- *  - Map Rust `FileMetaData` → `FileEntry` (UI model)
- *  - Resolve Linux section IDs to real filesystem paths
- *  - Wrap every Tauri command with error handling
- *  - Provide reactive loading / error state
+ *  - Reactive loading / error state
+ *  - Directory and trash loading (delegates mapping to `@/services/mappers`)
+ *  - File operations (delete, rename, create, restore)
+ *  - Shell integration (terminal, VS Code)
+ *  - Search
+ *
+ * Data mapping:  @/services/mappers
+ * Formatting:    @/utils/format
+ * Path helpers:  getHomeDir, getSectionPath (exported below)
  */
 
 import { ref } from 'vue';
@@ -28,97 +33,29 @@ import {
 	restoreTrash,
 	searchInDir,
 } from '@/services/tauri-bridge';
-import type {
-	DriveInformation,
-	FileMetaData,
-	TrashMetaData,
-} from '@/services/tauri-bridge';
-import type {
-	AccentTone,
-	DriveCard,
-	FileEntry,
-	FileStatus,
-	SectionId,
-} from '@/types/file-manager';
+import { mapDriveInfoToCard, mapFileMetaToEntry, mapTrashMetaToEntry } from '@/services/mappers';
+import type { AccentTone, DriveCard, FileEntry, SectionId } from '@/types/file-manager';
 
-// ─── Size formatter ───────────────────────────────────────────────────────────
-
-export function formatBytes(bytes: number): string {
-	if (bytes === 0) return '0 B';
-	const k = 1024;
-	const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-	const i = Math.floor(Math.log(bytes) / Math.log(k));
-	const val = bytes / Math.pow(k, i);
-	return `${val.toFixed(val < 10 ? 1 : 0)} ${sizes[i]}`;
-}
-
-// ─── Category inference ───────────────────────────────────────────────────────
-
-type FileCategory = FileEntry['category'];
+// ─── Home directory resolution ────────────────────────────────────────────────
 
 /**
- * Infer a `FileEntry` category from the Rust `file_type` string.
- * `file_type` is either a human-readable label like "Image", "Audio", "Video",
- * or a specific extension-derived label like "Rust Source File".
+ * Detect the user's home directory.
+ *
+ * In a Tauri context on Linux, the home dir is resolved at startup via
+ * `initHomeDirFromStorage`. Until that resolves, this returns a safe fallback.
  */
-export function inferCategory(fileType: string, isDir: boolean): FileCategory {
-	if (isDir) return 'folder';
-
-	const t = fileType.toLowerCase();
-
-	if (t === 'image' || t.includes('image') || t.includes('photo') || t.includes('bitmap') || t.includes('svg') || t.includes('png') || t.includes('jpg') || t.includes('jpeg') || t.includes('gif') || t.includes('webp') || t.includes('tiff')) return 'image';
-	if (t === 'audio' || t.includes('audio') || t.includes('music') || t.includes('sound') || t.includes('mp3') || t.includes('flac') || t.includes('ogg') || t.includes('wav')) return 'audio';
-	if (t === 'video' || t.includes('video') || t.includes('movie') || t.includes('film') || t.includes('mp4') || t.includes('mkv') || t.includes('avi') || t.includes('webm')) return 'video';
-	if (t === 'pdf' || t.includes('pdf')) return 'pdf';
-	if (t.includes('spreadsheet') || t.includes('excel') || t.includes('csv') || t.includes('ods') || t.includes('xls')) return 'spreadsheet';
-	if (t.includes('archive') || t.includes('zip') || t.includes('tar') || t.includes('gz') || t.includes('bz2') || t.includes('7z') || t.includes('rar') || t.includes('compress')) return 'archive';
-	if (
-		t.includes('source') ||
-		t.includes('script') ||
-		t.includes('code') ||
-		t.includes('rust') ||
-		t.includes('python') ||
-		t.includes('javascript') ||
-		t.includes('typescript') ||
-		t.includes('json') ||
-		t.includes('toml') ||
-		t.includes('yaml') ||
-		t.includes('html') ||
-		t.includes('css') ||
-		t.includes('shell') ||
-		t.includes('bash') ||
-		t.includes('sh file') ||
-		t.includes('c file') ||
-		t.includes('c++ file') ||
-		t.includes('go file') ||
-		t.includes('java file') ||
-		t.includes('kotlin') ||
-		t.includes('swift')
-	) return 'code';
-
-	// Default everything else (text, doc, etc.) to "document"
-	return 'document';
+export function getHomeDir(): string {
+	if (typeof window !== 'undefined') {
+		const injected = (window as { __LFM_HOME__?: string }).__LFM_HOME__;
+		if (injected) return injected;
+	}
+	// Overridden at startup by initHomeDirFromStorage()
+	return '/root';
 }
-
-// ─── SystemTime → Date ────────────────────────────────────────────────────────
-
-interface SystemTime {
-	secs_since_epoch: number;
-	nanos_since_epoch: number;
-}
-
-function systemTimeToDate(st: SystemTime): Date {
-	return new Date(st.secs_since_epoch * 1000 + Math.floor(st.nanos_since_epoch / 1_000_000));
-}
-
-// ─── Linux section → filesystem path ─────────────────────────────────────────
 
 /**
  * Resolve a virtual section ID to the canonical Linux filesystem path.
- * Falls back to $HOME when `HOME` is not set (should never happen in practice).
- *
- * These paths follow the XDG Base Directory Specification defaults:
- *   https://specifications.freedesktop.org/basedir-spec/latest/
+ * Follows the XDG Base Directory Specification defaults.
  */
 export function getSectionPath(sectionId: SectionId): string {
 	const home = getHomeDir();
@@ -136,234 +73,35 @@ export function getSectionPath(sectionId: SectionId): string {
 }
 
 /**
- * Detect the user's home directory.
- * In a Tauri context on Linux, `HOME` is always set; we keep the fallback
- * as a safety net.
+ * Derive $HOME from the Tauri storage path and cache it in `window.__LFM_HOME__`.
+ * Call once at app startup.
  */
-export function getHomeDir(): string {
-	// Tauri exposes env vars through the window.__TAURI__ context — but for
-	// path resolution we rely on CLI args or a well-known fallback.
-	// The proper solution is to call tauri-plugin-os or store the home path;
-	// for now we derive it from the typical Linux convention.
-	if (typeof window !== 'undefined') {
-		// If the app injected the home dir (e.g. via cli args initialisation),
-		// use it. Otherwise fall back to /home/<username> using a heuristic.
-		const injected = (window as any).__LFM_HOME__ as string | undefined;
-		if (injected) return injected;
-	}
-	// Safest cross-browser default when running inside a Tauri webview on Linux.
-	return '/root'; // overridden at startup by initHomeDir()
-}
+export async function initHomeDirFromStorage(): Promise<string> {
+	const cached = (window as { __LFM_HOME__?: string }).__LFM_HOME__;
+	if (cached && cached !== '/root') return cached;
 
-/** Call this once at app startup to resolve the real $HOME from the CLI args. */
-export async function initHomeDir(): Promise<void> {
-	try {
-		const { getCliArgs } = await import('@/services/tauri-bridge');
-		const args = await getCliArgs();
-		if (args.dirs.length > 0 && args.dirs[0]) {
-			// If the user launched with a dir, record that; home is still ~
-		}
-		// Use the os plugin to get the home directory if available.
-		// Tauri v2: @tauri-apps/plugin-os exposes homeDir via the OS plugin.
-		// We import it lazily so non-Tauri builds still work.
-		const os = await import('@tauri-apps/plugin-os');
-		// plugin-os v2 does not expose homeDir directly; use path resolution via
-		// the fact that data_local_dir on Linux is ~/.local/share.
-		// We parse it backwards: strip /.local/share to get $HOME.
-		// Alternatively we can fall back to /home/$USER.
-		// For robustness, store home in a global after parsing storage path.
-		void os; // imported but path-plugin not available; use heuristic below.
-	} catch {
-		// Running in browser dev mode — leave as default.
-	}
-
-	// Heuristic: on Linux the storage dir is ~/.local/share/Files
-	// We can call read_data to find a key and parse the path from an error,
-	// but that's fragile. Instead we expose a Tauri command equivalent:
-	// read_data always writes to data_local_dir() / "Files" / key.
-	// data_local_dir on Linux = ~/.local/share  →  HOME = that minus /.local/share
-	try {
-		const { readData } = await import('@/services/tauri-bridge');
-		const probe = await readData('__home_probe__');
-		// The error message when the file doesn't exist contains the path, which
-		// lets us infer home. This is too brittle — skip it and use the
-		// /proc/self/environ approach below instead.
-		void probe;
-	} catch {
-		// ignore
-	}
-
-	// Best effort: read /proc/self/environ (Linux only)
+	// Best effort: read /proc/self/environ (Linux-only, works in Tauri dev mode)
 	try {
 		const resp = await fetch('/proc/self/environ');
 		if (resp.ok) {
 			const text = await resp.text();
-			const envVars = text.split('\0');
-			const homeVar = envVars.find((v) => v.startsWith('HOME='));
+			const homeVar = text.split('\0').find((v) => v.startsWith('HOME='));
 			if (homeVar) {
 				const homeVal = homeVar.slice(5);
 				if (homeVal) {
-					(window as any).__LFM_HOME__ = homeVal;
+					(window as { __LFM_HOME__?: string }).__LFM_HOME__ = homeVal;
+					return homeVal;
 				}
 			}
 		}
 	} catch {
-		// Fetch to /proc fails in production Tauri (custom protocol) — that's fine.
-		// The home dir will be set by initHomeDirFromStorage() below.
-	}
-}
-
-/**
- * Derive $HOME from the Tauri storage path.
- *
- * On Linux, dirs::data_local_dir() returns ~/.local/share, so every storage
- * path starts with `<home>/.local/share/Files/...`.
- * We write a sentinel key and read back the error message to extract the base path.
- *
- * This is called once at startup and caches the result in window.__LFM_HOME__.
- */
-export async function initHomeDirFromStorage(): Promise<string> {
-	// If already resolved, return it.
-	const cached = (window as any).__LFM_HOME__ as string | undefined;
-	if (cached && cached !== '/root') return cached;
-
-	try {
-		const { writeData, readData } = await import('@/services/tauri-bridge');
-		// Write a sentinel value so the path exists.
-		await writeData('__lfm_home_sentinel__', { ts: Date.now() });
-		const result = await readData('__lfm_home_sentinel__');
-		if (result.status) {
-			// We know the file is at ~/.local/share/Files/__lfm_home_sentinel__
-			// We can't get the absolute path from just the data though.
-			// Fall through to a better heuristic.
-			void result;
-		}
-	} catch {
-		// ignore
+		// Fetch to /proc fails in production Tauri (custom protocol) — expected.
 	}
 
-	// Final fallback: use the current user from the process environment.
-	// In a real Tauri app the home dir should be exposed via tauri-plugin-os
-	// or passed as a CLI arg. For now we default to /home/<user> or /root.
 	return '/root';
 }
 
-// ─── Data mappers ─────────────────────────────────────────────────────────────
-
-/**
- * Convert a Rust `FileMetaData` struct (via Tauri JSON) to the UI `FileEntry`
- * model used throughout the Vue frontend.
- */
-export function mapFileMetaToEntry(meta: FileMetaData, accent: AccentTone = 'sky'): FileEntry {
-	const category = inferCategory(meta.file_type, meta.is_dir);
-	const modifiedAt = systemTimeToDate(meta.last_modified).toISOString();
-
-	const locationParts = meta.file_path.split('/').filter(Boolean);
-
-	let sizeLabel: string;
-	if (meta.is_dir) {
-		sizeLabel = '—';
-	} else {
-		sizeLabel = formatBytes(meta.size);
-	}
-
-	const tags: string[] = [];
-	if (meta.is_hidden) tags.push('hidden');
-	if (meta.readonly) tags.push('read-only');
-
-	const status: FileStatus = 'local';
-
-	return {
-		// Use the full file_path as the unique identifier so we can always
-		// resolve back to the real filesystem path.
-		id: meta.file_path,
-		name: meta.basename,
-		kind: meta.is_dir ? 'folder' : 'file',
-		category,
-		typeLabel: meta.file_type || (meta.is_dir ? 'Folder' : 'File'),
-		sizeLabel,
-		sortSize: meta.size,
-		modifiedAt,
-		preview: buildPreview(meta),
-		status,
-		accent,
-		locationPath: locationParts,
-		tags,
-		collaborators: [],
-		pinned: false,
-	};
-}
-
-/**
- * Convert a `TrashMetaData` struct to a `FileEntry` for display in the Trash
- * section. The `id` is the trash item path so restore/purge commands work.
- */
-export function mapTrashMetaToEntry(meta: TrashMetaData, accent: AccentTone = 'slate'): FileEntry {
-	const category = inferCategory(meta.file_type, meta.is_dir);
-	const deletedAt = new Date(meta.time_deleted * 1000).toISOString();
-
-	return {
-		id: meta.file_path,
-		name: meta.basename,
-		kind: meta.is_dir ? 'folder' : 'file',
-		category,
-		typeLabel: meta.file_type || (meta.is_dir ? 'Folder' : 'File'),
-		sizeLabel: meta.is_dir ? '—' : formatBytes(meta.size),
-		sortSize: meta.size,
-		modifiedAt: deletedAt,
-		preview: `Originally in ${meta.original_parent}`,
-		status: 'local',
-		accent,
-		locationPath: [meta.original_parent, meta.basename],
-		tags: ['trash'],
-		collaborators: [],
-		pinned: false,
-	};
-}
-
-function buildPreview(meta: FileMetaData): string {
-	const parts: string[] = [];
-	if (meta.is_dir) {
-		parts.push('Folder');
-	} else {
-		parts.push(meta.file_type || 'File');
-	}
-	if (!meta.is_dir && meta.size > 0) {
-		parts.push(`· ${formatBytes(meta.size)}`);
-	}
-	if (meta.is_hidden) parts.push('· hidden');
-	if (meta.readonly) parts.push('· read-only');
-	return parts.join(' ');
-}
-
-/**
- * Convert a Tauri `DriveInformation` struct to the UI `DriveCard` model.
- */
-export function mapDriveInfoToCard(drive: DriveInformation, index: number): DriveCard {
-	const accents: AccentTone[] = ['sky', 'emerald', 'violet', 'amber', 'rose', 'cyan', 'slate'];
-	const accent = accents[index % accents.length] ?? 'sky';
-
-	const usedBytes = drive.total_space - drive.available_space;
-	const usedPercent =
-		drive.total_space > 0 ? Math.round((usedBytes / drive.total_space) * 100) : 0;
-
-	return {
-		id: drive.mount_point,
-		label: drive.name || drive.mount_point,
-		usedLabel: `${formatBytes(usedBytes)} used`,
-		freeLabel: `${formatBytes(drive.available_space)} free`,
-		usedPercent,
-		accent,
-	};
-}
-
 // ─── Composable ───────────────────────────────────────────────────────────────
-
-export interface FilesystemState {
-	entries: FileEntry[];
-	isLoading: boolean;
-	error: string | null;
-}
 
 export function useFilesystem() {
 	const isLoading = ref(false);
@@ -373,21 +111,15 @@ export function useFilesystem() {
 
 	/**
 	 * Load all entries for a given section.
-	 * - For "trash" the Tauri trash API is used.
-	 * - For every other section, `read_directory` is used with the mapped path.
+	 * - For "trash": uses the Tauri trash API.
+	 * - For all others: uses `read_directory` with the mapped path.
 	 */
-	async function loadSection(
-		sectionId: SectionId,
-		accent: AccentTone = 'sky',
-	): Promise<FileEntry[]> {
+	async function loadSection(sectionId: SectionId, accent: AccentTone = 'sky'): Promise<FileEntry[]> {
 		isLoading.value = true;
 		error.value = null;
 
 		try {
-			if (sectionId === 'trash') {
-				return await loadTrash(accent);
-			}
-
+			if (sectionId === 'trash') return await loadTrash(accent);
 			const path = getSectionPath(sectionId);
 			return await loadDirectory(path, accent);
 		} catch (err) {
@@ -400,10 +132,7 @@ export function useFilesystem() {
 		}
 	}
 
-	/**
-	 * Load entries for an arbitrary filesystem path.
-	 * Used when navigating into sub-directories.
-	 */
+	/** Load entries for an arbitrary filesystem path. */
 	async function loadDirectory(path: string, accent: AccentTone = 'sky'): Promise<FileEntry[]> {
 		isLoading.value = true;
 		error.value = null;
@@ -447,7 +176,7 @@ export function useFilesystem() {
 
 	// ── File operations ─────────────────────────────────────────────────────
 
-	/** Open a file or folder with the system default application. */
+	/** Open a file with the system default application. */
 	async function openFile(filePath: string): Promise<boolean> {
 		try {
 			return await tauriOpenFile(filePath);
@@ -457,10 +186,7 @@ export function useFilesystem() {
 		}
 	}
 
-	/**
-	 * Move one or more paths to the trash.
-	 * Returns true if all paths were moved successfully.
-	 */
+	/** Move one or more paths to the trash. */
 	async function trashFiles(filePaths: string[]): Promise<boolean> {
 		if (filePaths.length === 0) return true;
 		try {
@@ -493,7 +219,7 @@ export function useFilesystem() {
 
 	/**
 	 * Rename a file or directory.
-	 * `newPath` should be the full absolute path including the new name.
+	 * `newPath` must be the full absolute path including the new name.
 	 */
 	async function renameEntry(oldPath: string, newPath: string): Promise<boolean> {
 		try {
@@ -504,12 +230,12 @@ export function useFilesystem() {
 		}
 	}
 
-	/** Create a new empty directory (and all parents). */
-	async function createFolder(dirPath: string): Promise<boolean> {
+	/** Create a new directory (and all parents). */
+	async function createDirectory(dirPath: string): Promise<boolean> {
 		try {
 			return await createDirRecursive(dirPath);
 		} catch (err) {
-			console.error('[useFilesystem] createFolder() failed:', err);
+			console.error('[useFilesystem] createDirectory() failed:', err);
 			return false;
 		}
 	}
@@ -541,10 +267,7 @@ export function useFilesystem() {
 		}
 	}
 
-	/**
-	 * Permanently delete specific items from the system trash.
-	 * Pass the trash item paths (the `id` fields of `FileEntry` in the trash section).
-	 */
+	/** Permanently delete specific items from the system trash. */
 	async function purgeTrashItems(paths: string[]): Promise<boolean> {
 		try {
 			return await purgeTrashes(paths);
@@ -557,9 +280,9 @@ export function useFilesystem() {
 	// ── Shell integration ───────────────────────────────────────────────────
 
 	/** Open a terminal emulator in the given directory. */
-	async function openInTerminal(folderPath: string): Promise<void> {
+	async function openInTerminal(dirPath: string): Promise<void> {
 		try {
-			await tauriOpenInTerminal(folderPath);
+			await tauriOpenInTerminal(dirPath);
 		} catch (err) {
 			console.error('[useFilesystem] openInTerminal() failed:', err);
 		}
@@ -580,13 +303,10 @@ export function useFilesystem() {
 	 * Search for files matching a glob pattern inside a directory.
 	 * Partial results are emitted via the `search_partial_result` Tauri event.
 	 */
-	async function search(
-		dirPath: string,
-		pattern: string,
-		accent: AccentTone = 'sky',
-	): Promise<FileEntry[]> {
+	async function search(dirPath: string, pattern: string, accent: AccentTone = 'sky'): Promise<FileEntry[]> {
 		isLoading.value = true;
 		error.value = null;
+
 		try {
 			const results = await searchInDir(dirPath, pattern);
 			return results.map((meta) => mapFileMetaToEntry(meta, accent));
@@ -601,34 +321,34 @@ export function useFilesystem() {
 	}
 
 	return {
-		// state
+		// State
 		isLoading,
 		error,
 
-		// data loading
+		// Data loading
 		loadSection,
 		loadDirectory,
 		loadTrash,
 		loadDrives,
 
-		// file operations
+		// File operations
 		openFile,
 		trashFiles,
 		permanentlyRemoveFile,
 		permanentlyRemoveDir,
 		renameEntry,
-		createFolder,
+		createDirectory,
 
-		// trash operations
+		// Trash operations
 		restoreTrashedFiles,
 		restoreSingleTrash,
 		purgeTrashItems,
 
-		// shell
+		// Shell
 		openInTerminal,
 		openInVscode,
 
-		// search
+		// Search
 		search,
 	};
 }

@@ -2,379 +2,626 @@
 import { computed, ref, watch } from 'vue';
 import { useToast } from 'vue-toastification';
 
-import BaseButton from '@/components/ui/BaseButton.vue';
-import { convertFileSrc, getVideoThumbnail } from '@/services/tauri-bridge';
+// Material Symbols Icons
+import IconDescription from '~icons/material-symbols/description';
+import IconPlayArrow from '~icons/material-symbols/play-arrow';
+import IconOpenInNew from '~icons/material-symbols/open-in-new';
+import IconTerminal from '~icons/material-symbols/terminal';
+import IconContentCopy from '~icons/material-symbols/content-copy';
+import IconEdit from '~icons/material-symbols/edit';
+import IconPushPin from '~icons/material-symbols/push-pin';
+import IconCheck from '~icons/material-symbols/check';
+import IconClose from '~icons/material-symbols/close';
+import IconInfo from '~icons/material-symbols/info-outline';
+import IconHistory from '~icons/material-symbols/history';
+import IconLabel from '~icons/material-symbols/label-outline';
+import IconChevronRight from '~icons/material-symbols/chevron-right';
+
 import { useFileManagerStore } from '@/stores/file-manager';
-import type { FileEntry } from '@/types/file-manager';
 import type { AccentTone, FileStatus } from '@/types/file-manager';
 
+// Accent theme mapping for file type colors - Now more layered and premium
 const accentThemeMap: Record<
-    AccentTone,
-    {
-        chip: string;
-        bar: string;
-        surface: string;
-        ring: string;
-        glow: string;
-    }
+	AccentTone,
+	{
+		chip: string;
+		bar: string;
+		surface: string;
+		ring: string;
+		glow: string;
+		text: string;
+	}
 > = {
-    sky: {
-        chip: 'bg-sky-500/12 text-sky-700 dark:bg-sky-400/12 dark:text-sky-200',
-        bar: 'bg-sky-500',
-        surface: 'from-sky-500/12 via-sky-500/3 to-transparent',
-        ring: 'ring-sky-300/50',
-        glow: 'shadow-[0_18px_34px_rgba(14,165,233,0.18)]',
-    },
-    emerald: {
-        chip: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-400/12 dark:text-emerald-200',
-        bar: 'bg-emerald-500',
-        surface: 'from-emerald-500/12 via-emerald-500/3 to-transparent',
-        ring: 'ring-emerald-300/50',
-        glow: 'shadow-[0_18px_34px_rgba(16,185,129,0.18)]',
-    },
-    amber: {
-        chip: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/12 dark:text-amber-200',
-        bar: 'bg-amber-500',
-        surface: 'from-amber-500/12 via-amber-500/3 to-transparent',
-        ring: 'ring-amber-300/50',
-        glow: 'shadow-[0_18px_34px_rgba(245,158,11,0.18)]',
-    },
-    violet: {
-        chip: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/12 dark:text-violet-200',
-        bar: 'bg-violet-500',
-        surface: 'from-violet-500/12 via-violet-500/3 to-transparent',
-        ring: 'ring-violet-300/50',
-        glow: 'shadow-[0_18px_34px_rgba(139,92,246,0.18)]',
-    },
-    rose: {
-        chip: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/12 dark:text-rose-200',
-        bar: 'bg-rose-500',
-        surface: 'from-rose-500/12 via-rose-500/3 to-transparent',
-        ring: 'ring-rose-300/50',
-        glow: 'shadow-[0_18px_34px_rgba(244,63,94,0.18)]',
-    },
-    cyan: {
-        chip: 'bg-cyan-500/12 text-cyan-700 dark:bg-cyan-400/12 dark:text-cyan-200',
-        bar: 'bg-cyan-500',
-        surface: 'from-cyan-500/12 via-cyan-500/3 to-transparent',
-        ring: 'ring-cyan-300/50',
-        glow: 'shadow-[0_18px_34px_rgba(6,182,212,0.18)]',
-    },
-    slate: {
-        chip: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/12 dark:text-slate-200',
-        bar: 'bg-slate-500',
-        surface: 'from-slate-500/12 via-slate-500/3 to-transparent',
-        ring: 'ring-slate-300/50',
-        glow: 'shadow-[0_18px_34px_rgba(100,116,139,0.18)]',
-    },
+	sky: {
+		chip: 'bg-sky-500/12 text-sky-700 dark:bg-sky-400/12 dark:text-sky-200',
+		bar: 'bg-sky-500',
+		surface: 'from-sky-500/15 via-sky-500/5 to-transparent',
+		ring: 'ring-sky-500/30',
+		glow: 'shadow-[0_0_40px_-10px_rgba(14,165,233,0.3)]',
+		text: 'text-sky-600 dark:text-sky-400'
+	},
+	emerald: {
+		chip: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-400/12 dark:text-emerald-200',
+		bar: 'bg-emerald-500',
+		surface: 'from-emerald-500/15 via-emerald-500/5 to-transparent',
+		ring: 'ring-emerald-500/30',
+		glow: 'shadow-[0_0_40px_-10px_rgba(16,185,129,0.3)]',
+		text: 'text-emerald-600 dark:text-emerald-400'
+	},
+	amber: {
+		chip: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/12 dark:text-amber-200',
+		bar: 'bg-amber-500',
+		surface: 'from-amber-500/15 via-amber-500/5 to-transparent',
+		ring: 'ring-amber-300/50',
+		glow: 'shadow-[0_0_40px_-10px_rgba(245,158,11,0.3)]',
+		text: 'text-amber-600 dark:text-amber-400'
+	},
+	violet: {
+		chip: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/12 dark:text-violet-200',
+		bar: 'bg-violet-500',
+		surface: 'from-violet-500/15 via-violet-500/5 to-transparent',
+		ring: 'ring-violet-500/30',
+		glow: 'shadow-[0_0_40px_-10px_rgba(139,92,246,0.3)]',
+		text: 'text-violet-600 dark:text-violet-400'
+	},
+	rose: {
+		chip: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/12 dark:text-rose-200',
+		bar: 'bg-rose-500',
+		surface: 'from-rose-500/15 via-rose-500/5 to-transparent',
+		ring: 'ring-rose-500/30',
+		glow: 'shadow-[0_0_40px_-10px_rgba(244,63,94,0.3)]',
+		text: 'text-rose-600 dark:text-rose-400'
+	},
+	cyan: {
+		chip: 'bg-cyan-500/12 text-cyan-700 dark:bg-cyan-400/12 dark:text-cyan-200',
+		bar: 'bg-cyan-500',
+		surface: 'from-cyan-500/15 via-cyan-500/5 to-transparent',
+		ring: 'ring-cyan-500/30',
+		glow: 'shadow-[0_0_40px_-10px_rgba(6,182,212,0.3)]',
+		text: 'text-cyan-600 dark:text-cyan-400'
+	},
+	slate: {
+		chip: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/12 dark:text-slate-200',
+		bar: 'bg-slate-500',
+		surface: 'from-slate-500/15 via-slate-500/5 to-transparent',
+		ring: 'ring-slate-500/30',
+		glow: 'shadow-[0_0_40px_-10px_rgba(100,116,139,0.3)]',
+		text: 'text-slate-600 dark:text-slate-400'
+	}
 };
 
 const statusToneMap: Record<FileStatus, string> = {
-    synced: 'bg-emerald-500/12 text-emerald-700 dark:bg-emerald-400/12 dark:text-emerald-200',
-    shared: 'bg-cyan-500/12 text-cyan-700 dark:bg-cyan-400/12 dark:text-cyan-200',
-    draft: 'bg-amber-500/12 text-amber-700 dark:bg-amber-400/12 dark:text-amber-200',
-    favorite: 'bg-rose-500/12 text-rose-700 dark:bg-rose-400/12 dark:text-rose-200',
-    local: 'bg-slate-500/12 text-slate-700 dark:bg-slate-400/12 dark:text-slate-200',
-    recent: 'bg-violet-500/12 text-violet-700 dark:bg-violet-400/12 dark:text-violet-200',
+	synced: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+	shared: 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/20',
+	draft: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
+	favorite: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/20',
+	local: 'bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/20',
+	recent: 'bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/20'
 };
 
 const categorySymbolMap: Record<string, string> = {
-    folder: 'F',
-    document: 'D',
-    spreadsheet: 'X',
-    image: 'P',
-    video: 'V',
-    archive: 'Z',
-    code: '</>',
-    pdf: 'PDF',
-    audio: 'A',
+	folder: '📁', document: '📄', spreadsheet: '📊', image: '🖼', video: '🎬', archive: '📦', code: '💻', pdf: '📕', audio: '🎵', default: '📄'
+};
+
+const codeExtensionIcons: Record<string, string> = {
+	js: 'JS', ts: 'TS', py: 'PY', rs: 'RS', go: 'GO', java: 'JAVA', cpp: 'CPP', c: 'C', css: 'CSS', html: 'HTML', json: '{}', xml: '<>', yaml: 'YML', md: 'MD', sh: 'SH'
 };
 
 const store = useFileManagerStore();
 const toast = useToast();
 
 const selectedItem = computed(() => store.selectedItem);
-
 const isImage = computed(() => selectedItem.value?.category === 'image');
 const isVideo = computed(() => selectedItem.value?.category === 'video');
+const isCode = computed(() => selectedItem.value?.category === 'code');
 const isPreviewable = computed(() => !!selectedItem.value?.preview);
-
 const previewSrc = computed(() => selectedItem.value?.preview || '');
 const imageError = ref(false);
 
+const isEditingName = ref(false);
+const editedName = ref('');
+const expandedSections = ref<Record<string, boolean>>({ info: true, dates: false, tags: false });
+
 watch(selectedItem, () => {
-    imageError.value = false;
+	imageError.value = false;
+	isEditingName.value = false;
 });
 
 const formatDate = (dateStr: string) => {
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
-        hour: 'numeric', minute: '2-digit'
-    }).format(new Date(dateStr));
+	if (!dateStr) return '-';
+	return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(dateStr));
 };
 
-function handleOpen() {
-    if (selectedItem.value) store.openItem(selectedItem.value.id);
-}
+const formatSize = (bytes: number) => {
+	if (!bytes) return '0 B';
+	const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+	let i = 0;
+	while (bytes >= 1024 && i < units.length - 1) { bytes /= 1024; i++; }
+	return `${bytes.toFixed(1)} ${units[i]}`;
+};
 
-function copyPath() {
-    if (selectedItem.value) {
-        navigator.clipboard.writeText(selectedItem.value.id);
-        toast.success('Path copied');
-    }
-}
+const getCodeIcon = (filename: string) => {
+	const ext = filename.split('.').pop()?.toLowerCase() || '';
+	return codeExtensionIcons[ext] || ext.toUpperCase();
+};
 
-function pinSelection() {
-    if (selectedItem.value) {
-        store.togglePinnedForSelection();
-        toast.success('Pinned status updated');
-    }
-}
+const toggleSection = (id: string) => { expandedSections.value[id] = !expandedSections.value[id]; };
 
-console.log('PreviewPane setup, selectedItem:', selectedItem.value?.name);
-
-watch(selectedItem, (newVal) => {
-    console.log('PreviewPane: selectedItem changed to', newVal?.name);
-});
+// Action handlers
+function handleOpen() { if (selectedItem.value) store.openItem(selectedItem.value.id); }
+function copyPath() { if (selectedItem.value) { navigator.clipboard.writeText(selectedItem.value.id); toast.success('Path copied'); } }
+function copyName() { if (selectedItem.value) { navigator.clipboard.writeText(selectedItem.value.name); toast.success('Name copied'); } }
+function openInTerminal() { if (selectedItem.value) { store.openInTerminal(selectedItem.value.id); toast.success('Terminal opened'); } }
+function pinSelection() { if (selectedItem.value) { store.togglePinnedForSelection(); toast.success(store.isPinned(selectedItem.value.id) ? 'Pinned' : 'Unpinned'); } }
+function startEditingName() { if (selectedItem.value) { editedName.value = selectedItem.value.name; isEditingName.value = true; } }
+function saveName() { if (selectedItem.value && editedName.value.trim()) { toast.success('Renamed'); isEditingName.value = false; } }
 </script>
 
-<template>
-<aside class="LFM-preview-pane">
-    <div v-if="!selectedItem" class="h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center">
-        <div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mb-4 text-slate-300">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                <polyline points="13 2 13 9 20 9" />
-            </svg>
-        </div>
-        <h3 class="text-sm font-semibold text-slate-600 dark:text-slate-300">No item selected</h3>
-        <p class="text-xs mt-2 leading-relaxed">Select a file or folder to view its properties and preview.</p>
-    </div>
+<template lang="pug">
+aside.LFM-preview-pane
+	//- --- Empty State ---
+	transition(name="fade" mode="out-in")
+		.LFM-empty-state(v-if="!selectedItem" key="empty")
+			.LFM-empty-visual
+				.LFM-empty-glow
+				IconDescription.LFM-empty-icon
+			h3 Select an item
+			p Choose a file or folder to view its properties and preview.
 
-    <div v-else class="flex flex-col h-full">
-        <!-- Debug Header -->
-        <div style="background: #ff000022; padding: 4px; border: 1px solid red; font-size: 10px; margin-bottom: 10px; color: #ff0000;">
-            DEBUG: {{ selectedItem.name }} ({{ selectedItem.category }})
-        </div>
-        
-        <!-- Hero Preview Area -->
-        <div class="LFM-preview-hero">
-            <div v-if="isPreviewable && !imageError" class="LFM-preview-visual">
-                <img v-if="isImage" :src="previewSrc" class="LFM-preview-img" @error="imageError = true" />
-                <div v-else-if="isVideo" class="relative w-full h-full">
-                    <img :src="previewSrc" class="LFM-preview-img opacity-50" @error="imageError = true" />
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <button class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-white/30 transition-all" @click="handleOpen">
-                            <span class="text-white text-2xl ml-1">▶</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div v-else class="LFM-preview-icon-fallback">
-                <div
-                    class="h-24 w-24 rounded-3xl flex items-center justify-center text-3xl font-bold shadow-xl"
-                    :class="accentThemeMap[selectedItem.accent].chip"
-                >
-                    {{ categorySymbolMap[selectedItem.category] || '?' }}
-                </div>
-            </div>
-        </div>
+		//- --- Active Preview Content ---
+		.LFM-preview-content(v-else key="content")
+			//- Hero Area with Dynamic Background - Now Full Width
+			.LFM-hero(:class="accentThemeMap[selectedItem.accent]?.glow")
+				.LFM-hero-bg(:class="accentThemeMap[selectedItem.accent]?.surface")
+				
+				//- Media Preview - Full Width & Height
+				.LFM-preview-frame
+					transition(name="scale-fade" mode="out-in")
+						.LFM-media-wrapper(v-if="isPreviewable && !imageError" :key="previewSrc")
+							img.LFM-preview-image(v-if="isImage" :src="previewSrc" alt="Preview" @error="imageError = true")
+							.LFM-video-container(v-else-if="isVideo")
+								img.LFM-preview-image(:src="previewSrc" alt="Thumbnail")
+								button.LFM-play-overlay(@click="handleOpen")
+									IconPlayArrow(:size="32")
+						
+						.LFM-fallback-wrapper(v-else :key="'fallback-' + selectedItem.id")
+							.LFM-fallback-blob(:class="accentThemeMap[selectedItem.accent]?.ring")
+								span.LFM-fallback-symbol {{ categorySymbolMap[selectedItem.category] || '📄' }}
+								span.LFM-fallback-ext(v-if="isCode") {{ getCodeIcon(selectedItem.name) }}
 
-        <!-- Header Info -->
-        <div class="LFM-preview-header">
-            <div>
-                <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{{ selectedItem.typeLabel }}</p>
-                <h2 class="mt-1 text-lg font-bold text-slate-900 dark:text-white truncate" :title="selectedItem.name">{{ selectedItem.name }}</h2>
-            </div>
-            
-            <span class="LFM-status-badge" :class="statusToneMap[selectedItem.status]">
-                {{ selectedItem.status }}
-            </span>
-        </div>
+				//- Integrated Action Bar
+				.LFM-hero-actions
+					button.LFM-action-pill.LFM-action-pill--primary(@click="handleOpen")
+						IconOpenInNew
+						span Open
+					button.LFM-action-pill(@click="openInTerminal" title="Open in Terminal")
+						IconTerminal.text-emerald-500
+					button.LFM-action-pill(@click="copyPath" title="Copy Path")
+						IconContentCopy.text-sky-500
+					button.LFM-action-pill(@click="pinSelection" :class="{ 'is-active': store.isPinned(selectedItem.id) }" title="Pin")
+						IconPushPin.text-fuchsia-500
 
-        <!-- Main Actions -->
-        <div class="LFM-preview-actions">
-            <BaseButton variant="primary" size="sm" class="flex-1" @click="handleOpen">Open</BaseButton>
-            <BaseButton variant="secondary" size="sm" @click="pinSelection">
-                {{ store.isPinned(selectedItem.id) ? 'Unpin' : 'Pin' }}
-            </BaseButton>
-        </div>
+			//- Identity Card
+			.LFM-id-card
+				.LFM-id-header
+					.LFM-id-titles
+						.LFM-type-badge(:class="accentThemeMap[selectedItem.accent]?.text") {{ selectedItem.typeLabel }}
+						.LFM-name-row(v-if="!isEditingName")
+							h2.LFM-filename(:title="selectedItem.name") {{ selectedItem.name }}
+							button.LFM-edit-trigger(@click="startEditingName")
+								IconEdit
+						.LFM-name-editor(v-else)
+							input.LFM-edit-input(v-model="editedName" autoFocus @keyup.enter="saveName" @keyup.esc="isEditingName = false")
+							button.LFM-edit-btn.LFM-edit-btn--save(@click="saveName")
+								IconCheck
+							button.LFM-edit-btn(@click="isEditingName = false")
+								IconClose
+					.LFM-status-pill(:class="statusToneMap[selectedItem.status]") {{ selectedItem.status }}
 
-        <!-- Metadata Sections -->
-        <div class="LFM-preview-details">
-            <div class="LFM-details-group">
-                <h3>Details</h3>
-                <div class="LFM-details-list">
-                    <div class="LFM-detail-row">
-                        <span>Name</span>
-                        <span class="truncate text-right" :title="selectedItem.name">{{ selectedItem.name }}</span>
-                    </div>
-                    <div class="LFM-detail-row">
-                        <span>Path</span>
-                        <button class="LFM-path-btn" @click="copyPath">
-                            <span class="truncate">{{ selectedItem.id }}</span>
-                            <span class="ml-1 text-[10px] opacity-50">📋</span>
-                        </button>
-                    </div>
-                    <div class="LFM-detail-row">
-                        <span>Created</span>
-                        <span>{{ selectedItem.createdAt ? formatDate(selectedItem.createdAt) : '-' }}</span>
-                    </div>
-                    <div class="LFM-detail-row">
-                        <span>Accessed</span>
-                        <span>{{ selectedItem.accessedAt ? formatDate(selectedItem.accessedAt) : '-' }}</span>
-                    </div>
-                    <div class="LFM-detail-row">
-                        <span>Size</span>
-                        <span>{{ selectedItem.sizeLabel }}</span>
-                    </div>
-                    <div class="LFM-detail-row">
-                        <span>Modified</span>
-                        <span>{{ formatDate(selectedItem.modifiedAt) }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+			//- Smart Properties Accordion
+			.LFM-accordion
+				//- Section: Information
+				.LFM-accordion-item(:class="{ 'is-expanded': expandedSections.info }")
+					button.LFM-accordion-header(@click="toggleSection('info')")
+						IconInfo
+						span Basic Information
+						IconChevronRight.LFM-accordion-arrow
+					.LFM-accordion-body
+						.LFM-prop-row
+							span.LFM-prop-label Size
+							span.LFM-prop-value.font-mono {{ formatSize(selectedItem.sortSize) }}
+						.LFM-prop-row
+							span.LFM-prop-label Type
+							span.LFM-prop-value {{ selectedItem.typeLabel }}
+						.LFM-prop-row
+							span.LFM-prop-label Path
+							button.LFM-prop-link(@click="copyPath") {{ selectedItem.id }}
 
-        <!-- Tags (if any) -->
-        <div v-if="selectedItem.tags?.length" class="LFM-preview-tags">
-            <h3>Tags</h3>
-            <div class="flex flex-wrap gap-1 mt-2">
-                <span v-for="tag in selectedItem.tags" :key="tag" class="LFM-tag">{{ tag }}</span>
-            </div>
-        </div>
-    </div>
-</aside>
+				//- Section: History
+				.LFM-accordion-item(:class="{ 'is-expanded': expandedSections.dates }")
+					button.LFM-accordion-header(@click="toggleSection('dates')")
+						IconHistory
+						span History & Dates
+						IconChevronRight.LFM-accordion-arrow
+					.LFM-accordion-body
+						.LFM-prop-row
+							span.LFM-prop-label Modified
+							span.LFM-prop-value.font-mono {{ formatDate(selectedItem.modifiedAt) }}
+						.LFM-prop-row
+							span.LFM-prop-label Created
+							span.LFM-prop-value.font-mono {{ formatDate(selectedItem.createdAt || '') }}
+
+				//- Section: Tags
+				.LFM-accordion-item(v-if="selectedItem.tags?.length" :class="{ 'is-expanded': expandedSections.tags }")
+					button.LFM-accordion-header(@click="toggleSection('tags')")
+						IconLabel
+						span Tags & Classification
+						IconChevronRight.LFM-accordion-arrow
+					.LFM-accordion-body
+						.LFM-tag-cloud
+							span.LFM-tag-pill(v-for="tag in selectedItem.tags" :key="tag") {{ tag }}
 </template>
 
-<style scoped lang="scss">
-@reference "tailwindcss";
+<style lang="sass" scoped>
+@reference "tailwindcss"
 
-.LFM-preview-pane {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	padding: 20px;
-	overflow-y: auto;
-}
+$lfm-ease: cubic-bezier(0.2, 1, 0.3, 1)
 
-.LFM-preview-hero {
-	width: 100%;
-	aspect-ratio: 16/10;
-	background: var(--LFM-active);
-	border-radius: 20px;
-	overflow: hidden;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	margin-bottom: 20px;
-}
+.LFM-preview-pane
+	display: flex
+	flex-direction: column
+	height: 100%
+	background: var(--LFM-preview-pane-bg)
+	overflow-y: auto
+	overflow-x: hidden
+	padding: 16px
+	gap: 20px
+	scrollbar-gutter: stable
 
-.LFM-preview-visual {
-	width: 100%;
-	height: 100%;
-}
+// --- Empty State ---
+.LFM-empty-state
+	display: flex
+	flex-direction: column
+	align-items: center
+	justify-content: center
+	height: 100%
+	text-align: center
+	padding: 40px 20px
+	color: var(--LFM-text-muted)
 
-.LFM-preview-img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
+	.LFM-empty-visual
+		position: relative
+		width: 100px
+		height: 100px
+		margin-bottom: 24px
+		display: flex
+		align-items: center
+		justify-content: center
 
-.LFM-preview-icon-fallback {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
+	.LFM-empty-glow
+		position: absolute
+		width: 80px
+		height: 80px
+		background: var(--LFM-blue)
+		filter: blur(40px)
+		opacity: 0.15
 
-.LFM-preview-header {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 12px;
-	margin-bottom: 20px;
-}
+	.LFM-empty-icon
+		font-size: 48px
+		opacity: 0.5
+		z-index: 1
 
-.LFM-status-badge {
-	padding: 2px 8px;
-	border-radius: 99px;
-	font-size: 10px;
-	font-weight: 600;
-	text-transform: capitalize;
-}
+	h3
+		font-size: 15px
+		font-weight: 600
+		color: var(--LFM-text)
+		margin: 0 0 8px
 
-.LFM-preview-actions {
-	display: flex;
-	gap: 8px;
-	margin-bottom: 24px;
-}
+	p
+		font-size: 13px
+		max-width: 200px
+		line-height: 1.5
 
-.LFM-preview-details {
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
-}
+// --- Hero Area ---
+.LFM-hero
+	position: relative
+	border-radius: 12px
+	aspect-ratio: 16 / 10
+	overflow: hidden
+	background: #0a0a0a
+	display: flex
+	align-items: center
+	justify-content: center
+	transition: all 400ms $lfm-ease
+	margin: -16px -16px 0
+	width: calc(100% + 32px)
+	border-radius: 0 0 12px 12px
 
-.LFM-details-group {
-	h3 {
-		font-size: 11px;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.1em;
-		color: var(--LFM-text-muted);
-		margin-bottom: 12px;
-	}
-}
+.LFM-hero-bg
+	position: absolute
+	inset: 0
+	background-image: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%)
+	opacity: 0.6
+	z-index: 0
 
-.LFM-details-list {
-	background: var(--LFM-active);
-	border-radius: 16px;
-	padding: 12px;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-}
+.LFM-preview-frame
+	position: relative
+	z-index: 1
+	width: 100%
+	height: 100%
+	display: flex
+	align-items: center
+	justify-content: center
 
-.LFM-detail-row {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	font-size: 12px;
-	gap: 12px;
+.LFM-preview-image
+	width: 100%
+	height: 100%
+	object-fit: cover
+	transition: transform 0.5s $lfm-ease
 
-	span:first-child {
-		color: var(--LFM-text-muted);
-		flex-shrink: 0;
-	}
+	&:hover
+		transform: scale(1.05)
 
-	span:last-child {
-		font-weight: 500;
-	}
-}
+.LFM-video-container
+	position: relative
+	width: 100%
+	height: 100%
+	display: flex
+	align-items: center
+	justify-content: center
 
-.LFM-path-btn {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-	background: transparent;
-	border: none;
-	padding: 0;
-	cursor: pointer;
-	color: inherit;
-	font-size: 11px;
-	max-width: 160px;
-	text-align: right;
+.LFM-play-overlay
+	position: absolute
+	width: 64px
+	height: 64px
+	border-radius: 50%
+	background: rgba(255, 255, 255, 0.1)
+	backdrop-filter: blur(12px)
+	border: 1px solid rgba(255, 255, 255, 0.2)
+	color: white
+	display: flex
+	align-items: center
+	justify-content: center
+	cursor: pointer
+	transition: all 200ms ease
+	z-index: 2
 
-	&:hover {
-		color: var(--LFM-blue);
-	}
-}
+	&:hover
+		transform: scale(1.1)
+		background: rgba(255, 255, 255, 0.2)
 
-.LFM-tag {
-	padding: 2px 8px;
-	background: var(--LFM-active);
-	border-radius: 6px;
-	font-size: 11px;
-	color: var(--LFM-text-muted);
-}
+.LFM-fallback-blob
+	width: 100px
+	height: 100px
+	border-radius: 28px
+	background: rgba(255,255,255,0.03)
+	backdrop-filter: blur(8px)
+	border-width: 1px
+	display: flex
+	flex-direction: column
+	align-items: center
+	justify-content: center
+	gap: 8px
+	transition: all 300ms ease
+
+.LFM-fallback-symbol
+	font-size: 40px
+
+.LFM-fallback-ext
+	font-size: 10px
+	font-weight: 800
+	letter-spacing: 0.1em
+	text-transform: uppercase
+	opacity: 0.6
+
+.LFM-hero-actions
+	position: absolute
+	bottom: 12px
+	left: 12px
+	right: 12px
+	display: flex
+	gap: 6px
+	z-index: 3
+
+.LFM-action-pill
+	display: flex
+	align-items: center
+	gap: 8px
+	height: 36px
+	padding: 0 12px
+	border-radius: 12px
+	background: rgba(0,0,0,0.3)
+	backdrop-filter: blur(16px)
+	border: 1px solid rgba(255,255,255,0.1)
+	color: white
+	font-size: 13px
+	font-weight: 600
+	cursor: pointer
+	transition: all 200ms ease
+
+	&:hover
+		background: rgba(0,0,0,0.5)
+		transform: translateY(-2px)
+
+	&--primary
+		flex: 1
+		background: var(--LFM-blue)
+		border: none
+		justify-content: center
+
+	&.is-active
+		background: var(--LFM-blue)
+		color: white
+		border-color: rgba(255,255,255,0.2)
+
+// --- ID Card ---
+.LFM-id-card
+	padding: 0 8px
+
+.LFM-id-titles
+	display: flex
+	flex-direction: column
+	gap: 4px
+
+.LFM-type-badge
+	font-size: 11px
+	font-weight: 700
+	text-transform: uppercase
+	letter-spacing: 0.08em
+
+.LFM-name-row
+	display: flex
+	align-items: center
+	gap: 12px
+
+.LFM-filename
+	font-size: 18px
+	font-weight: 700
+	margin: 0
+	word-break: break-all
+	line-height: 1.2
+
+.LFM-edit-trigger
+	opacity: 0
+	background: transparent
+	border: none
+	color: var(--LFM-text-muted)
+	cursor: pointer
+	transition: opacity 200ms ease
+
+.LFM-id-card:hover .LFM-edit-trigger
+	opacity: 1
+
+.LFM-status-pill
+	margin-top: 10px
+	display: inline-flex
+	align-self: flex-start
+	padding: 4px 12px
+	border-radius: 20px
+	font-size: 11px
+	font-weight: 600
+	text-transform: capitalize
+	border: 1px solid transparent
+
+// --- Accordion ---
+.LFM-accordion
+	display: flex
+	flex-direction: column
+	gap: 1px
+	background: var(--LFM-border)
+	border-radius: 16px
+	overflow: hidden
+	border: 1px solid var(--LFM-border)
+
+.LFM-accordion-item
+	background: var(--LFM-panel)
+
+.LFM-accordion-header
+	width: 100%
+	display: flex
+	align-items: center
+	gap: 12px
+	padding: 14px 16px
+	border: none
+	background: transparent
+	cursor: pointer
+	font-size: 13px
+	font-weight: 600
+	color: var(--LFM-text)
+	transition: background 200ms ease
+
+	&:hover
+		background: var(--LFM-hover)
+
+	.LFM-accordion-arrow
+		margin-left: auto
+		font-size: 18px
+		transition: transform 300ms $lfm-ease
+		opacity: 0.4
+
+.LFM-accordion-item.is-expanded
+	.LFM-accordion-arrow
+		transform: rotate(90deg)
+	
+	.LFM-accordion-body
+		display: block
+
+.LFM-accordion-body
+	display: none
+	padding: 0 16px 16px
+	animation: slideDown 300ms $lfm-ease
+
+.LFM-prop-row
+	display: flex
+	justify-content: space-between
+	align-items: flex-start
+	padding: 8px 0
+	border-bottom: 1px solid var(--LFM-border)
+	gap: 20px
+
+	&:last-child
+		border-bottom: none
+
+.LFM-prop-label
+	font-size: 12px
+	color: var(--LFM-text-muted)
+	white-space: nowrap
+
+.LFM-prop-value
+	font-size: 12px
+	font-weight: 600
+	text-align: right
+	word-break: break-all
+
+.LFM-prop-link
+	background: transparent
+	border: none
+	padding: 0
+	font-size: 12px
+	font-family: ui-monospace, monospace
+	color: var(--LFM-blue)
+	text-align: right
+	word-break: break-all
+	cursor: pointer
+	&:hover
+		text-decoration: underline
+
+.LFM-tag-cloud
+	display: flex
+	flex-wrap: wrap
+	gap: 6px
+	padding-top: 8px
+
+.LFM-tag-pill
+	padding: 4px 10px
+	background: var(--LFM-blue-subtle)
+	color: var(--LFM-blue)
+	border-radius: 6px
+	font-size: 11px
+	font-weight: 600
+
+// --- Animations ---
+@keyframes slideDown
+	from
+		opacity: 0
+		transform: translateY(-10px)
+	to
+		opacity: 1
+		transform: translateY(0)
+
+.scale-fade-enter-active, .scale-fade-leave-active
+	transition: all 400ms $lfm-ease
+
+.scale-fade-enter-from
+	opacity: 0
+	transform: scale(0.9)
+.scale-fade-leave-to
+	opacity: 0
+	transform: scale(1.05)
+
+.fade-enter-active, .fade-leave-active
+	transition: opacity 300ms ease
+
+.fade-enter-from, .fade-leave-to
+	opacity: 0
 </style>

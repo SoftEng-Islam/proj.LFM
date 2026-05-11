@@ -1,36 +1,46 @@
-import { defineStore } from 'pinia';
+/**
+ * Operations store — tracks the queue of background file operations.
+ *
+ * Each operation (copy, move, delete, compress) is tracked here so the UI
+ * can show progress indicators and allow pause/resume in the future.
+ */
+
+import { ref } from 'vue';
+import { acceptHMRUpdate, defineStore } from 'pinia';
 
 export interface FileOperation {
-  id: string;
-  type: 'copy' | 'move' | 'delete' | 'compress';
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  source: string;
-  destination?: string;
-  error?: string;
+	id: string;
+	type: 'copy' | 'move' | 'delete' | 'compress';
+	status: 'pending' | 'running' | 'completed' | 'failed';
+	source: string;
+	destination?: string;
+	error?: string;
 }
 
-interface OperationsState {
-  queue: FileOperation[];
-}
+export const useOperationsStore = defineStore('operations', () => {
+	const queue = ref<FileOperation[]>([]);
 
-export const useOperationsStore = defineStore('operations', {
-  state: (): OperationsState => ({
-    queue: [],
-  }),
+	function addOperation(operation: FileOperation) {
+		queue.value.push(operation);
+	}
 
-  actions: {
-    addOperation(operation: FileOperation) {
-      this.queue.push(operation);
-    },
+	function updateOperation(id: string, updates: Partial<FileOperation>) {
+		const operation = queue.value.find((item) => item.id === id);
+		if (operation) Object.assign(operation, updates);
+	}
 
-    updateOperation(id: string, updates: Partial<FileOperation>) {
-      const operation = this.queue.find((item) => item.id === id);
+	function removeCompleted() {
+		queue.value = queue.value.filter((op) => op.status !== 'completed');
+	}
 
-      if (!operation) {
-        return;
-      }
-
-      Object.assign(operation, updates);
-    },
-  },
+	return {
+		queue,
+		addOperation,
+		updateOperation,
+		removeCompleted,
+	};
 });
+
+if (import.meta.hot) {
+	import.meta.hot.accept(acceptHMRUpdate(useOperationsStore, import.meta.hot));
+}
