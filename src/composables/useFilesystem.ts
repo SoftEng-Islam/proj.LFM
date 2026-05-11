@@ -20,6 +20,7 @@ import {
 	createDirRecursive,
 	deleteFile,
 	getDrives,
+	getHomeDir as tauriGetHomeDir,
 	getTrashedItems,
 	openFile as tauriOpenFile,
 	openInTerminal as tauriOpenInTerminal,
@@ -80,22 +81,14 @@ export async function initHomeDirFromStorage(): Promise<string> {
 	const cached = (window as { __LFM_HOME__?: string }).__LFM_HOME__;
 	if (cached && cached !== '/root') return cached;
 
-	// Best effort: read /proc/self/environ (Linux-only, works in Tauri dev mode)
 	try {
-		const resp = await fetch('/proc/self/environ');
-		if (resp.ok) {
-			const text = await resp.text();
-			const homeVar = text.split('\0').find((v) => v.startsWith('HOME='));
-			if (homeVar) {
-				const homeVal = homeVar.slice(5);
-				if (homeVal) {
-					(window as { __LFM_HOME__?: string }).__LFM_HOME__ = homeVal;
-					return homeVal;
-				}
-			}
+		const homeVal = await tauriGetHomeDir();
+		if (homeVal) {
+			(window as { __LFM_HOME__?: string }).__LFM_HOME__ = homeVal;
+			return homeVal;
 		}
-	} catch {
-		// Fetch to /proc fails in production Tauri (custom protocol) — expected.
+	} catch (err) {
+		console.error('[useFilesystem] initHomeDirFromStorage failed:', err);
 	}
 
 	return '/root';

@@ -38,6 +38,27 @@ export interface FileMetaData {
     is_trash: boolean;
 }
 
+export interface FilePermissions {
+    mode: number;
+    owner: string;
+    group: string;
+    readonly: boolean;
+}
+
+export interface MediaInfo {
+    width: number | null;
+    height: number | null;
+    duration: number | null;
+    video_codec: string | null;
+    audio_codec: string | null;
+    bitrate: number | null;
+    frame_rate: number | null;
+    sample_rate: number | null;
+    channels: number | null;
+}
+
+
+
 export interface TrashMetaData {
     file_path: string;
     basename: string;
@@ -123,6 +144,16 @@ export function getFileMetaData(filePath: string): Promise<FileMetaData> {
 /** Get detailed file properties (size, perms, timestamps). */
 export function getFileProperties(filePath: string): Promise<FileMetaData> {
     return invoke('get_file_properties', { filePath });
+}
+
+/** Get detailed Unix file permissions (mode, owner, group). */
+export function getFilePermissions(filePath: string): Promise<FilePermissions> {
+    return invoke('get_file_permissions', { filePath });
+}
+
+/** Get technical media info (dimensions, duration, codecs). */
+export function getMediaInfo(filePath: string): Promise<MediaInfo> {
+    return invoke('get_media_info', { file_path: filePath });
 }
 
 /**
@@ -319,6 +350,11 @@ export function checkVscodeInstalled(): Promise<boolean> {
 /** Return a list of all font family names installed on the system. */
 export function getAvailableFonts(): Promise<string[]> {
     return invoke('get_available_fonts');
+}
+
+/** Return the current user's home directory path. */
+export function getHomeDir(): Promise<string> {
+    return invoke('get_home_dir');
 }
 
 /**

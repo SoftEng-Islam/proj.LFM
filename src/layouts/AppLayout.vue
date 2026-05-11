@@ -3,7 +3,7 @@ import { onMounted, onUnmounted } from 'vue';
 import StatusBar from '@/features/explorer/components/StatusBar.vue';
 import SidebarNavigation from '@/features/navigation/components/SidebarNavigation.vue';
 import { useFileManagerStore } from '@/stores/file-manager';
-import AppTabStrip from './components/AppTabStrip.vue';
+import AppHeader from './components/AppHeader/AppHeader.vue';
 import AppNavigationBar from './components/AppNavigationBar.vue';
 import AiChatSidebar from './components/AiChatSidebar.vue';
 import PreviewPane from '@/features/explorer/components/PreviewPane.vue';
@@ -82,7 +82,7 @@ onUnmounted(() => {
 
 <template>
 	<div id="LFM-shell" class="LFM-shell">
-		<AppTabStrip />
+		<AppHeader />
 		<AppNavigationBar />
 
 		<div class="LFM-body">
@@ -95,45 +95,15 @@ onUnmounted(() => {
 			</main>
 
 			<div class="LFM-right-sidebars">
-				<div
-					v-if="store.detailsOpen"
-					class="LFM-right-panel"
-					:style="{ width: `${store.detailsPanelWidth}px` }"
-				>
-					<div
-						class="LFM-panel-resizer"
-						role="separator"
-						aria-orientation="vertical"
-						aria-label="Resize file details panel. Double-click to reset width."
-						title="Drag to resize · Double-click to reset"
-						tabindex="0"
-						@pointerdown="beginResize('details', $event)"
-						@dblclick.prevent="onGutterDblclick('details')"
-						@keydown.left.prevent="store.setDetailsPanelWidth(store.detailsPanelWidth + 16)"
-						@keydown.right.prevent="store.setDetailsPanelWidth(store.detailsPanelWidth - 16)"
-					/>
+				<div v-if="store.detailsOpen" class="LFM-right-panel" :style="{ width: `${store.detailsPanelWidth}px` }">
+					<div class="LFM-panel-resizer" role="separator" aria-orientation="vertical" aria-label="Resize file details panel. Double-click to reset width." title="Drag to resize · Double-click to reset" tabindex="0" @pointerdown="beginResize('details', $event)" @dblclick.prevent="onGutterDblclick('details')" @keydown.left.prevent="store.setDetailsPanelWidth(store.detailsPanelWidth + 16)" @keydown.right.prevent="store.setDetailsPanelWidth(store.detailsPanelWidth - 16)" />
 					<aside class="LFM-sidebar-panel" aria-label="File Details">
 						<PreviewPane />
 					</aside>
 				</div>
 
-				<div
-					v-if="store.aiChatOpen"
-					class="LFM-right-panel"
-					:style="{ width: `${store.aiChatPanelWidth}px` }"
-				>
-					<div
-						class="LFM-panel-resizer"
-						role="separator"
-						aria-orientation="vertical"
-						aria-label="Resize assistant panel. Double-click to reset width."
-						title="Drag to resize · Double-click to reset"
-						tabindex="0"
-						@pointerdown="beginResize('ai', $event)"
-						@dblclick.prevent="onGutterDblclick('ai')"
-						@keydown.left.prevent="store.setAiChatPanelWidth(store.aiChatPanelWidth + 16)"
-						@keydown.right.prevent="store.setAiChatPanelWidth(store.aiChatPanelWidth - 16)"
-					/>
+				<div v-if="store.aiChatOpen" class="LFM-right-panel" :style="{ width: `${store.aiChatPanelWidth}px` }">
+					<div class="LFM-panel-resizer" role="separator" aria-orientation="vertical" aria-label="Resize assistant panel. Double-click to reset width." title="Drag to resize · Double-click to reset" tabindex="0" @pointerdown="beginResize('ai', $event)" @dblclick.prevent="onGutterDblclick('ai')" @keydown.left.prevent="store.setAiChatPanelWidth(store.aiChatPanelWidth + 16)" @keydown.right.prevent="store.setAiChatPanelWidth(store.aiChatPanelWidth - 16)" />
 					<aside class="LFM-sidebar-panel" aria-label="AI Chat">
 						<AiChatSidebar />
 					</aside>

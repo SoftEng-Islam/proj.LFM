@@ -4,6 +4,39 @@ export type ViewMode = 'grid' | 'list';
 export type SortMode = 'name' | 'modified' | 'size' | 'kind';
 export type AccentTone = 'sky' | 'emerald' | 'amber' | 'violet' | 'rose' | 'cyan' | 'slate';
 export type FileStatus = 'synced' | 'shared' | 'draft' | 'favorite' | 'local' | 'recent';
+export type PreviewMode = 'automatic' | 'full' | 'compact' | 'sticky';
+export type FileCategory =
+	| 'image'
+	| 'video'
+	| 'audio'
+	| 'code'
+	| 'markdown'
+	| 'pdf'
+	| 'font'
+	| 'document'
+	| 'folder'
+	| 'archive'
+	| 'spreadsheet'
+	| 'default';
+
+export interface FilePermissions {
+	mode: number;
+	owner: string;
+	group: string;
+	readonly: boolean;
+}
+
+export interface MediaInfo {
+	width: number | null;
+	height: number | null;
+	duration: number | null;
+	video_codec: string | null;
+	audio_codec: string | null;
+	bitrate: number | null;
+	frame_rate: number | null;
+	sample_rate: number | null;
+	channels: number | null;
+}
 
 export interface BreadcrumbSegment {
 	label: string;

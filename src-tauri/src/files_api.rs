@@ -68,6 +68,29 @@ pub struct TrashMetaData {
     created: SystemTime,
 }
 
+#[derive(serde::Serialize, Clone, Debug)]
+pub struct FilePermissions {
+    pub mode: u32,
+    pub owner: String,
+    pub group: String,
+    pub readonly: bool,
+}
+
+#[derive(serde::Serialize, Clone, Debug)]
+pub struct MediaInfo {
+    pub width: Option<u32>,
+    pub height: Option<u32>,
+    pub duration: Option<f64>,
+    pub video_codec: Option<String>,
+    pub audio_codec: Option<String>,
+    pub bitrate: Option<u64>,
+    pub frame_rate: Option<f32>,
+    pub sample_rate: Option<u32>,
+    pub channels: Option<u32>,
+}
+
+
+
 #[derive(serde::Serialize)]
 pub struct FolderInformation {
     number_of_files: u16,
@@ -248,6 +271,108 @@ pub async fn get_file_properties(file_path: &str) -> Result<FileMetaData, String
         is_trash: false,
     })
 }
+
+#[tauri::command]
+pub fn get_file_permissions(file_path: &str) -> Result<FilePermissions, String> {
+    use std::os::unix::fs::MetadataExt;
+    use std::os::unix::fs::PermissionsExt;
+
+    let metadata = fs::metadata(file_path).map_err(|e| e.to_string())?;
+    let mode = metadata.permissions().mode();
+
+    // For now, return placeholders for owner/group as we don't have users crate
+    // but we can get UID/GID and return them as strings.
+    let uid = metadata.uid();
+    let gid = metadata.gid();
+
+    Ok(FilePermissions {
+        mode,
+        owner: uid.to_string(),
+        group: gid.to_string(),
+        readonly: metadata.permissions().readonly(),
+    })
+}
+
+#[tauri::command]
+pub async fn get_media_info(file_path: String) -> Result<MediaInfo, String> {
+    let path = Path::new(&file_path);
+    let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+
+    let mut info = MediaInfo {
+        width: None,
+        height: None,
+        duration: None,
+        video_codec: None,
+        audio_codec: None,
+        bitrate: None,
+        frame_rate: None,
+        sample_rate: None,
+        channels: None,
+    };
+
+    // Images
+    if ["jpg", "jpeg", "png", "webp", "gif", "bmp"].contains(&ext.as_str()) {
+        if let Ok(dim) = image::image_dimensions(path) {
+            info.width = Some(dim.0);
+            info.height = Some(dim.1);
+        }
+    }
+    // Video/Audio via ffprobe
+    else if ["mp4", "mkv", "avi", "mov", "webm", "mp3", "wav", "ogg", "flac"].contains(&ext.as_str()) {
+        let output = Command::new("ffprobe")
+            .args(&[
+                "-v", "error",
+                "-select_streams", "v:0",
+                "-show_entries", "stream=width,height,codec_name,avg_frame_rate,bit_rate",
+                "-of", "json",
+                &file_path
+            ])
+            .output();
+
+        if let Ok(out) = output {
+            let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap_or(serde_json::Value::Null);
+            if let Some(stream) = json["streams"].as_array().and_then(|a| a.get(0)) {
+                info.width = stream["width"].as_u64().map(|v| v as u32);
+                info.height = stream["height"].as_u64().map(|v| v as u32);
+                info.video_codec = stream["codec_name"].as_str().map(|s| s.to_string());
+                info.bitrate = stream["bit_rate"].as_str().and_then(|s| s.parse().ok());
+
+                if let Some(fr_str) = stream["avg_frame_rate"].as_str() {
+                    let parts: Vec<&str> = fr_str.split('/').collect();
+                    if parts.len() == 2 {
+                        let num: f32 = parts[0].parse().unwrap_or(0.0);
+                        let den: f32 = parts[1].parse().unwrap_or(1.0);
+                        if den > 0.0 { info.frame_rate = Some(num / den); }
+                    }
+                }
+            }
+        }
+
+        let output_audio = Command::new("ffprobe")
+            .args(&[
+                "-v", "error",
+                "-select_streams", "a:0",
+                "-show_entries", "stream=codec_name,sample_rate,channels,duration",
+                "-of", "json",
+                &file_path
+            ])
+            .output();
+
+        if let Ok(out) = output_audio {
+            let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap_or(serde_json::Value::Null);
+            if let Some(stream) = json["streams"].as_array().and_then(|a| a.get(0)) {
+                info.audio_codec = stream["codec_name"].as_str().map(|s| s.to_string());
+                info.sample_rate = stream["sample_rate"].as_str().and_then(|s| s.parse().ok());
+                info.channels = stream["channels"].as_u64().map(|v| v as u32);
+                info.duration = stream["duration"].as_str().and_then(|s| s.parse().ok());
+            }
+        }
+    }
+
+    Ok(info)
+}
+
+
 
 /// Get size of a directory
 ///

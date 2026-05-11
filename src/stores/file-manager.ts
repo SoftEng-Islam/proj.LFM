@@ -18,12 +18,15 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { acceptHMRUpdate, defineStore } from 'pinia';
 
-import { defaultPath, navigationGroups } from '@/features/navigation/navigation';
+import { defaultPath, createNavigationGroups, createInitialTabs, driveCards as initialDriveCards } from '@/features/navigation/navigation';
+import { initHomeDirFromStorage } from '@/composables/useFilesystem';
 import {
 	convertFileSrc,
 	copy as tauriCopy,
 	deleteFile,
 	getDrives,
+	getFilePermissions,
+	getMediaInfo,
 	getImageThumbnail,
 	getVideoThumbnail,
 	isDir,
@@ -39,6 +42,8 @@ import type {
 	BreadcrumbSegment,
 	DriveCard,
 	FileEntry,
+	FilePermissions,
+	MediaInfo,
 	NavigationGroup,
 	SortMode,
 	ViewMode,
@@ -52,6 +57,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	// ── Core navigation state ─────────────────────────────────────────────────
 	const currentPath = ref<string>(defaultPath);
+	const homePath = ref<string>(defaultPath);
 	const currentEntries = ref<FileEntry[]>([]);
 	const searchQuery = ref('');
 	const selectedItemId = ref<string | null>(null);
@@ -66,24 +72,54 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	// ── Loading & data ────────────────────────────────────────────────────────
 	const isLoading = ref(false);
-	const driveCards = ref<DriveCard[]>([]);
-	const windowTabs = ref<WindowTab[]>([
-		{ id: 'tab-home', label: 'Home', path: defaultPath, sectionId: defaultPath, subtitle: 'Recent workspace' },
-	]);
+
+	/**
+	 * Structured navigation error — set when entering a directory fails.
+	 * The UI should render an appropriate empty state based on `kind`.
+	 */
+	const navError = ref<{
+		kind: 'permission' | 'not-found' | 'unknown';
+		path: string;
+		message: string;
+	} | null>(null);
+
+	const driveCards = ref<DriveCard[]>(initialDriveCards);
+	const windowTabs = ref<WindowTab[]>(createInitialTabs(defaultPath));
+	const navigationGroups = ref<NavigationGroup[]>(createNavigationGroups(defaultPath));
 	const favoriteItems = ref<string[]>([]);
+	const selectedItemPermissions = ref<FilePermissions | null>(null);
+	const selectedItemMediaInfo = ref<MediaInfo | null>(null);
+
+	// ── Preview Pane State ────────────────────────────────────────────────────
+	const previewMode = useStorage<'automatic' | 'full' | 'compact' | 'sticky'>('lfm-preview-mode', 'automatic');
+	const categoryPreferredMode = useStorage<Record<string, 'automatic' | 'full' | 'compact' | 'sticky'>>('lfm-category-preview-modes', {});
+
+	/**
+	 * Initialize the home directory and update navigation state.
+	 * This ensures sidebar links correctly point to /home/user instead of /root.
+	 */
+	async function initializeHomeDir() {
+		const home = await initHomeDirFromStorage();
+		homePath.value = home;
+		windowTabs.value = createInitialTabs(home);
+		navigationGroups.value = createNavigationGroups(home);
+
+		// If we're currently at the fallback /root, jump to the real home
+		if (currentPath.value === '/root') {
+			openSection(home);
+		}
+	}
 
 	// ── Computed: navigation groups with counts ───────────────────────────────
 	const navigationGroupsWithCounts = computed<NavigationGroup[]>(() =>
-		navigationGroups.map((group) => ({
+		navigationGroups.value.map((group) => ({
 			...group,
 			items: group.items.map((item) => ({ ...item, count: 0 })),
 		}))
 	);
 
 	// ── Computed: tabs with accent ────────────────────────────────────────────
-	const tabsWithAccent = computed<WindowTab[]>(() =>
-		windowTabs.value.map((tab) => ({ ...tab, accent: 'slate' as const }))
-	);
+	const tabsWithAccent = computed<WindowTab[]>(() => windowTabs.value.map((tab) => ({ ...tab, accent: 'slate' as const })));
 
 	// ── Computed: sorted + filtered entries ───────────────────────────────────
 	const sortedAndFilteredEntries = computed(() => {
@@ -103,11 +139,15 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 			if (left.kind !== 'folder' && right.kind === 'folder') return 1;
 
 			switch (sortMode.value) {
-				case 'name':     return left.name.localeCompare(right.name);
-				case 'size':     return right.sortSize - left.sortSize;
-				case 'kind':     return left.typeLabel.localeCompare(right.typeLabel);
+				case 'name':
+					return left.name.localeCompare(right.name);
+				case 'size':
+					return right.sortSize - left.sortSize;
+				case 'kind':
+					return left.typeLabel.localeCompare(right.typeLabel);
 				case 'modified':
-				default:         return new Date(right.modifiedAt).getTime() - new Date(left.modifiedAt).getTime();
+				default:
+					return new Date(right.modifiedAt).getTime() - new Date(left.modifiedAt).getTime();
 			}
 		});
 	});
@@ -148,7 +188,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 		return [
 			{ label: 'Directories', value: String(dirCount), helper: 'Total directories', accent: 'emerald' },
-			{ label: 'Files',       value: String(fileCount), helper: 'Total files',       accent: 'cyan'    },
+			{ label: 'Files', value: String(fileCount), helper: 'Total files', accent: 'cyan' },
 		];
 	});
 
@@ -159,10 +199,19 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	// ── Auto-select first item when entries change ────────────────────────────
 	watch(
-		sortedAndFilteredEntries,
-		(nextEntries) => {
-			if (!nextEntries.some((e) => e.id === selectedItemId.value)) {
-				selectedItemId.value = nextEntries[0]?.id ?? null;
+		selectedItemId,
+		async (newId) => {
+			selectedItemPermissions.value = null;
+			selectedItemMediaInfo.value = null;
+
+			if (newId) {
+				try {
+					const [perms, media] = await Promise.all([getFilePermissions(newId).catch(() => null), getMediaInfo(newId).catch(() => null)]);
+					selectedItemPermissions.value = perms;
+					selectedItemMediaInfo.value = media;
+				} catch (err) {
+					console.error('[FileManagerStore] Failed to fetch extended info:', err);
+				}
 			}
 		},
 		{ immediate: true }
@@ -171,9 +220,14 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	// ── Actions ───────────────────────────────────────────────────────────────
 
 	async function fetchDirectory(path: string) {
+		// Snapshot so we can roll back if the read fails
+		const prevPath = currentPath.value;
+		const prevEntries = currentEntries.value;
+
 		currentPath.value = path;
 		searchQuery.value = '';
 		isLoading.value = true;
+		navError.value = null;
 
 		try {
 			const res = await readDirectory(path);
@@ -187,12 +241,12 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 					return new Date().toISOString();
 				};
 
-				const modifiedAt  = parseTime(file.last_modified);
-				const createdAt   = parseTime(file.created);
-				const accessedAt  = parseTime(file.last_accessed);
-				const id          = file.file_path || `unknown-${Math.random()}`;
-				const lowerName   = (file.basename || '').toLowerCase();
-				const ext         = lowerName.split('.').pop() || '';
+				const modifiedAt = parseTime(file.last_modified);
+				const createdAt = parseTime(file.created);
+				const accessedAt = parseTime(file.last_accessed);
+				const id = file.file_path || `unknown-${Math.random()}`;
+				const lowerName = (file.basename || '').toLowerCase();
+				const ext = lowerName.split('.').pop() || '';
 
 				let category = 'document';
 				if (file.is_dir) {
@@ -213,42 +267,63 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 				const entry = reactive<FileEntry>({
 					id,
-					name:         file.basename || 'Unknown',
-					kind:         file.is_dir ? 'folder' : 'file',
+					name: file.basename || 'Unknown',
+					kind: file.is_dir ? 'folder' : 'file',
 					category,
-					typeLabel:    file.file_type || (file.is_dir ? 'Directory' : 'File'),
-					sizeLabel:    file.is_dir ? '' : formatBytes(file.size || 0),
-					sortSize:     file.size || 0,
+					typeLabel: file.file_type || (file.is_dir ? 'Directory' : 'File'),
+					sizeLabel: file.is_dir ? '' : formatBytes(file.size || 0),
+					sortSize: file.size || 0,
 					modifiedAt,
 					createdAt,
 					accessedAt,
-					readonly:     file.readonly,
-					preview:      category === 'image' ? convertFileSrc(id) : '',
-					status:       'local',
-					accent:       file.is_dir ? 'sky' : 'slate',
+					readonly: file.readonly,
+					preview: category === 'image' ? convertFileSrc(id) : '',
+					status: 'local',
+					accent: file.is_dir ? 'sky' : 'slate',
 					locationPath: [path, file.basename || ''],
-					tags:         [],
+					tags: [],
 					collaborators: [],
-					pinned:       false,
+					pinned: false,
 				});
 
 				// Generate thumbnails asynchronously
 				if (category === 'video') {
 					getVideoThumbnail(id)
-						.then((thumbPath) => { entry.preview = convertFileSrc(thumbPath); })
-						.catch((err) => { console.error(`Video thumbnail failed for ${file.basename}:`, err); });
+						.then((thumbPath) => {
+							entry.preview = convertFileSrc(thumbPath);
+						})
+						.catch((err) => {
+							console.error(`Video thumbnail failed for ${file.basename}:`, err);
+						});
 				} else if (category === 'image') {
 					getImageThumbnail(id)
-						.then((thumbPath) => { entry.preview = convertFileSrc(thumbPath); })
-						.catch((err) => { console.error(`Image thumbnail failed for ${file.basename}:`, err); });
+						.then((thumbPath) => {
+							entry.preview = convertFileSrc(thumbPath);
+						})
+						.catch((err) => {
+							console.error(`Image thumbnail failed for ${file.basename}:`, err);
+						});
 				}
 
 				return entry;
 			});
 		} catch (error) {
 			console.error('Failed to read directory:', error);
-			import('vue-toastification').then((m) => m.useToast().error(`Read failed: ${error}`));
-			currentEntries.value = [];
+
+			// Roll back to previous location so the user isn't stranded
+			currentPath.value = prevPath;
+			currentEntries.value = prevEntries;
+
+			// Classify the error for the UI empty-state
+			const msg = String(error);
+			const isPermission = /permission denied|access denied|eacces/i.test(msg);
+			const isNotFound = /no such file|not found|enoent/i.test(msg);
+
+			navError.value = {
+				kind: isPermission ? 'permission' : isNotFound ? 'not-found' : 'unknown',
+				path,
+				message: msg,
+			};
 		} finally {
 			isLoading.value = false;
 		}
@@ -296,12 +371,12 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 				}
 
 				return {
-					id:         drive.mount_point,
-					label:      label || 'Disk',
-					usedLabel:  formatBytes(used) + ' used',
-					freeLabel:  formatBytes(drive.available_space) + ' free',
+					id: drive.mount_point,
+					label: label || 'Disk',
+					usedLabel: formatBytes(used) + ' used',
+					freeLabel: formatBytes(drive.available_space) + ' free',
 					usedPercent,
-					accent:     drive.is_removable ? 'amber' : drive.mount_point === '/' ? 'sky' : 'emerald',
+					accent: drive.is_removable ? 'amber' : drive.mount_point === '/' ? 'sky' : 'emerald',
 				} as DriveCard;
 			});
 		} catch (e) {
@@ -312,21 +387,21 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	/** Create a placeholder directory entry (optimistic UI before backend call). */
 	function createDirectory(): FileEntry {
 		const entry: FileEntry = {
-			id:           `directory-${Date.now()}`,
-			name:         'New Directory',
-			kind:         'folder',
-			category:     'folder',
-			typeLabel:    'Directory',
-			sizeLabel:    '',
-			sortSize:     0,
-			modifiedAt:   new Date().toISOString(),
-			preview:      '',
-			status:       'draft',
-			accent:       'sky',
+			id: `directory-${Date.now()}`,
+			name: 'New Directory',
+			kind: 'folder',
+			category: 'folder',
+			typeLabel: 'Directory',
+			sizeLabel: '',
+			sortSize: 0,
+			modifiedAt: new Date().toISOString(),
+			preview: '',
+			status: 'draft',
+			accent: 'sky',
 			locationPath: [currentPath.value, 'New Directory'],
-			tags:         [],
+			tags: [],
 			collaborators: [],
-			pinned:       false,
+			pinned: false,
 		};
 		currentEntries.value = [entry, ...currentEntries.value];
 		return entry;
@@ -409,9 +484,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		try {
 			for (const src of clipboard.value.paths) {
 				const name = src.split('/').pop() || '';
-				const dest = currentPath.value.endsWith('/')
-					? currentPath.value + name
-					: currentPath.value + '/' + name;
+				const dest = currentPath.value.endsWith('/') ? currentPath.value + name : currentPath.value + '/' + name;
 
 				if (clipboard.value.mode === 'copy') {
 					await tauriCopy(src, dest);
@@ -426,27 +499,41 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		}
 	}
 
+	// ── Preview Mode Actions ──────────────────────────────────────────────────
+	function setPreviewMode(mode: 'automatic' | 'full' | 'compact' | 'sticky') {
+		previewMode.value = mode;
+	}
+
+	function setPreferredModeForCategory(category: string, mode: 'automatic' | 'full' | 'compact' | 'sticky') {
+		categoryPreferredMode.value[category] = mode;
+	}
+
+	function getPreferredModeForCategory(category: string): 'automatic' | 'full' | 'compact' | 'sticky' {
+		return categoryPreferredMode.value[category] ?? previewMode.value;
+	}
+
 	return {
 		// Path & entries
 		currentPath,
 		currentEntries: sortedAndFilteredEntries,
+		navError,
 		selectedItem,
 		searchQuery,
 		viewMode,
 		sortMode,
 
 		// Panel state (from usePanelResize)
-		detailsOpen:          panels.detailsOpen,
-		aiChatOpen:           panels.aiChatOpen,
-		detailsPanelWidth:    panels.detailsPanelWidth,
-		aiChatPanelWidth:     panels.aiChatPanelWidth,
+		detailsOpen: panels.detailsOpen,
+		aiChatOpen: panels.aiChatOpen,
+		detailsPanelWidth: panels.detailsPanelWidth,
+		aiChatPanelWidth: panels.aiChatPanelWidth,
 		setDetailsPanelWidth: panels.setDetailsPanelWidth,
-		setAiChatPanelWidth:  panels.setAiChatPanelWidth,
+		setAiChatPanelWidth: panels.setAiChatPanelWidth,
 		reconcileRightPanelWidths: panels.reconcilePanelWidths,
-		resetDetailsPanelWidth:    panels.resetDetailsPanelWidth,
-		resetAiChatPanelWidth:     panels.resetAiChatPanelWidth,
-		toggleDetails:             panels.toggleDetails,
-		toggleAiChat:              panels.toggleAiChat,
+		resetDetailsPanelWidth: panels.resetDetailsPanelWidth,
+		resetAiChatPanelWidth: panels.resetAiChatPanelWidth,
+		toggleDetails: panels.toggleDetails,
+		toggleAiChat: panels.toggleAiChat,
 
 		// Clipboard
 		clipboard,
@@ -457,11 +544,19 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		breadcrumbs,
 		workspaceStats,
 		activityFeed,
+		homePath,
+		selectedItemPermissions,
+		selectedItemMediaInfo,
 		navigationGroups: navigationGroupsWithCounts,
 		windowTabs: tabsWithAccent,
 		driveCards,
 
+		// Preview Mode State
+		previewMode,
+		categoryPreferredMode,
+
 		// Actions
+		initializeHomeDir,
 		fetchDirectory,
 		fetchDrives,
 		openSection,
@@ -480,6 +575,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		renameItem,
 		setClipboard,
 		paste,
+		setPreviewMode,
+		setPreferredModeForCategory,
+		getPreferredModeForCategory,
 	};
 });
 

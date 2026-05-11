@@ -3,8 +3,8 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
-import { navigationGroups, defaultPath } from '@/features/navigation/navigation';
 import { useFileManagerStore } from '@/stores/file-manager';
+import type { NavigationGroup } from '@/types/file-manager';
 
 // Icons
 import IconHome from '~icons/material-symbols/home';
@@ -19,7 +19,7 @@ import IconSettings from '~icons/material-symbols/settings';
 import IconLinux from '~icons/material-symbols/terminal';
 
 const store = useFileManagerStore();
-const { driveCards } = storeToRefs(store);
+const { driveCards, navigationGroups, currentPath, homePath } = storeToRefs(store);
 const route = useRoute();
 
 // Collapsible section state
@@ -42,7 +42,7 @@ const cloudItems = [
 <template>
 	<nav class="LFM-sidebar-nav" aria-label="Navigation pane">
 		<!-- Home -->
-		<RouterLink :to="defaultPath" class="LFM-sbar-item LFM-sbar-item--home" :class="{ 'LFM-sbar-item--active': isActive(defaultPath) }">
+		<RouterLink :to="homePath" class="LFM-sbar-item LFM-sbar-item--home" :class="{ 'LFM-sbar-item--active': isActive(homePath) }">
 			<span class="LFM-sbar-icon">
 				<IconHome class="text-blue-500 text-lg" />
 			</span>
@@ -57,7 +57,7 @@ const cloudItems = [
 			</button>
 
 			<template v-if="!collapsed['pinned']">
-				<RouterLink v-for="item in navigationGroups.flatMap((g) => g.items)" :key="item.id" :to="item.path" class="LFM-sbar-item" :class="{ 'LFM-sbar-item--active': isActive(item.path) }">
+				<RouterLink v-for="item in navigationGroups.flatMap((g: NavigationGroup) => g.items)" :key="item.id" :to="item.path" class="LFM-sbar-item" :class="{ 'LFM-sbar-item--active': isActive(item.path) }">
 					<span class="LFM-sbar-icon">
 						<IconFolder class="text-amber-500" />
 					</span>

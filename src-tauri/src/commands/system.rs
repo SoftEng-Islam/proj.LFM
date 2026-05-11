@@ -13,3 +13,13 @@ pub async fn check_vscode_installed() -> Result<bool, String> {
 pub fn get_available_fonts() -> Result<Vec<String>, String> {
     system_service::get_available_fonts().map_err(|error| error.to_string())
 }
+
+/**
+ * Return the current user's home directory path.
+ * Fallback to "/root" if HOME is not set.
+ */
+#[tauri::command]
+#[inline]
+pub fn get_home_dir() -> String {
+    std::env::var("HOME").unwrap_or_else(|_| "/root".to_string())
+}

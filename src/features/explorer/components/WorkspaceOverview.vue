@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { openFile, convertFileSrc, getVideoThumbnail } from '@/services/tauri-bridge';
+import { openFile } from '@/services/tauri-bridge';
 
 import ActionToolbar from '@/features/explorer/components/ActionToolbar.vue';
 import ContextMenu from '@/features/explorer/components/ContextMenu.vue';
 import RenameModal from '@/components/ui/RenameModal.vue';
 import PropertiesModal from '@/components/ui/PropertiesModal.vue';
 import FolderIcon from '@/components/ui/FolderIcon.vue';
-
 
 import { useFileManagerStore } from '@/stores/file-manager';
 import type { FileEntry } from '@/types/file-manager';
@@ -20,26 +19,27 @@ const router = useRouter();
 const toast = useToast();
 const selectedId = computed(() => store.selectedItem?.id ?? '');
 
-// Context menu state
-const contextMenu = ref<{ visible: boolean; x: number; y: number; itemId: string; }>({
+// ── Dialog / overlay state ──────────────────────────────────────────────────
+
+const contextMenu = ref<{ visible: boolean; x: number; y: number; itemId: string }>({
 	visible: false,
 	x: 0,
 	y: 0,
 	itemId: '',
 });
 
-// Rename modal state
-const renameDialog = ref<{ visible: boolean; path: string; currentName: string; }>({
+const renameDialog = ref<{ visible: boolean; path: string; currentName: string }>({
 	visible: false,
 	path: '',
 	currentName: '',
 });
 
-// Properties modal state
-const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null; }>({
+const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null }>({
 	visible: false,
 	item: null,
 });
+
+// ── Context menu helpers ────────────────────────────────────────────────────
 
 function openContextMenu(e: MouseEvent, itemId: string) {
 	e.preventDefault();
@@ -57,6 +57,8 @@ function openEmptyContextMenu(e: MouseEvent) {
 	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId: '' };
 }
 
+// ── Dialog openers ──────────────────────────────────────────────────────────
+
 function openRenameDialog(path: string) {
 	const name = path.split('/').pop() || '';
 	renameDialog.value = { visible: true, path, currentName: name };
@@ -66,155 +68,132 @@ function openRenameDialog(path: string) {
 function openPropertiesDialog(itemId?: string) {
 	const targetId = itemId || selectedId.value;
 	if (!targetId) return;
-	const item = store.currentEntries.find(e => e.id === targetId);
-	if (item) {
-		propertiesDialog.value = { visible: true, item };
-	}
+	const item = store.currentEntries.find((e: FileEntry) => e.id === targetId);
+	if (item) propertiesDialog.value = { visible: true, item };
 	closeContextMenu();
 }
 
 async function handleRename(newName: string) {
 	const success = await store.renameItem(renameDialog.value.path, newName);
-	if (success) {
-		toast.success('Renamed successfully');
-	} else {
-		toast.error('Failed to rename');
-	}
+	toast[success ? 'success' : 'error'](success ? 'Renamed successfully' : 'Failed to rename');
 	renameDialog.value.visible = false;
 }
 
-// Determine icon type for non-folder entries
-function isFolder(entry: { kind: string; }) {
+// ── Item helpers ────────────────────────────────────────────────────────────
+
+function isFolder(entry: { kind: string }) {
 	return entry.kind === 'folder';
 }
 
+/**
+ * Open a file or navigate into a directory.
+ * Directories are pushed to the router (triggers openSection via route watch).
+ * Files are opened via the Tauri backend with the system default application.
+ */
 function openItem(entry: FileEntry) {
 	if (isFolder(entry)) {
+		// Push to router — the route watcher in FileManagerView calls store.openSection
 		router.push(entry.id);
 	} else {
+		// Tauri IPC: open with system default app
 		openFile(entry.id);
 	}
 }
 
-// File type icon color map
+// ── Icon helpers ────────────────────────────────────────────────────────────
+
 const fileIconColors: Record<string, string> = {
 	document: '#2b7cd3',
-	image: '#e07000',
-	video: '#6236cc',
-	audio: '#1db954',
-	archive: '#f1c40f',
-	code: '#34495e',
-	default: '#7f8c8d',
+	image:    '#e07000',
+	video:    '#6236cc',
+	audio:    '#1db954',
+	archive:  '#f1c40f',
+	code:     '#34495e',
+	default:  '#7f8c8d',
 };
 
 function getFileIconColor(category: string) {
-	return fileIconColors[category] || fileIconColors.default;
+	return fileIconColors[category] ?? fileIconColors['default'] ?? '#7f8c8d';
 }
 
-// File category → emoji glyph (fallback icon)
-const fileGlyphs: Record<string, string> = {
-	document: '📄',
-	image: '🖼',
-	audio: '🎵',
-	video: '🎬',
-	archive: '📦',
-	code: '📝',
-	data: '📊',
-	default: '📄',
-};
-function fileGlyph(category: string): string {
-	return fileGlyphs[category] ?? fileGlyphs['default'] ?? '📄';
-}
+// ── Date formatter ──────────────────────────────────────────────────────────
 
-const formatDate = (dateStr: string) => {
-	return new Intl.DateTimeFormat('en-US', {
-		month: 'short', day: 'numeric', year: 'numeric',
-	}).format(new Date(dateStr));
-};
+const formatDate = (dateStr: string) =>
+	new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(
+		new Date(dateStr)
+	);
+
+// ── Keyboard shortcuts ──────────────────────────────────────────────────────
 
 const workspaceRef = ref<HTMLElement>();
 
-// Keyboard Shortcuts
 function handleKeydown(e: KeyboardEvent) {
-	// Don't trigger shortcuts if user is typing in an input
+	// Skip if typing in an input
 	if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
 	const selected = store.selectedItem;
-	if (!selected && e.key !== 'v') return;
 
-	// Navigation
+	// Arrow key navigation
 	if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
 		e.preventDefault();
 		const items = store.currentEntries;
-		const idx = items.findIndex(it => it.id === selectedId.value);
+		const idx = items.findIndex((it: FileEntry) => it.id === selectedId.value);
 		let nextIdx = idx;
 
 		if (e.key === 'ArrowRight') nextIdx = Math.min(idx + 1, items.length - 1);
-		if (e.key === 'ArrowLeft') nextIdx = Math.max(idx - 1, 0);
+		if (e.key === 'ArrowLeft')  nextIdx = Math.max(idx - 1, 0);
 
-		// Grid vertical navigation
 		if (store.viewMode === 'grid') {
 			const containerWidth = workspaceRef.value?.offsetWidth || window.innerWidth;
-			// Each item is 100px + 4px gap roughly. Let's be more precise if possible.
-			// But 104 is a good estimate.
 			const itemsPerRow = Math.floor(containerWidth / 104) || 1;
-
 			if (e.key === 'ArrowDown') nextIdx = Math.min(idx + itemsPerRow, items.length - 1);
-			if (e.key === 'ArrowUp') nextIdx = Math.max(idx - itemsPerRow, 0);
+			if (e.key === 'ArrowUp')   nextIdx = Math.max(idx - itemsPerRow, 0);
 		} else {
-			// List view
 			if (e.key === 'ArrowDown') nextIdx = Math.min(idx + 1, items.length - 1);
-			if (e.key === 'ArrowUp') nextIdx = Math.max(idx - 1, 0);
+			if (e.key === 'ArrowUp')   nextIdx = Math.max(idx - 1, 0);
 		}
 
 		const nextItem = items[nextIdx];
-		if (nextItem) {
-			store.selectItem(nextItem.id);
-		}
+		if (nextItem) store.selectItem(nextItem.id);
 		return;
 	}
 
-	// Actions
+	// Enter — open selected item
 	if (e.key === 'Enter') {
 		e.preventDefault();
 		if (selected) openItem(selected);
 	}
 
+	// F2 — rename
 	if (e.key === 'F2') {
 		e.preventDefault();
 		if (selected) openRenameDialog(selected.id);
 	}
 
+	// Delete — trash selected
 	if (e.key === 'Delete') {
 		e.preventDefault();
 		store.deleteSelection();
 	}
 
+	// Backspace — navigate to parent directory
 	if (e.key === 'Backspace') {
-		// Go to parent directory
 		const parts = store.currentPath.split('/').filter(Boolean);
 		if (parts.length > 0) {
 			parts.pop();
-			const parent = '/' + parts.join('/');
-			store.openSection(parent || '/');
+			store.openSection('/' + parts.join('/') || '/');
 		}
 	}
 
-	// Ctrl Shortcuts
+	// Ctrl / Meta shortcuts
 	if (e.ctrlKey || e.metaKey) {
 		if (e.key === 'c') {
 			e.preventDefault();
-			if (selected) {
-				store.setClipboard([selected.id], 'copy');
-				toast.info('Copied to clipboard');
-			}
+			if (selected) { store.setClipboard([selected.id], 'copy'); toast.info('Copied to clipboard'); }
 		}
 		if (e.key === 'x') {
 			e.preventDefault();
-			if (selected) {
-				store.setClipboard([selected.id], 'cut');
-				toast.info('Cut to clipboard');
-			}
+			if (selected) { store.setClipboard([selected.id], 'cut'); toast.info('Cut to clipboard'); }
 		}
 		if (e.key === 'v') {
 			e.preventDefault();
@@ -222,18 +201,13 @@ function handleKeydown(e: KeyboardEvent) {
 		}
 		if (e.key === 'a') {
 			e.preventDefault();
-			// Select all could be implemented here
+			// TODO: select all entries
 		}
 	}
 }
 
-import { onMounted, onUnmounted } from 'vue';
-onMounted(() => {
-	window.addEventListener('keydown', handleKeydown);
-});
-onUnmounted(() => {
-	window.removeEventListener('keydown', handleKeydown);
-});
+onMounted(() => window.addEventListener('keydown', handleKeydown));
+onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 </script>
 
 <template lang="pug">
@@ -241,96 +215,96 @@ onUnmounted(() => {
 	ActionToolbar(@rename="openRenameDialog" @properties="openPropertiesDialog")
 
 	.LFM-workspace-content(@contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
-		div(v-if="store.viewMode !== 'list'", class="LFM-grid" @contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
-			button(
-				v-for="entry in store.currentEntries"
-				:key="entry.id"
-				type="button"
-				class="LFM-grid-item"
-				:class="{ 'LFM-grid-item--selected': selectedId === entry.id }"
-				:aria-selected="selectedId === entry.id"
-				:title="entry.name"
-				@click="store.selectItem(entry.id)"
-				@dblclick="openItem(entry)"
-				@contextmenu="(e) => openContextMenu(e, entry.id)"
-			)
-				.LFM-grid-item-icon
-					// FolderIcon component expects size as a number, not a string
-					FolderIcon(
-						v-if="isFolder(entry)"
-						:size="164"
-						class="text-amber-500"
-					)
-					img.LFM-media-thumbnail(
-						v-else-if="entry.preview"
-						:src="entry.preview"
-						loading="lazy"
-					)
-					.LFM-file-icon(
-						v-else
-						:style="{ background: getFileIconColor(entry.category) }"
-					)
-						//- Video icon placeholder
-						svg(v-if="entry.category === 'video'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-							polygon(points="23 7 16 12 23 17 23 7")
-							rect(x="1" y="5" width="15" height="14" rx="2" ry="2")
-						//- Audio icon placeholder
-						svg(v-else-if="entry.category === 'audio'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-							path(d="M9 18V5l12-2v13")
-							circle(cx="6" cy="18" r="3")
-							circle(cx="18" cy="16" r="3")
-						//- Default file icon placeholder
-						svg(v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-							path(d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z")
-							polyline(points="13 2 13 9 20 9")
 
-				span(class="LFM-grid-item-name") {{ entry.name }}
+		//- ── Permission / read error empty state ─────────────────────────
+		.LFM-nav-error(v-if="store.navError")
+			.LFM-nav-error-icon
+				svg(v-if="store.navError.kind === 'permission'" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
+					rect(x="3" y="11" width="18" height="11" rx="2" ry="2")
+					path(d="M7 11V7a5 5 0 0 1 10 0v4")
+				svg(v-else-if="store.navError.kind === 'not-found'" xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
+					circle(cx="11" cy="11" r="8")
+					line(x1="21" y1="21" x2="16.65" y2="16.65")
+				svg(v-else xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round")
+					path(d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z")
+					line(x1="12" y1="9" x2="12" y2="13")
+					line(x1="12" y1="17" x2="12.01" y2="17")
+			.LFM-nav-error-title
+				| {{ store.navError.kind === 'permission' ? 'Access Denied' : store.navError.kind === 'not-found' ? 'Not Found' : 'Cannot Open Directory' }}
+			.LFM-nav-error-desc
+				| {{ store.navError.kind === 'permission' ? "You don't have permission to view this directory." : store.navError.kind === 'not-found' ? 'This directory no longer exists.' : 'An error occurred while trying to open this directory.' }}
+			.LFM-nav-error-path {{ store.navError.path }}
+			button.LFM-nav-error-btn(@click="store.navError = null") Go Back
 
-		div(v-else, class="LFM-list" @contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
-			.LFM-list-header
-				span(class="LFM-list-col LFM-list-col--name") Name
-				span(class="LFM-list-col") Date modified
-				span(class="LFM-list-col") Type
-				span(class="LFM-list-col LFM-list-col--right") Size
+		//- ── Normal file view ────────────────────────────────────────────
+		template(v-else)
+			//- Grid view
+			.LFM-grid(v-if="store.viewMode !== 'list'" @contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
+				button(
+					v-for="entry in store.currentEntries"
+					:key="entry.id"
+					type="button"
+					class="LFM-grid-item"
+					:class="{ 'LFM-grid-item--selected': selectedId === entry.id }"
+					:aria-selected="selectedId === entry.id"
+					:title="entry.name"
+					@click="store.selectItem(entry.id)"
+					@dblclick="openItem(entry)"
+					@contextmenu="(e) => openContextMenu(e, entry.id)"
+				)
+					.LFM-grid-item-icon
+						FolderIcon(v-if="isFolder(entry)" :size="164" class="text-amber-500")
+						img.LFM-media-thumbnail(v-else-if="entry.preview" :src="entry.preview" loading="lazy")
+						.LFM-file-icon(v-else :style="{ background: getFileIconColor(entry.category) }")
+							svg(v-if="entry.category === 'video'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+								polygon(points="23 7 16 12 23 17 23 7")
+								rect(x="1" y="5" width="15" height="14" rx="2" ry="2")
+							svg(v-else-if="entry.category === 'audio'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+								path(d="M9 18V5l12-2v13")
+								circle(cx="6" cy="18" r="3")
+								circle(cx="18" cy="16" r="3")
+							svg(v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+								path(d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z")
+								polyline(points="13 2 13 9 20 9")
+					span.LFM-grid-item-name {{ entry.name }}
 
-			button(
-				v-for="row in store.currentEntries"
-				:key="row.id"
-				type="button"
-				class="LFM-list-row"
-				:class="{ 'LFM-list-row--selected': selectedId === row.id }"
-				@click="store.selectItem(row.id)"
-				@dblclick="openItem(row)"
-				@contextmenu="(e) => openContextMenu(e, row.id)"
-			)
-				div(class="LFM-list-col LFM-list-col--name")
-					.LFM-list-file-icon(
-						:style="{ background: getFileIconColor(row.category) }"
-					)
-						span(v-if="isFolder(row)")
-							svg(width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-								path(d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z")
-						img.LFM-list-media-thumbnail(
-							v-else-if="row.preview"
-							:src="row.preview"
-							loading="lazy"
-						)
-						svg(v-else-if="row.category === 'video'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-							polygon(points="23 7 16 12 23 17 23 7")
-							rect(x="1" y="5" width="15" height="14" rx="2" ry="2")
-						svg(v-else-if="row.category === 'audio'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-							path(d="M9 18V5l12-2v13")
-							circle(cx="6" cy="18" r="3")
-							circle(cx="18" cy="16" r="3")
-						svg(v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-							path(d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z")
-							polyline(points="13 2 13 9 20 9")
-
-					span(class="LFM-list-item-name") {{ row.name }}
-
-				span(class="LFM-list-col") {{ formatDate(row.modifiedAt) }}
-				span(class="LFM-list-col") {{ row.typeLabel }}
-				span(class="LFM-list-col LFM-list-col--right") {{ row.sizeLabel }}
+			//- List view
+			.LFM-list(v-else @contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
+				.LFM-list-header
+					span.LFM-list-col.LFM-list-col--name Name
+					span.LFM-list-col Date modified
+					span.LFM-list-col Type
+					span.LFM-list-col.LFM-list-col--right Size
+				button(
+					v-for="row in store.currentEntries"
+					:key="row.id"
+					type="button"
+					class="LFM-list-row"
+					:class="{ 'LFM-list-row--selected': selectedId === row.id }"
+					@click="store.selectItem(row.id)"
+					@dblclick="openItem(row)"
+					@contextmenu="(e) => openContextMenu(e, row.id)"
+				)
+					.LFM-list-col.LFM-list-col--name
+						.LFM-list-file-icon(:style="{ background: getFileIconColor(row.category) }")
+							span(v-if="isFolder(row)")
+								svg(width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+									path(d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z")
+							img.LFM-list-media-thumbnail(v-else-if="row.preview" :src="row.preview" loading="lazy")
+							svg(v-else-if="row.category === 'video'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+								polygon(points="23 7 16 12 23 17 23 7")
+								rect(x="1" y="5" width="15" height="14" rx="2" ry="2")
+							svg(v-else-if="row.category === 'audio'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+								path(d="M9 18V5l12-2v13")
+								circle(cx="6" cy="18" r="3")
+								circle(cx="18" cy="16" r="3")
+							svg(v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+								path(d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z")
+								polyline(points="13 2 13 9 20 9")
+						span.LFM-list-item-name {{ row.name }}
+					span.LFM-list-col {{ formatDate(row.modifiedAt) }}
+					span.LFM-list-col {{ row.typeLabel }}
+					span.LFM-list-col.LFM-list-col--right {{ row.sizeLabel }}
 
 	ContextMenu(
 		v-if="contextMenu.visible"
@@ -426,10 +400,6 @@ onUnmounted(() => {
 		border-width: 0 12px 12px 0
 		border-color: transparent rgba(255, 255, 255, 0.3) transparent transparent
 
-.LFM-file-icon-glyph
-	font-size: 20px
-	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))
-
 .LFM-media-thumbnail
 	max-width: 64px
 	max-height: 64px
@@ -521,4 +491,67 @@ onUnmounted(() => {
 	overflow: hidden
 	text-overflow: ellipsis
 	white-space: nowrap
+
+// ── Navigation error empty state ──────────────────────────────────────────────
+.LFM-nav-error
+	display: flex
+	flex-direction: column
+	align-items: center
+	justify-content: center
+	gap: 12px
+	height: 100%
+	min-height: 300px
+	padding: 48px 24px
+	text-align: center
+
+.LFM-nav-error-icon
+	display: flex
+	align-items: center
+	justify-content: center
+	width: 96px
+	height: 96px
+	border-radius: 50%
+	background: rgba(239, 68, 68, 0.1)
+	color: rgba(239, 68, 68, 0.8)
+	margin-bottom: 8px
+
+.LFM-nav-error-title
+	font-size: 18px
+	font-weight: 600
+	color: var(--LFM-text)
+
+.LFM-nav-error-desc
+	font-size: 13px
+	color: var(--LFM-text)
+	opacity: 0.6
+	max-width: 360px
+	line-height: 1.5
+
+.LFM-nav-error-path
+	font-size: 11px
+	font-family: monospace
+	background: var(--LFM-hover)
+	color: var(--LFM-text)
+	opacity: 0.7
+	padding: 4px 12px
+	border-radius: 4px
+	max-width: 100%
+	overflow: hidden
+	text-overflow: ellipsis
+	white-space: nowrap
+
+.LFM-nav-error-btn
+	margin-top: 4px
+	padding: 8px 20px
+	border-radius: 6px
+	background: var(--LFM-panel)
+	border: 1px solid var(--LFM-border)
+	color: var(--LFM-text)
+	font-size: 13px
+	cursor: pointer
+	transition: background 150ms, border-color 150ms
+
+	&:hover
+		background: var(--LFM-hover)
+		border-color: var(--LFM-blue)
 </style>

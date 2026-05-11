@@ -5,6 +5,7 @@ import { useFileManagerStore } from '@/stores/file-manager';
 const store = useFileManagerStore();
 
 onMounted(() => {
+	store.initializeHomeDir();
 	store.fetchDrives();
 });
 </script>
