@@ -8,6 +8,7 @@ import type { NavigationGroup } from '@/types/file-manager';
 
 // Icons
 import IconHome from '~icons/material-symbols/home';
+import IconDelete from '~icons/material-symbols/delete';
 import IconChevronRight from '~icons/material-symbols/chevron-right';
 import IconFolder from '~icons/material-symbols/folder';
 import IconPushPin from '~icons/material-symbols/push-pin';
@@ -41,13 +42,22 @@ const cloudItems = [
 
 <template>
 	<nav class="LFM-sidebar-nav" aria-label="Navigation pane">
-		<!-- Home -->
-		<RouterLink :to="homePath" class="LFM-sbar-item LFM-sbar-item--home" :class="{ 'LFM-sbar-item--active': isActive(homePath) }">
-			<span class="LFM-sbar-icon">
-				<IconHome class="text-blue-500 text-lg" />
-			</span>
-			<span class="LFM-sbar-label">Home</span>
-		</RouterLink>
+		<!-- Main Shortcuts -->
+		<div class="LFM-sbar-top">
+			<RouterLink :to="homePath" class="LFM-sbar-item LFM-sbar-item--home" :class="{ 'LFM-sbar-item--active': isActive(homePath) }">
+				<span class="LFM-sbar-icon">
+					<IconHome class="text-blue-500" />
+				</span>
+				<span class="LFM-sbar-label">Home</span>
+			</RouterLink>
+
+			<RouterLink :to="homePath + '/.local/share/Trash'" class="LFM-sbar-item LFM-sbar-item--trash" :class="{ 'LFM-sbar-item--active': isActive(homePath + '/.local/share/Trash') }">
+				<span class="LFM-sbar-icon">
+					<IconDelete class="text-rose-500" />
+				</span>
+				<span class="LFM-sbar-label">Trash</span>
+			</RouterLink>
+		</div>
 
 		<!-- Pinned Section -->
 		<div class="LFM-sbar-section">
@@ -57,7 +67,13 @@ const cloudItems = [
 			</button>
 
 			<template v-if="!collapsed['pinned']">
-				<RouterLink v-for="item in navigationGroups.flatMap((g: NavigationGroup) => g.items)" :key="item.id" :to="item.path" class="LFM-sbar-item" :class="{ 'LFM-sbar-item--active': isActive(item.path) }">
+				<RouterLink 
+					v-for="item in navigationGroups.flatMap((g: NavigationGroup) => g.items).filter(i => i.id !== 'home' && i.id !== 'trash')" 
+					:key="item.id" 
+					:to="item.path" 
+					class="LFM-sbar-item" 
+					:class="{ 'LFM-sbar-item--active': isActive(item.path) }"
+				>
 					<span class="LFM-sbar-icon">
 						<IconFolder class="text-amber-500" />
 					</span>
@@ -173,19 +189,38 @@ const cloudItems = [
 	&--active {
 		background: var(--LFM-blue-subtle);
 		color: var(--LFM-blue);
-		font-weight: 500;
+		font-weight: 600;
 
 		&::before {
 			content: '';
 			position: absolute;
-			left: -4px;
-			top: 8px;
-			bottom: 8px;
+			left: -8px;
+			top: 6px;
+			bottom: 6px;
 			width: 4px;
 			background: var(--LFM-blue);
 			border-radius: 0 4px 4px 0;
+			box-shadow: 0 0 10px var(--LFM-blue);
 		}
 	}
+
+	&--home, &--trash {
+		margin-bottom: 2px;
+		height: 38px;
+		.LFM-sbar-icon {
+			font-size: 20px;
+		}
+		.LFM-sbar-label {
+			font-size: 14px;
+			font-weight: 700;
+		}
+	}
+}
+
+.LFM-sbar-top {
+	padding-bottom: 8px;
+	border-bottom: 1px solid var(--LFM-border);
+	margin-bottom: 8px;
 }
 
 .LFM-sbar-icon {

@@ -30,9 +30,12 @@ export interface MediaInfo {
 	width: number | null;
 	height: number | null;
 	duration: number | null;
+	container: string | null;
 	video_codec: string | null;
 	audio_codec: string | null;
 	bitrate: number | null;
+	video_bitrate: number | null;
+	audio_bitrate: number | null;
 	frame_rate: number | null;
 	sample_rate: number | null;
 	channels: number | null;

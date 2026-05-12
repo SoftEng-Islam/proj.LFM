@@ -13,7 +13,7 @@ import { getHomeDir } from '@/composables/useFilesystem';
  * NOTE: This is a static value used as a starting point.
  * The store will update currentPath once the real home dir is detected.
  */
-export const defaultPath: string = getHomeDir();
+export const defaultPath: string = '/';
 
 /**
  * Generate navigation groups based on a specific home directory.

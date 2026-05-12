@@ -81,9 +81,12 @@ pub struct MediaInfo {
     pub width: Option<u32>,
     pub height: Option<u32>,
     pub duration: Option<f64>,
+    pub container: Option<String>,
     pub video_codec: Option<String>,
     pub audio_codec: Option<String>,
     pub bitrate: Option<u64>,
+    pub video_bitrate: Option<u64>,
+    pub audio_bitrate: Option<u64>,
     pub frame_rate: Option<f32>,
     pub sample_rate: Option<u32>,
     pub channels: Option<u32>,
@@ -311,9 +314,12 @@ pub async fn get_media_info(file_path: String) -> Result<MediaInfo, String> {
         width: None,
         height: None,
         duration: None,
+        container: None,
         video_codec: None,
         audio_codec: None,
         bitrate: None,
+        video_bitrate: None,
+        audio_bitrate: None,
         frame_rate: None,
         sample_rate: None,
         channels: None,
@@ -328,7 +334,24 @@ pub async fn get_media_info(file_path: String) -> Result<MediaInfo, String> {
     }
     // Video/Audio via ffprobe
     else if ["mp4", "mkv", "avi", "mov", "webm", "mp3", "wav", "ogg", "flac"].contains(&ext.as_str()) {
-        let output = Command::new("ffprobe")
+        let output_format = Command::new("ffprobe")
+            .args(&[
+                "-v", "error",
+                "-show_entries", "format=format_name,bit_rate",
+                "-of", "json",
+                &file_path
+            ])
+            .output();
+
+        if let Ok(out) = output_format {
+            let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap_or(serde_json::Value::Null);
+            if let Some(format) = json["format"].as_object() {
+                info.container = format["format_name"].as_str().map(|s| s.to_string());
+                info.bitrate = format["bit_rate"].as_str().and_then(|s| s.parse().ok());
+            }
+        }
+
+        let output_video = Command::new("ffprobe")
             .args(&[
                 "-v", "error",
                 "-select_streams", "v:0",
@@ -338,13 +361,13 @@ pub async fn get_media_info(file_path: String) -> Result<MediaInfo, String> {
             ])
             .output();
 
-        if let Ok(out) = output {
+        if let Ok(out) = output_video {
             let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap_or(serde_json::Value::Null);
             if let Some(stream) = json["streams"].as_array().and_then(|a| a.get(0)) {
                 info.width = stream["width"].as_u64().map(|v| v as u32);
                 info.height = stream["height"].as_u64().map(|v| v as u32);
                 info.video_codec = stream["codec_name"].as_str().map(|s| s.to_string());
-                info.bitrate = stream["bit_rate"].as_str().and_then(|s| s.parse().ok());
+                info.video_bitrate = stream["bit_rate"].as_str().and_then(|s| s.parse().ok());
 
                 if let Some(fr_str) = stream["avg_frame_rate"].as_str() {
                     let parts: Vec<&str> = fr_str.split('/').collect();
@@ -361,7 +384,7 @@ pub async fn get_media_info(file_path: String) -> Result<MediaInfo, String> {
             .args(&[
                 "-v", "error",
                 "-select_streams", "a:0",
-                "-show_entries", "stream=codec_name,sample_rate,channels,duration",
+                "-show_entries", "stream=codec_name,sample_rate,channels,duration,bit_rate",
                 "-of", "json",
                 &file_path
             ])
@@ -374,6 +397,7 @@ pub async fn get_media_info(file_path: String) -> Result<MediaInfo, String> {
                 info.sample_rate = stream["sample_rate"].as_str().and_then(|s| s.parse().ok());
                 info.channels = stream["channels"].as_u64().map(|v| v as u32);
                 info.duration = stream["duration"].as_str().and_then(|s| s.parse().ok());
+                info.audio_bitrate = stream["bit_rate"].as_str().and_then(|s| s.parse().ok());
             }
         }
     }

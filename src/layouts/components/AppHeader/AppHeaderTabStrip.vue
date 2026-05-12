@@ -3,179 +3,179 @@ import { useRouter } from 'vue-router';
 import { useFileManagerStore } from '@/stores/file-manager';
 import IconAdd from '~icons/material-symbols/add';
 import IconFolder from '~icons/material-symbols/folder';
+import IconClose from '~icons/material-symbols/close';
 
 const store = useFileManagerStore();
 const router = useRouter();
 
 function handleCloseTab(tabId: string) {
-    const idx = store.windowTabs.findIndex((t: any) => t.id === tabId);
-    if (idx === -1) return;
-    
-    const isActive = store.currentPath === store.windowTabs[idx]?.sectionId;
-    store.closeTab(tabId);
-    
-    if (isActive) {
-        const next = store.windowTabs[Math.max(0, idx - 1)];
-        if (next) router.push(next.path);
-    }
+	const idx = store.windowTabs.findIndex((t: any) => t.id === tabId);
+	if (idx === -1) return;
+	
+	const isActive = store.currentPath === store.windowTabs[idx]?.sectionId;
+	store.closeTab(tabId);
+	
+	if (isActive) {
+		const next = store.windowTabs[Math.max(0, idx - 1)];
+		if (next) router.push(next.path);
+	}
 }
 
 function handleNewTab() {
-    const id = store.addTab();
-    const tab = store.windowTabs.find((t: any) => t.id === id);
-    if (tab) router.push(tab.path);
+	const id = store.addTab();
+	const tab = store.windowTabs.find((t: any) => t.id === id);
+	if (tab) router.push(tab.path);
 }
 </script>
 
-<template>
-    <div class="LFM-tab-row" data-tauri-drag-region>
-        <div class="LFM-tab-strip pl-2" role="tablist">
-            <RouterLink
-                v-for="tab in store.windowTabs"
-                :key="tab.id"
-                :to="tab.path"
-                class="LFM-tab"
-                :class="{ 'LFM-tab--active': store.currentPath === tab.sectionId }"
-                role="tab"
-                :aria-selected="store.currentPath === tab.sectionId"
-            >
-                <IconFolder class="LFM-tab-icon text-amber-500" />
-                <span class="LFM-tab-label">{{ tab.label }}</span>
-                <button 
-                    v-if="store.windowTabs.length > 1"
-                    class="LFM-tab-close" 
-                    title="Close tab" 
-                    @click.prevent="handleCloseTab(tab.id)"
-                >×</button>
-            </RouterLink>
-            
-            <button
-                class="LFM-new-tab"
-                title="New tab"
-                @click="handleNewTab"
-            >
-                <IconAdd />
-            </button>
-        </div>
+<template lang="pug">
+.LFM-tab-row(data-tauri-drag-region)
+	.LFM-tab-strip(role="tablist")
+		transition-group(name="tab-list")
+			RouterLink.LFM-tab(
+				v-for="tab in store.windowTabs"
+				:key="tab.id"
+				:to="tab.path"
+				:class="{ 'LFM-tab--active': store.currentPath === tab.sectionId }"
+				role="tab"
+				:aria-selected="store.currentPath === tab.sectionId"
+			)
+				.LFM-tab-content
+					IconFolder.LFM-tab-icon(:class="tab.accent ? `text-${tab.accent}-500` : 'text-amber-500'")
+					span.LFM-tab-label {{ tab.label }}
+					button.LFM-tab-close(
+						v-if="store.windowTabs.length > 1"
+						title="Close tab"
+						@click.prevent="handleCloseTab(tab.id)"
+					)
+						IconClose
 
-        <div class="LFM-tab-drag" data-tauri-drag-region />
-    </div>
+		button.LFM-new-tab(title="New tab" @click="handleNewTab")
+			IconAdd
+
+	.LFM-tab-drag(data-tauri-drag-region)
 </template>
 
-<style scoped lang="scss">
-@reference "tailwindcss";
-.LFM-tab-row {
-    display: flex;
-    align-items: stretch;
-    height: 36px;
-    background: var(--LFM-title-bar);
-    border-bottom: 1px solid var(--LFM-border);
-    flex-shrink: 0;
-    user-select: none;
-}
+<style lang="sass" scoped>
+@reference "tailwindcss"
 
-.LFM-tab-strip {
-    display: flex;
-    align-items: stretch;
-    height: 100%;
-    flex-shrink: 0;
-}
+.LFM-tab-row
+	display: flex
+	align-items: stretch
+	height: 36px
+	background: var(--LFM-title-bar)
+	border-bottom: 1px solid var(--LFM-border)
+	flex-shrink: 0
+	user-select: none
 
-.LFM-tab {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 12px;
-    min-width: 120px;
-    max-width: 200px;
-    height: 100%;
-    cursor: pointer;
-    color: var(--LFM-text);
-    border-right: 1px solid var(--LFM-border);
-    transition: all 150ms ease;
-    font-size: 12px;
-    text-decoration: none;
-    flex-shrink: 0;
-    @apply rounded-t-lg;
+.LFM-tab-strip
+	display: flex
+	align-items: stretch
+	height: 100%
+	padding-left: 8px
 
-    &:hover {
-        background: var(--LFM-hover);
-    }
+.LFM-tab
+	display: flex
+	align-items: center
+	min-width: 140px
+	max-width: 220px
+	height: 32px
+	margin-top: 4px
+	padding: 0 8px
+	cursor: pointer
+	color: var(--LFM-text)
+	text-decoration: none
+	border-radius: 8px 8px 0 0
+	transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1)
+	position: relative
+	font-size: 12px
 
-    &--active {
-        background: var(--LFM-panel);
-        border-bottom: none;
-        position: relative;
-        
-        &::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--LFM-blue);
-        }
-    }
-}
+	&:hover
+		background: var(--LFM-hover)
 
-.LFM-tab-icon {
-    font-size: 16px;
-}
+	&--active
+		background: var(--LFM-panel)
+		z-index: 2
+		
+		&::after
+			content: ''
+			position: absolute
+			bottom: -1px
+			left: 0
+			right: 0
+			height: 2px
+			background: var(--LFM-blue)
+			box-shadow: 0 -2px 10px var(--LFM-blue)
 
-.LFM-tab-label {
-    flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
+.LFM-tab-content
+	display: flex
+	align-items: center
+	gap: 8px
+	width: 100%
 
-.LFM-tab-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--LFM-text);
-    font-size: 14px;
-    opacity: 0.5;
-    transition: all 150ms ease;
+.LFM-tab-icon
+	font-size: 16px
+	flex-shrink: 0
 
-    &:hover {
-        background: #c42b1c;
-        color: white;
-        opacity: 1;
-    }
-}
+.LFM-tab-label
+	flex: 1
+	overflow: hidden
+	text-overflow: ellipsis
+	white-space: nowrap
+	font-weight: 500
 
-.LFM-new-tab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    margin: auto 6px;
-    border-radius: 6px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--LFM-text);
-    font-size: 18px;
-    transition: all 150ms ease;
+.LFM-tab-close
+	display: flex
+	align-items: center
+	justify-content: center
+	width: 20px
+	height: 20px
+	border-radius: 4px
+	background: transparent
+	border: none
+	cursor: pointer
+	color: var(--LFM-text)
+	font-size: 14px
+	opacity: 0
+	transition: all 150ms ease
 
-    &:hover {
-        background: var(--LFM-hover);
-        @apply shadow-sm;
-    }
-}
+	&:hover
+		background: rgba(255, 255, 255, 0.1)
+		color: #f87171
 
-.LFM-tab-drag {
-    flex: 1;
-    -webkit-app-region: drag;
-    app-region: drag;
-}
+.LFM-tab:hover .LFM-tab-close
+	opacity: 0.6
+
+.LFM-tab-close:hover
+	opacity: 1 !important
+
+.LFM-new-tab
+	display: flex
+	align-items: center
+	justify-content: center
+	width: 28px
+	height: 28px
+	margin: 4px 6px 0
+	border-radius: 6px
+	background: transparent
+	border: none
+	cursor: pointer
+	color: var(--LFM-text)
+	font-size: 18px
+	transition: all 150ms ease
+
+	&:hover
+		background: var(--LFM-hover)
+
+.LFM-tab-drag
+	flex: 1
+	-webkit-app-region: drag
+
+// Animations
+.tab-list-enter-active, .tab-list-leave-active
+	transition: all 300ms ease
+
+.tab-list-enter-from, .tab-list-leave-to
+	opacity: 0
+	transform: translateY(-10px) scale(0.9)
 </style>

@@ -410,6 +410,8 @@ export function enableShadowEffect(effect: boolean): Promise<void> {
 
 // ─── Extensions / CLI ────────────────────────────────────────────────────────
 
+import { getCurrentWindow } from '@tauri-apps/api/window';
+
 /** Return the parsed CLI arguments passed when the app was launched. */
 export function getCliArgs(): Promise<CliArgs> {
 	return invoke('get_cli_args');
@@ -421,4 +423,24 @@ export function getCliArgs(): Promise<CliArgs> {
  */
 export function listenStylesheetChange(): Promise<void> {
 	return invoke('listen_stylesheet_change');
+}
+
+// ─── Window Controls ────────────────────────────────────────────────────────
+
+/** Minimize the current application window. */
+export async function minimizeWindow(): Promise<void> {
+	const window = getCurrentWindow();
+	await window.minimize();
+}
+
+/** Toggle between maximized and restored window states. */
+export async function toggleMaximize(): Promise<void> {
+	const window = getCurrentWindow();
+	await window.toggleMaximize();
+}
+
+/** Close the current application window. */
+export async function closeWindow(): Promise<void> {
+	const window = getCurrentWindow();
+	await window.close();
 }

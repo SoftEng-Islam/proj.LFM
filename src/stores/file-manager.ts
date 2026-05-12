@@ -74,6 +74,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	// ── Loading & data ────────────────────────────────────────────────────────
 	const isLoading = ref(false);
+	const isInitialized = ref(false);
 
 	/**
 	 * Structured navigation error — set when entering a directory fails.
@@ -107,10 +108,11 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		windowTabs.value = createInitialTabs(home);
 		navigationGroups.value = createNavigationGroups(home);
 
-		// If we're currently at the fallback /root, jump to the real home
-		if (currentPath.value === '/root') {
+		// If we're currently at a generic root, jump to the real home
+		if (currentPath.value === '/root' || currentPath.value === '/') {
 			openSection(home);
 		}
+		isInitialized.value = true;
 	}
 
 	// ── Computed: navigation groups with counts ───────────────────────────────
@@ -576,6 +578,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		// Actions
 		initializeHomeDir,
 		fetchDirectory,
+		refresh,
 		fetchDrives,
 		openSection,
 		selectItem,

@@ -28,12 +28,18 @@ function goUp() {
         if (up) router.push(up);
     }
 }
-function refresh() { location.reload(); }
+function refresh() { store.refresh(); }
 
 function handleGlobalKeydown(e: KeyboardEvent) {
+    // Ctrl+F focus search
     if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
         e.preventDefault();
         searchRef.value?.focus();
+    }
+    // F5 refresh content
+    if (e.key === 'F5') {
+        e.preventDefault();
+        refresh();
     }
 }
 

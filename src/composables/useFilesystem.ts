@@ -51,7 +51,7 @@ export function getHomeDir(): string {
 		if (injected) return injected;
 	}
 	// Overridden at startup by initHomeDirFromStorage()
-	return '/root';
+	return '/';
 }
 
 /**
@@ -79,7 +79,7 @@ export function getSectionPath(sectionId: SectionId): string {
  */
 export async function initHomeDirFromStorage(): Promise<string> {
 	const cached = (window as { __LFM_HOME__?: string }).__LFM_HOME__;
-	if (cached && cached !== '/root') return cached;
+	if (cached && cached !== '/') return cached;
 
 	try {
 		const homeVal = await tauriGetHomeDir();
@@ -91,7 +91,7 @@ export async function initHomeDirFromStorage(): Promise<string> {
 		console.error('[useFilesystem] initHomeDirFromStorage failed:', err);
 	}
 
-	return '/root';
+	return '/';
 }
 
 // ─── Composable ───────────────────────────────────────────────────────────────

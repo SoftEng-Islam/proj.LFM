@@ -1,10 +1,8 @@
-import { computed, watch } from 'vue';
-import { useStorage } from '@vueuse/core';
 import { acceptHMRUpdate, defineStore } from 'pinia';
-
 import type { UiTheme } from '@/types/file-manager';
 
 const themeStorageKey = 'lfm-theme';
+const defaultTheme: UiTheme = 'dark';
 
 function applyThemeToDocument(theme: UiTheme) {
 	if (typeof document === 'undefined') {
@@ -18,39 +16,56 @@ function applyThemeToDocument(theme: UiTheme) {
 	root.style.colorScheme = theme;
 }
 
-export const useUiStore = defineStore('ui', () => {
-	const theme = useStorage<UiTheme>(themeStorageKey, 'dark');
-	const isDark = computed(() => theme.value === 'dark');
-	const themeToggleLabel = computed(() => (isDark.value ? 'Light Mode' : 'Dark Mode'));
+function resolveInitialTheme(): UiTheme {
+	if (typeof window === 'undefined') {
+		return defaultTheme;
+	}
 
-	watch(
-		theme,
-		(nextTheme) => {
-			applyThemeToDocument(nextTheme);
+	const storedTheme = window.localStorage.getItem(themeStorageKey);
+	if (storedTheme === 'light' || storedTheme === 'dark') {
+		return storedTheme as UiTheme;
+	}
+
+	return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function persistTheme(theme: UiTheme) {
+	if (typeof window === 'undefined') {
+		return;
+	}
+	window.localStorage.setItem(themeStorageKey, theme);
+}
+
+export const useUiStore = defineStore('ui', {
+	state: () => ({
+		theme: defaultTheme,
+		hasHydratedTheme: false,
+	}),
+	getters: {
+		isDark: (state) => state.theme === 'dark',
+		themeToggleLabel(): string {
+			return this.isDark ? 'Light Mode' : 'Dark Mode';
 		},
-		{ immediate: true }
-	);
-
-	function initializeTheme() {
-		applyThemeToDocument(theme.value);
-	}
-
-	function setTheme(nextTheme: UiTheme) {
-		theme.value = nextTheme;
-	}
-
-	function toggleTheme() {
-		setTheme(isDark.value ? 'light' : 'dark');
-	}
-
-	return {
-		theme,
-		isDark,
-		themeToggleLabel,
-		initializeTheme,
-		setTheme,
-		toggleTheme
-	};
+	},
+	actions: {
+		initializeTheme() {
+			if (!this.hasHydratedTheme) {
+				this.theme = resolveInitialTheme();
+				this.hasHydratedTheme = true;
+			}
+			persistTheme(this.theme);
+			applyThemeToDocument(this.theme);
+		},
+		setTheme(nextTheme: UiTheme) {
+			this.theme = nextTheme;
+			this.hasHydratedTheme = true;
+			persistTheme(this.theme);
+			applyThemeToDocument(this.theme);
+		},
+		toggleTheme() {
+			this.setTheme(this.isDark ? 'light' : 'dark');
+		},
+	},
 });
 
 if (import.meta.hot) {

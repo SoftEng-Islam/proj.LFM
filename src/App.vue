@@ -2,6 +2,8 @@
 import { onMounted } from 'vue';
 import { useFileManagerStore } from '@/stores/file-manager';
 
+import AppPreloader from '@/components/ui/AppPreloader.vue';
+
 const store = useFileManagerStore();
 
 onMounted(() => {
@@ -11,6 +13,7 @@ onMounted(() => {
 </script>
 
 <template lang="pug">
+AppPreloader(:isReady="store.isInitialized")
 RouterView(v-slot="{ Component }")
 	component(:is="Component")
 </template>
