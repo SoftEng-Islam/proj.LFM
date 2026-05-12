@@ -16,7 +16,5 @@
 		"src/**/*.d.ts",
 		"src/**/*.vue"
 	],
-	"exclude": [
-		"src/legacy/**/*"
-	]
+	"exclude": []
 }

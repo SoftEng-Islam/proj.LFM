@@ -12,7 +12,5 @@
 	"include": [
 		"api/**/*.ts"
 	],
-	"exclude": [
-		"src/legacy/**/*"
-	]
+	"exclude": []
 }

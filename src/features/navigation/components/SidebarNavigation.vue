@@ -67,13 +67,7 @@ const cloudItems = [
 			</button>
 
 			<template v-if="!collapsed['pinned']">
-				<RouterLink 
-					v-for="item in navigationGroups.flatMap((g: NavigationGroup) => g.items).filter(i => i.id !== 'home' && i.id !== 'trash')" 
-					:key="item.id" 
-					:to="item.path" 
-					class="LFM-sbar-item" 
-					:class="{ 'LFM-sbar-item--active': isActive(item.path) }"
-				>
+				<RouterLink v-for="item in navigationGroups.flatMap((g: NavigationGroup) => g.items).filter(i => i.id !== 'home' && i.id !== 'trash')" :key="item.id" :to="item.path" class="LFM-sbar-item" :class="{ 'LFM-sbar-item--active': isActive(item.path) }">
 					<span class="LFM-sbar-icon">
 						<IconFolder class="text-amber-500" />
 					</span>
@@ -204,12 +198,15 @@ const cloudItems = [
 		}
 	}
 
-	&--home, &--trash {
+	&--home,
+	&--trash {
 		margin-bottom: 2px;
 		height: 38px;
+
 		.LFM-sbar-icon {
 			font-size: 20px;
 		}
+
 		.LFM-sbar-label {
 			font-size: 14px;
 			font-weight: 700;

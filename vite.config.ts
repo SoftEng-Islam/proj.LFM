@@ -1,67 +1,85 @@
 import { fileURLToPath, URL } from 'node:url';
 
-import tailwindcss from '@tailwindcss/vite';
-import vue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import tailwindcss from '@tailwindcss/vite';
+// import tsconfigPaths from 'vite-tsconfig-paths';
 import VueDevTools from 'vite-plugin-vue-devtools';
 import Icons from 'unplugin-icons/vite';
+import svgLoader from 'vite-svg-loader';
+// import { visualizer } from 'rollup-plugin-visualizer';
+import viteImagemin from 'vite-plugin-imagemin';
+import vuePugPlugin from 'vite-plugin-pug';
 
-export default defineConfig(async ({ mode }) => {
+export default defineConfig(({ mode }) => {
+	const server = {
+		port: 1420,
+		watch: {
+			open: true,
+			usePolling: true,
+			interval: 300,
+			ignored: ['**/src-tauri/target/**'],
+		},
+	};
 	const plugins = [
-		vue(),
-		tailwindcss(),
-		Icons({
-			autoInstall: true,
-			compiler: 'vue3',
-			scale: 1,
+		viteImagemin({
+			gifsicle: {
+				optimizationLevel: 7,
+				interlaced: false,
+			},
+			optipng: {
+				optimizationLevel: 7,
+			},
+			mozjpeg: {
+				quality: 20,
+			},
+			pngquant: {
+				quality: [0.8, 0.9],
+				speed: 4,
+			},
+			svgo: {
+				plugins: [
+					{
+						name: 'removeViewBox',
+					},
+					{
+						name: 'removeEmptyAttrs',
+						active: false,
+					},
+				],
+			},
 		}),
+		vue({
+			template: {
+				preprocessOptions: {
+					// 'preprocessOptions' is passed through to the pug compiler
+					plugins: [vuePugPlugin],
+				},
+			},
+		}),
+		tailwindcss(),
 		VueDevTools(),
+		Icons({
+			compiler: 'vue3',
+		}),
+		svgLoader(),
 	];
 
-	if (process.env.ANALYZE === 'true') {
-		const { visualizer } = await import('rollup-plugin-visualizer');
-		plugins.push(
-			visualizer({
-				open: true,
-				filename: 'dist/stats.html',
-				gzipSize: true,
-				brotliSize: true,
-			})
-		);
+	if (mode === 'analyze') {
+		// plugins.push(visualizer({ filename: 'dist/stats.html', open: false }));
 	}
 
 	return {
-		clearScreen: false,
+		server,
 		plugins,
-		server: {
-			host: '0.0.0.0',
-			port: 1420,
-			strictPort: true,
-			open: false,
-			watch: {
-				ignored: ['**/src-tauri/target/**'],
-			},
-		},
-		preview: {
-			host: '0.0.0.0',
-			port: 4173,
-			strictPort: true,
-		},
 		css: {
 			devSourcemap: mode === 'development',
-			preprocessorOptions: {
-				sass: {
-					api: 'modern-compiler',
-					indentedSyntax: true,
-				},
-			},
 		},
 		resolve: {
-			alias: [
-				{ find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
-				{ find: /^daisyui$/, replacement: fileURLToPath(new URL('./node_modules/daisyui/index.js', import.meta.url)) },
-				{ find: /^daisyui\/theme$/, replacement: fileURLToPath(new URL('./node_modules/daisyui/theme/index.js', import.meta.url)) },
-			],
+			tsconfigPaths: true,
+			alias: {
+				'@': fileURLToPath(new URL('./src', import.meta.url)),
+			},
 		},
 	};
 });
