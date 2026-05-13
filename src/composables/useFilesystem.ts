@@ -62,14 +62,24 @@ export function getSectionPath(sectionId: SectionId): string {
 	const home = getHomeDir();
 
 	switch (sectionId) {
-		case 'home':        return home;
-		case 'documents':   return `${home}/Documents`;
-		case 'downloads':   return `${home}/Downloads`;
-		case 'projects':    return `${home}/Projects`;
-		case 'media':       return `${home}/Pictures`;
-		case 'shared':      return `${home}/Public`;
-		case 'trash':       return 'trash'; // handled specially via getTrashedItems()
-		default:            return home;
+		case 'home':
+			return home;
+		case 'documents':
+			return `${home}/Documents`;
+		case 'downloads':
+			return `${home}/Downloads`;
+		case 'Videos':
+			return `${home}/Videos`;
+		case 'Pictures':
+			return `${home}/Pictures`;
+		case 'Public':
+			return `${home}/Public`;
+		case 'Music':
+			return `${home}/Music`;
+		case 'trash':
+			return 'trash'; // handled specially via getTrashedItems()
+		default:
+			return home;
 	}
 }
 

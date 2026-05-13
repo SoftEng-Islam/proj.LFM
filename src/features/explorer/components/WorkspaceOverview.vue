@@ -8,7 +8,7 @@ import ActionToolbar from '@/features/explorer/components/ActionToolbar.vue';
 import ContextMenu from '@/features/explorer/components/ContextMenu.vue';
 import RenameModal from '@/components/ui/RenameModal.vue';
 import PropertiesModal from '@/components/ui/PropertiesModal.vue';
-import FolderIcon from '@/components/ui/VueIcons/FolderIcon.vue';
+import FolderIcon from '@/components/VueIcons/Folder/FolderIcon.vue';
 
 import { useFileManagerStore } from '@/stores/file-manager';
 import type { FileEntry } from '@/types/file-manager';
@@ -253,7 +253,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 					@contextmenu="(e) => openContextMenu(e, entry.id)"
 				)
 					.LFM-grid-item-icon
-						FolderIcon(v-if="isFolder(entry)" :size="164" class="text-amber-500")
+						FolderIcon(v-if="isFolder(entry)" :size="100" :color="'orange'")
 						img.LFM-media-thumbnail(v-else-if="entry.preview" :src="entry.preview" loading="lazy")
 						.LFM-file-icon(v-else :style="{ background: getFileIconColor(entry.category) }")
 							svg(v-if="entry.category === 'video'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")

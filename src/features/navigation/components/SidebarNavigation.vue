@@ -10,7 +10,8 @@ import type { NavigationGroup } from '@/types/file-manager';
 import IconHome from '~icons/material-symbols/home';
 import IconDelete from '~icons/material-symbols/delete';
 import IconChevronRight from '~icons/material-symbols/chevron-right';
-import IconFolder from '~icons/material-symbols/folder';
+// import IconFolder from '~icons/material-symbols/folder';
+import FolderIcon from '@/components/VueIcons/Folder/FolderIcon.vue';
 import IconPushPin from '~icons/material-symbols/push-pin';
 import IconHardDrive from '~icons/material-symbols/hard-drive';
 import IconCloud from '~icons/material-symbols/cloud';
@@ -69,7 +70,8 @@ const cloudItems = [
 			<template v-if="!collapsed['pinned']">
 				<RouterLink v-for="item in navigationGroups.flatMap((g: NavigationGroup) => g.items).filter(i => i.id !== 'home' && i.id !== 'trash')" :key="item.id" :to="item.path" class="LFM-sbar-item" :class="{ 'LFM-sbar-item--active': isActive(item.path) }">
 					<span class="LFM-sbar-icon">
-						<IconFolder class="text-amber-500" />
+						<!-- <IconFolder class="text-amber-500" /> -->
+						<FolderIcon :color="'orange'" />
 					</span>
 					<span class="LFM-sbar-label">{{ item.label }}</span>
 					<IconPushPin class="LFM-sbar-pin" />
