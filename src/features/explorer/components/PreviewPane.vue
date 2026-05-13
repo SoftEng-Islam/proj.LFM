@@ -36,14 +36,13 @@ import IconFullscreen from '~icons/material-symbols/fullscreen';
 
 import { useFileManagerStore } from '@/stores/file-manager';
 import type { AccentTone, FileStatus } from '@/types/file-manager';
-import { readTextFile } from '@/services/tauri-bridge';
+import { convertFileSrc, getDirectoryCount, setFilePermissions } from '@/services/tauri-bridge';
 import AudioPlayer from '@/components/ui/AudioPlayer.vue';
 import CodePreview from '@/components/ui/CodePreview.vue';
 import MarkdownPreview from '@/components/ui/MarkdownPreview.vue';
 import PDFPreview from '@/components/ui/PDFPreview.vue';
 import FontPreview from '@/components/ui/FontPreview.vue';
 import OfficePreview from '@/components/ui/OfficePreview.vue';
-import { getDirectoryCount, setFilePermissions } from '@/services/tauri-bridge';
 
 // Accent theme mapping for file type colors
 const accentThemeMap: Record<
@@ -142,7 +141,9 @@ const isFont = computed(() => selectedItem.value?.category === 'font');
 const isOffice = computed(() => ['document', 'spreadsheet'].includes(selectedItem.value?.category || ''));
 const isPreviewable = computed(() => !!selectedItem.value?.preview || isOffice.value);
 const previewSrc = computed(() => selectedItem.value?.preview || '');
+const videoSrc = computed(() => selectedItem.value ? convertFileSrc(selectedItem.value.id) : '');
 const imageError = ref(false);
+const isPlayingVideo = ref(false);
 
 // File content for text-based previews
 const fileContent = ref('');
@@ -210,6 +211,7 @@ watch(selectedItem, async () => {
 	fileContent.value = '';
 	isLoadingContent.value = false;
 	directoryItemCount.value = null;
+	isPlayingVideo.value = false;
 
 	if (selectedItem.value) {
 		if (isCode.value || isMarkdown.value) {
@@ -395,9 +397,11 @@ aside.LFM-preview-pane
 							.LFM-media-stage(v-if="isPreviewable && !imageError" :key="previewSrc")
 								img.LFM-stage-image(v-if="isImage" :src="previewSrc" alt="Preview" @error="imageError = true")
 								.LFM-video-stage(v-else-if="isVideo")
-									img.LFM-stage-image(:src="previewSrc" alt="Thumbnail")
-									button.LFM-play-btn(@click="handleOpen")
-										IconPlayArrow(size="40")
+									template(v-if="!isPlayingVideo")
+										img.LFM-stage-image(:src="previewSrc" alt="Thumbnail")
+										button.LFM-play-btn(@click="isPlayingVideo = true")
+											IconPlayArrow(size="40")
+									video.LFM-stage-video(v-else controls autoplay :src="videoSrc")
 								AudioPlayer(v-else-if="isAudio" :src="previewSrc" :title="selectedItem.name")
 								CodePreview(v-else-if="isCode && !isLoadingContent" :code="fileContent" :language="getLanguageFromFilename(selectedItem.name)" :filename="selectedItem.name")
 								MarkdownPreview(v-else-if="isMarkdown && !isLoadingContent" :markdown="fileContent" :filename="selectedItem.name")
@@ -767,7 +771,7 @@ $lfm-ease: cubic-bezier(0.2, 1, 0.3, 1)
 	align-items: center
 	justify-content: center
 
-.LFM-stage-image
+.LFM-stage-image, .LFM-stage-video
 	max-width: 100%
 	max-height: 100%
 	object-fit: contain

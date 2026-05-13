@@ -20,6 +20,7 @@ import { acceptHMRUpdate, defineStore } from 'pinia';
 
 import { defaultPath, createNavigationGroups, createInitialTabs, driveCards as initialDriveCards } from '@/features/navigation/navigation';
 import { initHomeDirFromStorage } from '@/composables/useFilesystem';
+import { mapTrashMetaToEntry } from '@/services/mappers';
 import {
 	convertFileSrc,
 	copy as tauriCopy,
@@ -29,6 +30,7 @@ import {
 	getMediaInfo,
 	getImageThumbnail,
 	getVideoThumbnail,
+	getTrashedItems,
 	isDir,
 	openFile,
 	openInTerminal as tauriOpenTerminal,
@@ -250,6 +252,12 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		navError.value = null;
 
 		try {
+			if (path === '/trash') {
+				const info = await getTrashedItems();
+				currentEntries.value = info.files.map((meta) => mapTrashMetaToEntry(meta, 'slate'));
+				return;
+			}
+
 			const res = await readDirectory(path);
 
 			currentEntries.value = res.files.map((file) => {
@@ -353,6 +361,10 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		currentPath.value = path;
 		searchQuery.value = '';
 		fetchDirectory(path);
+	}
+
+	function refresh() {
+		fetchDirectory(currentPath.value);
 	}
 
 	function selectItem(itemId: string) {
@@ -541,6 +553,8 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		searchQuery,
 		viewMode,
 		sortMode,
+		isLoading,
+		isInitialized,
 
 		// Panel state (from usePanelResize)
 		detailsOpen: panels.detailsOpen,

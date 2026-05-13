@@ -51,7 +51,7 @@ const cloudItems = [
 				<span class="LFM-sbar-label">Home</span>
 			</RouterLink>
 
-			<RouterLink :to="homePath + '/.local/share/Trash'" class="LFM-sbar-item LFM-sbar-item--trash" :class="{ 'LFM-sbar-item--active': isActive(homePath + '/.local/share/Trash') }">
+			<RouterLink to="/trash" class="LFM-sbar-item LFM-sbar-item--trash" :class="{ 'LFM-sbar-item--active': isActive('/trash') }">
 				<span class="LFM-sbar-icon">
 					<IconDelete class="text-rose-500" />
 				</span>

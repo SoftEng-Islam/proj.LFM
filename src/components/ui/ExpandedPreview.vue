@@ -13,6 +13,7 @@ import { readTextFile } from '@/services/tauri-bridge';
 import IconClose from '~icons/material-symbols/close';
 import IconFullscreen from '~icons/material-symbols/fullscreen';
 import IconFullscreenExit from '~icons/material-symbols/fullscreen-exit';
+import IconMinimize from '~icons/material-symbols/minimize';
 import IconSave from '~icons/material-symbols/save';
 import IconEdit from '~icons/material-symbols/edit';
 import IconVisibility from '~icons/material-symbols/visibility';
@@ -41,6 +42,7 @@ const isPDF = computed(() => item.value?.category === 'pdf');
 const isOffice = computed(() => ['document', 'spreadsheet'].includes(item.value?.category || ''));
 
 const isFullscreen = ref(false);
+const isMinimized = ref(false);
 const isEditing = ref(false);
 const isDrawing = ref(false);
 const editContent = ref('');
@@ -85,6 +87,82 @@ function toggleDrawing() {
 	}
 }
 
+// Crop Logic
+const isCropping = ref(false);
+const cropStart = ref({ x: 0, y: 0 });
+const cropEnd = ref({ x: 0, y: 0 });
+let cropping = false;
+
+const cropRect = computed(() => {
+	const x = Math.min(cropStart.value.x, cropEnd.value.x);
+	const y = Math.min(cropStart.value.y, cropEnd.value.y);
+	const width = Math.abs(cropEnd.value.x - cropStart.value.x);
+	const height = Math.abs(cropEnd.value.y - cropStart.value.y);
+	return { x, y, width, height };
+});
+
+function toggleCropping() {
+	isCropping.value = !isCropping.value;
+	if (isCropping.value) {
+		isDrawing.value = false;
+		cropStart.value = { x: 0, y: 0 };
+		cropEnd.value = { x: 0, y: 0 };
+	}
+}
+
+function startCrop(e: MouseEvent) {
+	if (!isCropping.value) return;
+	cropping = true;
+	cropStart.value = { x: e.offsetX, y: e.offsetY };
+	cropEnd.value = { x: e.offsetX, y: e.offsetY };
+}
+
+function updateCrop(e: MouseEvent) {
+	if (!cropping) return;
+	cropEnd.value = { x: e.offsetX, y: e.offsetY };
+}
+
+function stopCrop() {
+	cropping = false;
+}
+
+function applyCrop() {
+	if (cropRect.value.width === 0 || cropRect.value.height === 0) return;
+	
+	const img = document.querySelector('.LFM-expanded-image') as HTMLImageElement;
+	if (!img) return;
+
+	const scaleX = img.naturalWidth / img.width;
+	const scaleY = img.naturalHeight / img.height;
+
+	const canvas = document.createElement('canvas');
+	canvas.width = cropRect.value.width * scaleX;
+	canvas.height = cropRect.value.height * scaleY;
+	
+	const context = canvas.getContext('2d');
+	if (!context) return;
+
+	context.drawImage(
+		img,
+		cropRect.value.x * scaleX,
+		cropRect.value.y * scaleY,
+		cropRect.value.width * scaleX,
+		cropRect.value.height * scaleY,
+		0,
+		0,
+		canvas.width,
+		canvas.height
+	);
+
+	const link = document.createElement('a');
+	link.download = `cropped_${item.value?.name || 'image.png'}`;
+	link.href = canvas.toDataURL('image/png');
+	link.click();
+	
+	toast.success('Cropped image saved to downloads');
+	isCropping.value = false;
+}
+
 async function loadContent() {
 	if (!item.value) return;
 	if (isCode.value || isMarkdown.value) {
@@ -114,7 +192,10 @@ async function handleSave() {
 function close() {
 	store.setExpandedPreviewId(null);
 	isEditing.value = false;
+	isCropping.value = false;
+	isDrawing.value = false;
 	isFullscreen.value = false;
+	isMinimized.value = false;
 }
 
 function toggleFullscreen() {
@@ -144,7 +225,7 @@ onMounted(() => {
 <template lang="pug">
 Teleport(to="body")
 	Transition(name="modal-fade")
-		.LFM-expanded-overlay(v-if="item" @click.self="close")
+		.LFM-expanded-overlay(v-if="item && !isMinimized" @click.self="close")
 			.LFM-expanded-window(
 				:class="{ 'is-fullscreen': isFullscreen }"
 				v-motion
@@ -169,13 +250,15 @@ Teleport(to="body")
 						template(v-if="isImage")
 							button.LFM-action-btn(@click="toggleDrawing" :class="{ 'is-active': isDrawing }" title="Draw on image")
 								IconBrush
-							button.LFM-action-btn(title="Crop (Not implemented)")
+							button.LFM-action-btn(@click="toggleCropping" :class="{ 'is-active': isCropping }" title="Crop Image")
 								IconCrop
 
 						.LFM-divider-v
 						
 						button.LFM-action-btn(@click="toggleFullscreen" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'")
 							component(:is="isFullscreen ? IconFullscreenExit : IconFullscreen")
+						button.LFM-action-btn(@click="isMinimized = true" title="Minimize")
+							IconMinimize
 						button.LFM-action-btn.LFM-action-btn--close(@click="close" title="Close")
 							IconClose
 
@@ -185,17 +268,30 @@ Teleport(to="body")
 						//- View Mode
 						template(v-if="!isEditing")
 							.LFM-expanded-image-container(v-if="isImage")
-								img.LFM-expanded-image(:src="item.preview" alt="Full Preview")
-								canvas.LFM-drawing-canvas(
-									v-if="isDrawing"
-									ref="canvasRef"
-									width="800"
-									height="600"
-									@mousedown="startDrawing"
-									@mousemove="draw"
-									@mouseup="stopDrawing"
-									@mouseleave="stopDrawing"
+								.LFM-image-wrapper(
+									@mousedown="startCrop"
+									@mousemove="updateCrop"
+									@mouseup="stopCrop"
+									@mouseleave="stopCrop"
 								)
+									img.LFM-expanded-image(:src="item.preview" alt="Full Preview" draggable="false")
+									
+									canvas.LFM-drawing-canvas(
+										v-if="isDrawing"
+										ref="canvasRef"
+										width="800"
+										height="600"
+										@mousedown="startDrawing"
+										@mousemove="draw"
+										@mouseup="stopDrawing"
+										@mouseleave="stopDrawing"
+									)
+
+									.LFM-crop-overlay(v-if="isCropping && cropRect.width > 0")
+										.LFM-crop-box(
+											:style="{ left: cropRect.x + 'px', top: cropRect.y + 'px', width: cropRect.width + 'px', height: cropRect.height + 'px' }"
+										)
+											button.LFM-apply-crop-btn(@click.stop="applyCrop") Apply Crop
 							video.LFM-expanded-video(v-else-if="isVideo" :src="item.preview" controls autoplay)
 							CodePreview(v-else-if="isCode" :src="item.preview" :title="item.name")
 							MarkdownPreview(v-else-if="isMarkdown" :src="item.preview" :title="item.name")
@@ -226,6 +322,14 @@ Teleport(to="body")
 					.LFM-expanded-info
 						span(v-if="isEditing") Editing...
 						span(v-else) Viewing
+	
+	Transition(name="pill-slide")
+		.LFM-minimized-pill(v-if="item && isMinimized" @click="isMinimized = false")
+			.LFM-pill-content
+				span.LFM-expanded-symbol {{ item.category === 'folder' ? '📁' : '📄' }}
+				span.LFM-pill-title Viewing: {{ item.name }}
+			button.LFM-action-btn.LFM-action-btn--close(@click.stop="close" title="Close")
+				IconClose
 </template>
 
 <style lang="sass" scoped>
@@ -341,10 +445,49 @@ Teleport(to="body")
 	align-items: center
 	justify-content: center
 
+.LFM-image-wrapper
+	position: relative
+	display: inline-block
+	max-width: 100%
+	max-height: 100%
+	overflow: hidden
+
 .LFM-expanded-image
 	max-width: 100%
 	max-height: 100%
-	object-fit: contain
+	display: block
+	user-select: none
+
+.LFM-crop-overlay
+	position: absolute
+	inset: 0
+	pointer-events: none
+	z-index: 10
+
+.LFM-crop-box
+	position: absolute
+	border: 2px dashed var(--LFM-blue)
+	background: transparent
+	box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5)
+	pointer-events: auto
+
+.LFM-apply-crop-btn
+	position: absolute
+	bottom: -32px
+	right: -2px
+	background: var(--LFM-blue)
+	color: white
+	border: none
+	border-radius: 4px
+	padding: 4px 12px
+	font-size: 12px
+	font-weight: 600
+	cursor: pointer
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3)
+	transition: all 200ms ease
+	&:hover
+		background: #0ea5e9
+		transform: translateY(-2px)
 
 .LFM-drawing-canvas
 	position: absolute
@@ -421,4 +564,46 @@ Teleport(to="body")
 
 .modal-fade-enter-from, .modal-fade-leave-to
 	opacity: 0
+
+.LFM-minimized-pill
+	position: fixed
+	bottom: 24px
+	right: 24px
+	z-index: 9999
+	background: var(--LFM-panel)
+	border: 1px solid var(--LFM-border)
+	border-radius: 24px
+	padding: 8px 12px 8px 16px
+	display: flex
+	align-items: center
+	gap: 16px
+	box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4), 0 4px 10px -2px rgba(0,0,0,0.3)
+	cursor: pointer
+	transition: all 200ms ease
+
+	&:hover
+		transform: translateY(-2px)
+		box-shadow: 0 14px 30px -5px rgba(0,0,0,0.5), 0 6px 14px -2px rgba(0,0,0,0.4)
+		border-color: var(--LFM-blue)
+
+.LFM-pill-content
+	display: flex
+	align-items: center
+	gap: 8px
+
+.LFM-pill-title
+	font-size: 13px
+	font-weight: 600
+	color: var(--LFM-text)
+	max-width: 200px
+	white-space: nowrap
+	overflow: hidden
+	text-overflow: ellipsis
+
+.pill-slide-enter-active, .pill-slide-leave-active
+	transition: all 300ms cubic-bezier(0.2, 1, 0.3, 1)
+
+.pill-slide-enter-from, .pill-slide-leave-to
+	opacity: 0
+	transform: translateY(40px) scale(0.9)
 </style>

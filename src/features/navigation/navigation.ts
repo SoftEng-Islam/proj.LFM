@@ -42,7 +42,7 @@ export function createNavigationGroups(home: string): NavigationGroup[] {
 			title: 'System',
 			description: 'Maintenance and cleanup.',
 			items: [
-				{ id: 'trash', label: 'Trash', caption: 'Items waiting for purge or restore', path: `${home}/.local/share/Trash`, accent: 'slate' },
+				{ id: 'trash', label: 'Trash', caption: 'Items waiting for purge or restore', path: '/trash', accent: 'slate' },
 			],
 		},
 	];

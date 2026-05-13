@@ -5,10 +5,6 @@ import { defaultPath } from '@/features/navigation/navigation';
 
 const routes: RouteRecordRaw[] = [
 	{
-		path: '/',
-		redirect: defaultPath
-	},
-	{
 		path: '/:path(.*)*',
 		name: 'browser',
 		component: FileManagerView,
@@ -17,5 +13,12 @@ const routes: RouteRecordRaw[] = [
 		}
 	}
 ];
+
+if (defaultPath !== '/') {
+	routes.unshift({
+		path: '/',
+		redirect: defaultPath
+	});
+}
 
 export default routes;

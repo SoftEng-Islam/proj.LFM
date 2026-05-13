@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@material-design-icons/svg':
-        specifier: ^0.14.15
-        version: 0.14.15
       '@tauri-apps/api':
         specifier: ^2.11.0
         version: 2.11.0
@@ -1399,9 +1396,6 @@ packages:
 
   '@leichtgewicht/ip-codec@2.0.5':
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
-
-  '@material-design-icons/svg@0.14.15':
-    resolution: {integrity: sha512-6nbjwGwyJnphwQUscJAYqw1Tk6+W8KvsgOAeyVgzIFXVsHfgX5XyplTUcZ29wbcTUysMMyCUi1LYpmFKA/e61g==}
 
   '@mdx-js/mdx@1.6.22':
     resolution: {integrity: sha512-AMxuLxPz2j5/6TpF/XSdKpQP1NlG0z11dFOlq+2IP/lSgl11GY8ji6S/rgsViN/L0BDvHvUMruRb7ub+24LUYA==}
@@ -11812,8 +11806,6 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   '@leichtgewicht/ip-codec@2.0.5': {}
-
-  '@material-design-icons/svg@0.14.15': {}
 
   '@mdx-js/mdx@1.6.22':
     dependencies:
