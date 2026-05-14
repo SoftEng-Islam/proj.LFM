@@ -26,6 +26,26 @@
 	--LFM-context-hover: rgba(255,255,255,0.08)
 	--LFM-context-text: #f0f0f0
 	--LFM-context-divider: rgba(255,255,255,0.1)
+	// Default accent color (orange) - only active for default theme
+	--LFM-default-accent: #d96b26
+	--LFM-default-accent-subtle: rgba(217, 107, 38, 0.12)
+
+	html[data-theme="light"],
+	html[data-theme="dark"]
+		--LFM-accent: var(--LFM-default-accent)
+		--LFM-accent-subtle: var(--LFM-default-accent-subtle)
+
+	// Disable accent for non-default themes (RosePine, Grouvbox, Atom, VSCode, etc.)
+	html[data-theme="lsrosepine"],
+	html[data-theme="lsrosepine-dark"],
+	html[data-theme="lsgrouvbox"],
+	html[data-theme="lsgrouvbox-dark"],
+	html[data-theme="lsatom"],
+	html[data-theme="lsatom-dark"],
+	html[data-theme="lsvscode"],
+	html[data-theme="lsvscode-dark"]
+		--LFM-accent: var(--color-primary, inherit)
+		--LFM-accent-subtle: color-mix(in srgb, var(--color-primary, inherit) 12%, transparent)
 
 .dark
 	--LFM-bg: #202020
