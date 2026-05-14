@@ -121,6 +121,29 @@ export interface StorageData {
 	status: boolean;
 }
 
+export interface LfmConfigAppearance {
+	theme: 'light' | 'dark';
+	icon_set: string;
+	font_size: number;
+	show_hidden_files: boolean;
+}
+
+export interface LfmConfigBehavior {
+	default_path: string;
+	confirm_delete: boolean;
+	single_click_open: boolean;
+}
+
+export interface LfmConfigTerminal {
+	emulator: string;
+}
+
+export interface LfmConfig {
+	appearance: LfmConfigAppearance;
+	behavior: LfmConfigBehavior;
+	terminal: LfmConfigTerminal;
+}
+
 export interface CliArgs {
 	dirs: string[];
 	is_reveal: boolean;
@@ -344,7 +367,13 @@ export function readData(key: string): Promise<StorageData> {
 export function deleteStorageData(key: string): Promise<void> {
 	return invoke('delete_storage_data', { key });
 }
+export function getConfig(): Promise<LfmConfig> {
+	return invoke('get_config');
+}
 
+export function saveConfig(config: LfmConfig): Promise<boolean> {
+	return invoke('save_config', { config });
+}
 // ─── System / Shell ──────────────────────────────────────────────────────────
 
 /** Open a terminal emulator in the given directory. */

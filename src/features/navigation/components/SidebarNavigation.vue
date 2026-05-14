@@ -140,12 +140,12 @@ const cloudItems = [
 
 		<!-- Settings at bottom -->
 		<div class="LFM-sbar-settings">
-			<button class="LFM-sbar-item LFM-sbar-item--settings">
+			<RouterLink to="/settings" class="LFM-sbar-item LFM-sbar-item--settings" :class="{ 'LFM-sbar-item--active': isActive('/settings') }">
 				<span class="LFM-sbar-icon">
 					<IconSettings />
 				</span>
 				<span class="LFM-sbar-label">Settings</span>
-			</button>
+			</RouterLink>
 		</div>
 	</nav>
 </template>

@@ -4,6 +4,7 @@
 )]
 
 mod commands;
+mod config;
 mod drives;
 mod errors;
 mod extensions;
@@ -219,6 +220,8 @@ async fn main() {
             commands::system::get_home_dir,
             commands::thumbnails::get_video_thumbnail,
             commands::thumbnails::get_image_thumbnail,
+            config::get_config,
+            config::save_config,
             enable_shadow_effect,
             change_transparent_effect
         ])
