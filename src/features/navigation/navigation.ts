@@ -2,7 +2,7 @@
  * Navigation data — defines the sidebar navigation groups, default path, and
  * static drive card placeholders used before real drive data is fetched.
  *
- * Paths use `getHomeDir()` so they work for any Linux user, not just /home/softeng.
+ * Paths use `getHomeDir()` so they work for any Linux user, not just /home/user.
  */
 
 import type { DriveCard, NavigationGroup, WindowTab } from '@/types/file-manager';

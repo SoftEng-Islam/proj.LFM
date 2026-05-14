@@ -41,7 +41,7 @@ impl Default for Config {
                 show_hidden_files: false,
             },
             behavior: Behavior {
-                default_path: "/home/user".to_string(),
+                default_path: "/drives".to_string(),
                 confirm_delete: true,
                 single_click_open: false,
             },

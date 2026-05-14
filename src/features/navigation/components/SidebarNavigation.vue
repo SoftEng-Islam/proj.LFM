@@ -85,6 +85,7 @@ const cloudItems = [
 				<IconChevronRight class="LFM-sbar-chevron" :class="{ 'LFM-sbar-chevron--collapsed': collapsed['drives'] }" />
 				<span>Drives</span>
 			</button>
+			<RouterLink to="/drives" class="LFM-sbar-item">Locations</RouterLink>
 			<template v-if="!collapsed['drives']">
 				<RouterLink v-for="drive in driveCards" :key="drive.id" :to="drive.id" class="LFM-sbar-item" :class="{ 'LFM-sbar-item--active': isActive(drive.id) }">
 					<span class="LFM-sbar-icon">
