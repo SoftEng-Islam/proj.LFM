@@ -47,18 +47,25 @@ div.LFM-settings-shell
             legend Appearance
             .LFM-control
               label(for="theme") Theme
-              select#theme(v-model="store.config.appearance.theme")
+              select#theme(v-model="store.config.appearance.theme" @change="store.applyLiveConfig()")
                 option(value="dark") Dark
                 option(value="light") Light
             .LFM-control
               label(for="iconSet") Icon set
-              input#iconSet(type="text" v-model="store.config.appearance.icon_set" placeholder="Papirus")
+              select#iconSize(v-model="store.config.appearance.icon_size" @change="store.applyLiveConfig()")
+                option(value="small") Small (16px)
+                option(value="medium") Medium (24px)
+                option(value="large") Large (32px)
             .LFM-control
               label(for="fontSize") Font size
-              input#fontSize(type="number" min="10" max="24" v-model.number="store.config.appearance.font_size")
+              select#fontSize(v-model="store.config.appearance.font_size" @change="store.applyLiveConfig()")
+                option(value="12") 12px
+                option(value="14") 14px
+                option(value="16") 16px
+                option(value="18") 18px
             .LFM-control
               label
-                input(type="checkbox" v-model="store.config.appearance.show_hidden_files")
+                input(type="checkbox" v-model="store.config.appearance.show_hidden_files" @change="store.applyLiveConfig()")
                 | Show hidden files
 
           fieldset.LFM-settings-group

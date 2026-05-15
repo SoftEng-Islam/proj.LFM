@@ -13,6 +13,7 @@ const configStore = useConfigStore();
 onMounted(async () => {
 	await configStore.loadConfig();
 	explorerStore.showHiddenFiles = configStore.config.appearance.show_hidden_files;
+		configStore.applyLiveConfig();
 	store.initializeHomeDir();
 	store.fetchDrives();
 });
