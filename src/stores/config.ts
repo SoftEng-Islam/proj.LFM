@@ -1,7 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
 import { useUiStore } from '@/stores/ui';
 import { useExplorerStore } from '@/stores/explorer.store';
-import { getConfig as getConfigCommand, saveConfig as saveConfigCommand } from '@/services/tauri-bridge';
+import { getConfig as getConfigCommand, saveConfig as saveConfigCommand, getHomeDir } from '@/services/tauri-bridge';
 import type { LfmConfig } from '@/services/tauri-bridge';
 
 function createDefaultConfig(): LfmConfig {
@@ -38,6 +38,11 @@ this.isLoading = true;
 this.error = '';
 try {
 const config = await getConfigCommand();
+		// Set default path to user's home directory if not set
+		if (!config.behavior.default_path) {
+			const homeDir = await getHomeDir();
+			config.behavior.default_path = homeDir;
+		}
 this.config = config;
 useUiStore().setTheme(config.appearance.theme);
 useExplorerStore().showHiddenFiles = config.appearance.show_hidden_files;
