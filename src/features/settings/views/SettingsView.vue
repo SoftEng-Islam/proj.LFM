@@ -51,7 +51,7 @@ div.LFM-settings-shell
                 option(value="dark") Dark
                 option(value="light") Light
             .LFM-control
-              label(for="iconSet") Icon set
+              label(for="iconSize") Icon size
               select#iconSize(v-model="store.config.appearance.icon_size" @change="store.applyLiveConfig()")
                 option(value="small") Small (16px)
                 option(value="medium") Medium (24px)
