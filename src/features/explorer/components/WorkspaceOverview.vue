@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { on as busOn, off as busOff } from '@/renderer/events/bus';
 import { useRouter } from 'vue-router';
 
 import { openFile } from '@/services/tauri-bridge';
@@ -194,7 +195,23 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => window.addEventListener('keydown', handleKeydown));
-onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
+onMounted(() => {
+	window.addEventListener('keydown', handleKeydown);
+
+	// Listen for global rename shortcut (F2) and open rename dialog
+	busOn('shortcut:rename', () => {
+		// Ignore if typing in input or textarea
+		const active = document.activeElement;
+		if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) return;
+		const selected = store.selectedItem;
+		if (selected) openRenameDialog(selected.id);
+	});
+});
+
+onUnmounted(() => {
+	window.removeEventListener('keydown', handleKeydown);
+	busOff('shortcut:rename');
+});
 </script>
 
 <template lang="pug">

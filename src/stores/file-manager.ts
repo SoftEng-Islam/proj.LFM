@@ -91,6 +91,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	const driveCards = ref<DriveCard[]>(initialDriveCards);
 	const windowTabs = ref<WindowTab[]>(createInitialTabs(defaultPath));
+	const activeTabId = ref<string>(windowTabs.value[0]?.id ?? '');
 	const navigationGroups = ref<NavigationGroup[]>(createNavigationGroups(defaultPath));
 	const favoriteItems = ref<string[]>([]);
 	const selectedItemPermissions = ref<FilePermissions | null>(null);
@@ -109,6 +110,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		const home = await initHomeDirFromStorage();
 		homePath.value = home;
 		windowTabs.value = createInitialTabs(home);
+		activeTabId.value = windowTabs.value[0]?.id ?? '';
 		navigationGroups.value = createNavigationGroups(home);
 
 		// If we're currently at a generic root, jump to the real home
@@ -362,6 +364,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	function openSection(path: string) {
 		currentPath.value = path;
 		searchQuery.value = '';
+		updateActiveTabPath(path);
 		fetchDirectory(path);
 	}
 
@@ -441,17 +444,56 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		if (match) match.pinned = !match.pinned;
 	}
 
+	function getTabLabel(path: string) {
+		if (path === defaultPath) return 'Home';
+		if (path === homePath.value) return 'Home';
+		if (path === '/trash') return 'Trash';
+		if (path === '/drives' || path === '/@drives') return '@drives';
+		if (path === '/locations' || path === '/@locations') return '@locations';
+		if (path === '/settings' || path === '/@settings') return '@settings';
+		return (path + '').split('/').filter(Boolean).pop() || 'New Tab';
+	}
+
+	function updateTabPath(tabId: string, path: string) {
+		const idx = windowTabs.value.findIndex((t) => t.id === tabId);
+		if (idx === -1) return;
+		const resolvedPath = path && path.startsWith('@') ? (path === '@drives' ? '/drives' : path) : path;
+		windowTabs.value[idx].path = resolvedPath;
+		windowTabs.value[idx].sectionId = resolvedPath;
+		windowTabs.value[idx].subtitle = resolvedPath;
+		windowTabs.value[idx].label = getTabLabel(path);
+	}
+
+	function updateActiveTabPath(path: string) {
+		if (!activeTabId.value) return;
+		updateTabPath(activeTabId.value, path);
+	}
+
+	function setActiveTab(tabId: string) {
+		if (!windowTabs.value.find((t) => t.id === tabId)) return;
+		activeTabId.value = tabId;
+	}
+
 	function addTab(path: string = defaultPath) {
 		const id = `tab-${Date.now()}`;
-		const label = path === defaultPath ? 'Home' : path.split('/').pop() || 'New Tab';
-		windowTabs.value.push({ id, label, path, sectionId: path, subtitle: path });
+		// Resolve logical aliases for sectionId/path where applicable
+		const resolvedPath = path && path.startsWith('@') ? (path === '@drives' ? '/drives' : path) : path;
+		const label = getTabLabel(path);
+		windowTabs.value.push({ id, label, path: resolvedPath, sectionId: resolvedPath, subtitle: resolvedPath });
+		activeTabId.value = id;
 		return id;
 	}
 
 	function closeTab(tabId: string) {
 		if (windowTabs.value.length <= 1) return;
 		const idx = windowTabs.value.findIndex((t) => t.id === tabId);
-		if (idx !== -1) windowTabs.value.splice(idx, 1);
+		if (idx === -1) return;
+		const wasActive = activeTabId.value === tabId;
+		windowTabs.value.splice(idx, 1);
+		if (wasActive) {
+			const next = windowTabs.value[Math.max(0, idx - 1)];
+			if (next) activeTabId.value = next.id;
+		}
 	}
 
 	async function openItem(filePath: string) {
@@ -575,6 +617,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		selectedItemMediaInfo,
 		navigationGroups: navigationGroupsWithCounts,
 		windowTabs: tabsWithAccent,
+		activeTabId,
+		setActiveTab,
+		updateActiveTabPath,
 		driveCards,
 		openSettings,
 		closeSettings,

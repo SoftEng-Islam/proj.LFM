@@ -35,8 +35,18 @@ function toggleSection(key: string) {
 	collapsed.value[key] = !collapsed.value[key];
 }
 
+function normalizeRoutePath(path: string) {
+	if (path === '/drives' || path === '/@drives' || path === '/locations' || path === '/@locations') {
+		return '/drives';
+	}
+	if (path === '/settings' || path === '/@settings') {
+		return '/settings';
+	}
+	return path;
+}
+
 function isActive(path: string) {
-	return route.path === path;
+	return normalizeRoutePath(route.path) === normalizeRoutePath(path);
 }
 
 type SidebarDriveType = DriveCard['driveType'];
@@ -115,7 +125,7 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 			IconChevronRight.LFM-sbar-chevron(:class="{ 'LFM-sbar-chevron--collapsed': collapsed['drives'] }")
 			span Drives
 
-		RouterLink.LFM-sbar-item.LFM-sbar-item--locations(to="/drives" :class="{ 'LFM-sbar-item--active': isActive('/drives') }")
+		RouterLink.LFM-sbar-item.LFM-sbar-item--locations(to="/@locations" :class="{ 'LFM-sbar-item--active': isActive('/@locations') }")
 			span.LFM-sbar-icon
 				IconStorage
 			span.LFM-sbar-drive-copy

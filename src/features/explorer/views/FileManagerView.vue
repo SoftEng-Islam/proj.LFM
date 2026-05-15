@@ -16,14 +16,14 @@ const store = useFileManagerStore();
 const toast = useToast();
 
 const renameDialog = ref<{ visible: boolean; path: string; currentName: string }>({
-    visible: false,
-    path: '',
-    currentName: '',
+	visible: false,
+	path: '',
+	currentName: '',
 });
 
 const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null }>({
-    visible: false,
-    item: null,
+	visible: false,
+	item: null,
 });
 
 function handleKeydown(e: KeyboardEvent) {
@@ -34,10 +34,10 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 function openPropertiesDialog(item?: FileEntry) {
-    const target = item || store.selectedItem;
-    if (target) {
-        propertiesDialog.value = { visible: true, item: target };
-    }
+	const target = item || store.selectedItem;
+	if (target) {
+		propertiesDialog.value = { visible: true, item: target };
+	}
 }
 
 onMounted(() => {
@@ -49,10 +49,12 @@ onUnmounted(() => {
 });
 
 watch(
-	() => route.path,
-	(path) => {
-		if (path) {
-			store.openSection(path);
+	() => route.fullPath,
+	() => {
+		if (route.path) {
+			const activeTab = typeof route.query.tab === 'string' ? route.query.tab : store.activeTabId;
+			if (activeTab) store.setActiveTab(activeTab);
+			store.openSection(route.path);
 		}
 	},
 	{ immediate: true }

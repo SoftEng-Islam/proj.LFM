@@ -34,7 +34,7 @@
    6. (Ctrl + page-up/page-down) and (Ctrl + Shift + Right/Left Arrows) to go through the opened tabs
    7. The Copy, Cut and Paste doesn't work its do nothing. fix it.
    8. F1 key must give us a help window ( window like the settings window ) with a section for the keyboard shortcuts
-   9. F2 Will open the settings window
+   9. F7 Will open the settings window
    10. F3 Will Toggle the Preview pane
    11. F4 Will toggle the AI chat sidebar
    12. F6 will take us to the default path.

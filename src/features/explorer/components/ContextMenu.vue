@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useFileManagerStore } from '@/stores/file-manager';
 import { useToast } from 'vue-toastification';
 
@@ -40,6 +41,7 @@ const emit = defineEmits<{
 }>();
 
 const store = useFileManagerStore();
+const router = useRouter();
 const toast = useToast();
 const menuRef = ref<HTMLElement>();
 
@@ -72,9 +74,21 @@ async function handleOpen() {
 }
 
 function handleOpenNewTab() {
-    if (props.filePath) {
-        store.addTab(props.filePath);
+    if (!props.filePath) {
+        close();
+        return;
     }
+
+    const addedTabId = store.addTab(props.filePath);
+    const addedTab = store.windowTabs.find((t) => t.id === addedTabId);
+
+    if (addedTab) {
+        const isFolder = !props.filePath.includes('.') || props.filePath.endsWith('/');
+        if (isFolder) {
+            router.push({ path: addedTab.path, query: { tab: addedTab.id } });
+        }
+    }
+
     close();
 }
 
@@ -180,15 +194,7 @@ const menuItems = computed(() => {
     <Teleport to="body">
         <div ref="menuRef" class="LFM-context-menu" :style="{ left: `${x}px`, top: `${y}px` }" role="menu">
             <div class="LFM-context-toolbar">
-                <button 
-                    v-for="cmd in commandActions" 
-                    :key="cmd.title" 
-                    class="LFM-context-cmd" 
-                    :class="{ 'LFM-context-cmd--disabled': cmd.disabled }"
-                    :title="cmd.title" 
-                    :disabled="cmd.disabled"
-                    @click="cmd.action"
-                >
+                <button v-for="cmd in commandActions" :key="cmd.title" class="LFM-context-cmd" :class="{ 'LFM-context-cmd--disabled': cmd.disabled }" :title="cmd.title" :disabled="cmd.disabled" @click="cmd.action">
                     <component :is="cmd.icon" class="LFM-context-cmd-icon" />
                 </button>
             </div>
@@ -197,14 +203,7 @@ const menuItems = computed(() => {
 
             <template v-for="(item, i) in menuItems" :key="i">
                 <div v-if="'divider' in item && item.divider" class="LFM-context-divider" />
-                <button 
-                    v-else-if="'label' in item" 
-                    class="LFM-context-item" 
-                    :class="{ 'LFM-context-item--disabled': item.disabled }"
-                    role="menuitem" 
-                    :disabled="item.disabled"
-                    @click="item.action && item.action()"
-                >
+                <button v-else-if="'label' in item" class="LFM-context-item" :class="{ 'LFM-context-item--disabled': item.disabled }" role="menuitem" :disabled="item.disabled" @click="item.action && item.action()">
                     <component :is="item.icon" class="LFM-context-item-icon" />
                     <span class="LFM-context-item-label">{{ item.label }}</span>
                     <span v-if="'hasArrow' in item && item.hasArrow" class="LFM-context-item-arrow">›</span>
@@ -216,6 +215,7 @@ const menuItems = computed(() => {
 
 <style scoped lang="scss">
 @reference "tailwindcss";
+
 .LFM-context-menu {
     position: fixed;
     z-index: 9999;
@@ -233,8 +233,15 @@ const menuItems = computed(() => {
 }
 
 @keyframes menu-pop {
-    from { opacity: 0; transform: scale(0.95) translateY(-10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .LFM-context-toolbar {

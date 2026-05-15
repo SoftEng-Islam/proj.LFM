@@ -11,6 +11,7 @@ const routes: RouteRecordRaw[] = [
 		path: '/settings',
 		name: 'settings',
 		component: SettingsView,
+		alias: ['/@settings'],
 		meta: {
 			title: 'LFM Settings',
 		},
@@ -19,6 +20,7 @@ const routes: RouteRecordRaw[] = [
 		path: '/drives',
 		name: 'drives',
 		component: DrivesOverviewView,
+		alias: ['/locations', '/@drives', '/@locations'],
 		meta: {
 			title: 'Storage Overview',
 		},

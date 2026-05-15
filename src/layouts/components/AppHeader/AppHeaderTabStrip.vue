@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useFileManagerStore } from '@/stores/file-manager';
 import { useConfigStore } from '@/stores/config';
 import { storeToRefs } from 'pinia';
@@ -13,28 +13,50 @@ import IconArrowForward from '~icons/material-symbols/arrow-forward';
 const store = useFileManagerStore();
 const configStore = useConfigStore();
 const router = useRouter();
+const route = useRoute();
 const { config } = storeToRefs(configStore);
 
+const activeTabId = computed(() => {
+	const tabId = route.query.tab;
+	if (typeof tabId === 'string' && tabId) return tabId;
+	return store.activeTabId;
+});
+
+function resolveAppRoutePath(path: string) {
+	if (path === '/drives') return '/@drives';
+	if (path === '/@drives') return '/@drives';
+	if (path === '/locations') return '/@locations';
+	if (path === '/@locations') return '/@locations';
+	if (path === '/settings') return '/@settings';
+	if (path === '/@settings') return '/@settings';
+	return path;
+}
+
 // Default path from config
-const defaultTabPath = computed(() => config.value.behavior.default_path || '/drives');
+const defaultTabPath = computed(() => config.value.behavior.default_path || '@drives');
 
 function handleCloseTab(tabId: string) {
 	const idx = store.windowTabs.findIndex((t: any) => t.id === tabId);
 	if (idx === -1) return;
-	
-	const isActive = store.currentPath === store.windowTabs[idx]?.sectionId;
+
+	const activeId = typeof route.query.tab === 'string' ? route.query.tab : '';
+	const isActive = activeId ? activeId === tabId : route.path === store.windowTabs[idx]?.path;
 	store.closeTab(tabId);
-	
+
 	if (isActive) {
 		const next = store.windowTabs[Math.max(0, idx - 1)];
-		if (next) router.push(next.path);
+		if (next) router.push({ path: resolveAppRoutePath(next.path), query: { tab: next.id } });
 	}
 }
 
 function handleNewTab() {
-	const id = store.addTab(defaultTabPath.value);
+	// Always open a new tab that points to the Storage Overview alias '@drives'
+	const id = store.addTab('@drives');
 	const tab = store.windowTabs.find((t: any) => t.id === id);
-	if (tab) router.push(tab.path);
+	if (tab) {
+		const navPath = tab.path && tab.path.startsWith('@') ? (tab.path === '@drives' ? '/@drives' : tab.path) : resolveAppRoutePath(tab.path);
+		router.push({ path: navPath, query: { tab: id } });
+	}
 }
 </script>
 
@@ -45,10 +67,11 @@ function handleNewTab() {
 			RouterLink.LFM-tab(
 				v-for="tab in store.windowTabs"
 				:key="tab.id"
-				:to="tab.path"
-				:class="{ 'LFM-tab--active': store.currentPath === tab.sectionId }"
+				:to="{ path: resolveAppRoutePath(tab.path), query: { tab: tab.id } }"
+				@click="store.setActiveTab(tab.id)"
+				:class="{ 'LFM-tab--active': activeTabId === tab.id }"
 				role="tab"
-				:aria-selected="store.currentPath === tab.sectionId"
+				:aria-selected="activeTabId === tab.id"
 			)
 				.LFM-tab-content
 					IconFolder.LFM-tab-icon(:class="tab.accent ? `text-${tab.accent}-500` : 'text-amber-500'")
@@ -107,7 +130,7 @@ function handleNewTab() {
 		background: var(--LFM-panel)
 		z-index: 2
 		color: hsl(var(--p))
-		
+
 		&::after
 			content: ''
 			position: absolute
