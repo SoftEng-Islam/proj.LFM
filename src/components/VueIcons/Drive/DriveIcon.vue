@@ -20,15 +20,17 @@ interface Props {
 	isEjecting?: boolean;
 	/** Show error state */
 	hasError?: boolean;
+	/** Show transfer/activity animation */
+	hasActivity?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
 	type: 'internal',
-	color: undefined,
 	size: 24,
 	isMounted: true,
 	isEjecting: false,
 	hasError: false,
+	hasActivity: false,
 });
 
 /** Resolves the color to a hex value */
@@ -110,6 +112,7 @@ svg(
 		:fill="stateIndicator.indicator"
 		:fill-opacity="stateIndicator.indicatorOpacity"
 		class="LFM-drive-indicator"
+		:class="{ 'LFM-drive-indicator--active': hasActivity || isEjecting }"
 	)
 
 	//- Glossy highlight on top
@@ -129,7 +132,17 @@ svg(
 .LFM-drive-indicator
 	transition: fill-opacity 0.3s ease
 
-&:hover
+.LFM-drive-indicator--active
+	animation: LFM-drive-pulse 1s ease-in-out infinite
+
+.LFM-drive-icon:hover
 	transform: scale(1.1)
 	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))
+
+@keyframes LFM-drive-pulse
+	0%, 100%
+		opacity: 0.45
+
+	50%
+		opacity: 1
 </style>

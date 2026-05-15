@@ -14,12 +14,39 @@ import { inferCategory } from '@/utils/file-category';
 import { formatBytes } from '@/utils/format';
 import { systemTimeToIso } from '@/utils/time';
 
-// ─── Accent cycle for drives ──────────────────────────────────────────────────
+// ─── Drive display helpers ───────────────────────────────────────────────────
 
-const DRIVE_ACCENTS: AccentTone[] = ['sky', 'emerald', 'violet', 'amber', 'rose', 'cyan', 'slate'];
+function driveAccent(type: DriveCard['driveType']): AccentTone {
+	if (type === 'root') return 'sky';
+	if (type === 'usb' || type === 'removable' || type === 'sdcard') return 'amber';
+	if (type === 'ssd') return 'emerald';
+	if (type === 'network') return 'cyan';
+	return 'slate';
+}
 
-function cycleAccent(index: number): AccentTone {
-	return DRIVE_ACCENTS[index % DRIVE_ACCENTS.length] ?? 'sky';
+function inferDriveType(drive: DriveInformation): DriveCard['driveType'] {
+	const haystack = `${drive.name} ${drive.mount_point} ${drive.disk_type} ${drive.file_system}`.toLowerCase();
+
+	if (drive.mount_point === '/') return 'root';
+	if (haystack.includes('nfs') || haystack.includes('cifs') || haystack.includes('smb')) return 'network';
+	if (haystack.includes('mmc') || haystack.includes('sd card') || haystack.includes('sdcard')) return 'sdcard';
+	if (drive.is_removable && haystack.includes('ssd')) return 'ssd';
+	if (drive.is_removable && haystack.includes('hdd')) return 'hdd';
+	if (drive.is_removable || haystack.includes('usb')) return 'usb';
+	if (haystack.includes('ssd') || haystack.includes('nvme')) return 'ssd';
+	if (haystack.includes('hdd') || haystack.includes('sata')) return 'hdd';
+
+	return 'internal';
+}
+
+function buildDriveLabel(drive: DriveInformation, index: number): string {
+	if (drive.mount_point === '/') return 'Root';
+
+	const mountParts = drive.mount_point.split('/').filter(Boolean);
+	const lastMountPart = mountParts[mountParts.length - 1];
+	if (lastMountPart) return lastMountPart.charAt(0).toUpperCase() + lastMountPart.slice(1);
+
+	return `Drive ${index + 1}`;
 }
 
 // ─── Preview builder ──────────────────────────────────────────────────────────
@@ -120,17 +147,34 @@ export function mapTrashMetaToEntry(meta: TrashMetaData, accent: AccentTone = 's
  * Accent color cycles through the predefined palette based on drive index.
  */
 export function mapDriveInfoToCard(drive: DriveInformation, index: number): DriveCard {
-	const accent = cycleAccent(index);
+	const driveType = inferDriveType(drive);
+	const accent = driveAccent(driveType);
 	const usedBytes = drive.total_space - drive.available_space;
-	const usedPercent =
-		drive.total_space > 0 ? Math.round((usedBytes / drive.total_space) * 100) : 0;
+	const usedPercent = drive.total_space > 0 ? Math.round((usedBytes / drive.total_space) * 100) : 0;
+	const totalLabel = formatBytes(drive.total_space);
+	const filesystem = drive.file_system || 'unknown';
+	const label = buildDriveLabel(drive, index);
+	const deviceLabel = drive.mount_point === '/' ? 'Root filesystem' : drive.disk_type || `Drive ${index + 1}`;
+	const pathId = drive.mount_point === '/' ? '/root' : drive.mount_point;
+	const mountParts = drive.mount_point.split('/').filter(Boolean);
+	const mountName = drive.mount_point === '/' ? 'Root' : mountParts[mountParts.length - 1] || 'Drive';
+	const devicePath = drive.name ? `/dev/${drive.name}` : drive.disk_type || `Drive ${index + 1}`;
 
 	return {
-		id: drive.mount_point,
-		label: drive.name || drive.mount_point,
+		id: pathId,
+		label,
 		usedLabel: `${formatBytes(usedBytes)} used`,
 		freeLabel: `${formatBytes(drive.available_space)} free`,
 		usedPercent,
 		accent,
+		deviceLabel,
+		mountPoint: drive.mount_point,
+		mountName,
+		devicePath,
+		filesystem,
+		driveType,
+		capacityLabel: `${totalLabel} ${filesystem}`,
+		isMounted: true,
+		isRemovable: drive.is_removable,
 	};
 }

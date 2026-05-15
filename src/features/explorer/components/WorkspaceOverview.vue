@@ -9,6 +9,7 @@ import ContextMenu from '@/features/explorer/components/ContextMenu.vue';
 import RenameModal from '@/components/ui/RenameModal.vue';
 import PropertiesModal from '@/components/ui/PropertiesModal.vue';
 import FolderIcon from '@/components/VueIcons/Folder/FolderIcon.vue';
+import FileIcon from '@/components/VueIcons/File/FileIcon.vue';
 
 import { useFileManagerStore } from '@/stores/file-manager';
 import type { FileEntry } from '@/types/file-manager';
@@ -98,22 +99,6 @@ function openItem(entry: FileEntry) {
 		// Tauri IPC: open with system default app
 		openFile(entry.id);
 	}
-}
-
-// ── Icon helpers ────────────────────────────────────────────────────────────
-
-const fileIconColors: Record<string, string> = {
-	document: '#2b7cd3',
-	image: '#e07000',
-	video: '#6236cc',
-	audio: '#1db954',
-	archive: '#f1c40f',
-	code: '#34495e',
-	default: '#7f8c8d',
-};
-
-function getFileIconColor(category: string) {
-	return fileIconColors[category] ?? fileIconColors['default'] ?? '#7f8c8d';
 }
 
 // ── Date formatter ──────────────────────────────────────────────────────────
@@ -254,18 +239,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 				)
 					.LFM-grid-item-icon
 						FolderIcon(v-if="isFolder(entry)" :size="100" :color="'orange'")
-						img.LFM-media-thumbnail(v-else-if="entry.preview" :src="entry.preview" loading="lazy")
-						.LFM-file-icon(v-else :style="{ background: getFileIconColor(entry.category) }")
-							svg(v-if="entry.category === 'video'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-								polygon(points="23 7 16 12 23 17 23 7")
-								rect(x="1" y="5" width="15" height="14" rx="2" ry="2")
-							svg(v-else-if="entry.category === 'audio'" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-								path(d="M9 18V5l12-2v13")
-								circle(cx="6" cy="18" r="3")
-								circle(cx="18" cy="16" r="3")
-							svg(v-else width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-								path(d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z")
-								polyline(points="13 2 13 9 20 9")
+						img.LFM-media-thumbnail(v-else-if="entry.preview" :src="entry.preview" loading="lazy" decoding="async")
+						FileIcon(v-else :name="entry.name" :path="entry.id" :size="56")
 					span.LFM-grid-item-name {{ entry.name }}
 
 			//- List view
@@ -286,21 +261,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 					@contextmenu="(e) => openContextMenu(e, row.id)"
 				)
 					.LFM-list-col.LFM-list-col--name
-						.LFM-list-file-icon(:style="{ background: getFileIconColor(row.category) }")
-							span(v-if="isFolder(row)")
-								svg(width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-									path(d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z")
-							img.LFM-list-media-thumbnail(v-else-if="row.preview" :src="row.preview" loading="lazy")
-							svg(v-else-if="row.category === 'video'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-								polygon(points="23 7 16 12 23 17 23 7")
-								rect(x="1" y="5" width="15" height="14" rx="2" ry="2")
-							svg(v-else-if="row.category === 'audio'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-								path(d="M9 18V5l12-2v13")
-								circle(cx="6" cy="18" r="3")
-								circle(cx="18" cy="16" r="3")
-							svg(v-else width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-								path(d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z")
-								polyline(points="13 2 13 9 20 9")
+						.LFM-list-file-icon
+							FolderIcon(v-if="isFolder(row)" :size="20" :color="'orange'")
+							img.LFM-list-media-thumbnail(v-else-if="row.preview" :src="row.preview" loading="lazy" decoding="async")
+							FileIcon(v-else :name="row.name" :path="row.id" :size="18")
 						span.LFM-list-item-name {{ row.name }}
 					span.LFM-list-col {{ formatDate(row.modifiedAt) }}
 					span.LFM-list-col {{ row.typeLabel }}
@@ -379,41 +343,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 	height: 64px
 	width: 64px
 
-.LFM-file-icon
-	width: 52px
-	height: 64px
-	border-radius: 3px
-	display: flex
-	flex-direction: column
-	align-items: center
-	justify-content: center
-	position: relative
-
-	&::before
-		content: ''
-		position: absolute
-		top: 0
-		right: 0
-		width: 0
-		height: 0
-		border-style: solid
-		border-width: 0 12px 12px 0
-		border-color: transparent rgba(255, 255, 255, 0.3) transparent transparent
-
-.LFM-media-thumbnail
-	max-width: 64px
-	max-height: 64px
-	object-fit: cover
-	border-radius: 4px
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2)
-
-.LFM-list-media-thumbnail
-	width: 16px
-	height: 16px
-	object-fit: cover
-	border-radius: 2px
-	margin-right: 8px
-
 .LFM-grid-item-name
 	margin-top: 6px
 	font-size: 11px
@@ -425,6 +354,19 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 	-webkit-line-clamp: 2
 	-webkit-box-orient: vertical
 	word-break: break-word
+
+.LFM-media-thumbnail
+	max-width: 64px
+	max-height: 64px
+	object-fit: cover
+	border-radius: 4px
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2)
+
+.LFM-list-media-thumbnail
+	width: 20px
+	height: 20px
+	object-fit: cover
+	border-radius: 3px
 
 .LFM-list
 	width: 100%
@@ -479,9 +421,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
 		justify-content: flex-end
 
 .LFM-list-file-icon
-	width: 16px
-	height: 16px
-	border-radius: 2px
+	width: 22px
+	height: 22px
 	display: flex
 	align-items: center
 	justify-content: center

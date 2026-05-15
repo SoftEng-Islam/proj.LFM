@@ -126,9 +126,19 @@
  */
 @custom-variant light (&:where([data-theme=light], [data-theme=light] *));
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@custom-variant lsrosepine (&:where([data-theme=lsrosepine], [data-theme=lsrosepine] *));
+@custom-variant lsrosepine-dark (&:where([data-theme=lsrosepine-dark], [data-theme=lsrosepine-dark] *));
+@custom-variant lsgrouvbox (&:where([data-theme=lsgrouvbox], [data-theme=lsgrouvbox] *));
+@custom-variant lsgrouvbox-dark (&:where([data-theme=lsgrouvbox-dark], [data-theme=lsgrouvbox-dark] *));
+@custom-variant lsnord (&:where([data-theme=lsnord], [data-theme=lsnord] *));
+@custom-variant lsnord-dark (&:where([data-theme=lsnord-dark], [data-theme=lsnord-dark] *));
+@custom-variant lsatom (&:where([data-theme=lsatom], [data-theme=lsatom] *));
+@custom-variant lsatom-dark (&:where([data-theme=lsatom-dark], [data-theme=lsatom-dark] *));
+@custom-variant lsvscode (&:where([data-theme=lsvscode], [data-theme=lsvscode] *));
+@custom-variant lsvscode-dark (&:where([data-theme=lsvscode-dark], [data-theme=lsvscode-dark] *));
 @custom-variant cupcake (&:where([data-theme=cupcake], [data-theme=cupcake] *));
-@custom-variant retro (&:where([data-theme=retro], [data-theme=retro] *));
+@custom-variant cupcake-dark (&:where([data-theme=cupcake-dark], [data-theme=cupcake-dark] *));
 @custom-variant valentine (&:where([data-theme=valentine], [data-theme=valentine] *));
-@custom-variant business (&:where([data-theme=business], [data-theme=business] *));
+@custom-variant valentine-dark (&:where([data-theme=valentine-dark], [data-theme=valentine-dark] *));
+@custom-variant coffee-light (&:where([data-theme=coffee-light], [data-theme=coffee-light] *));
 @custom-variant coffee (&:where([data-theme=coffee], [data-theme=coffee] *));
-@custom-variant nord (&:where([data-theme=nord], [data-theme=nord] *));

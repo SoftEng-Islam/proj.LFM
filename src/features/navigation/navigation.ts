@@ -56,6 +56,19 @@ export function createInitialTabs(home: string): WindowTab[] {
  * Static drive card placeholders — shown before `fetchDrives()` resolves.
  */
 export const driveCards: DriveCard[] = [
-	{ id: 'root', label: 'Root', usedLabel: '— used', freeLabel: '— free', usedPercent: 0, accent: 'sky' },
-	{ id: 'workspace', label: 'Workspace SSD', usedLabel: '— used', freeLabel: '— free', usedPercent: 0, accent: 'emerald' },
+	{
+		id: '/root',
+		label: 'Root',
+		usedLabel: '— used',
+		freeLabel: '— free',
+		usedPercent: 0,
+		accent: 'sky',
+		deviceLabel: 'System',
+		mountPoint: '/',
+		filesystem: 'detecting',
+		driveType: 'root',
+		capacityLabel: 'Detecting capacity',
+		isMounted: true,
+		isRemovable: false,
+	},
 ];

@@ -1,94 +1,92 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { getDrives } from '@/services/tauri-bridge';
 import type { DriveInformation } from '@/services/tauri-bridge';
+import { mapDriveInfoToCard } from '@/services/mappers';
+import DriveIcon from '@/components/VueIcons/Drive/DriveIcon.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 const drives = ref<DriveInformation[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const driveCards = computed(() => drives.value.map(mapDriveInfoToCard));
 
 onMounted(async () => {
-	loading.value = true;
-	error.value = null;
-	try {
-		const result = await getDrives();
-		drives.value = result.array_of_drives;
-	} catch (err) {
-		error.value = String(err ?? 'Failed to load drives');
-	} finally {
-		loading.value = false;
-	}
+  loading.value = true;
+  error.value = null;
+  try {
+    const result = await getDrives();
+    drives.value = result.array_of_drives;
+  } catch (err) {
+    error.value = String(err ?? 'Failed to load drives');
+  } finally {
+    loading.value = false;
+  }
 });
 
-function formatBytes(bytes: number): string {
-	const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-	let size = bytes;
-	let unitIdx = 0;
-	while (size >= 1024 && unitIdx < units.length - 1) {
-		size /= 1024;
-		unitIdx++;
-	}
-	return `${size.toFixed(2)} ${units[unitIdx]}`;
-}
-
-function getUsagePercent(used: number, total: number): number {
-	if (total === 0) return 0;
-	return Math.round((used / total) * 100);
-}
-
 function getDriveColor(percent: number): string {
-	if (percent < 50) return 'bg-emerald-500';
-	if (percent < 80) return 'bg-amber-500';
-	return 'bg-rose-500';
+  if (percent < 50) return 'bg-emerald-500';
+  if (percent < 80) return 'bg-amber-500';
+  return 'bg-rose-500';
+}
+
+function getDriveHealth(percent: number): string {
+  if (percent < 70) return 'Healthy';
+  if (percent < 90) return 'Limited space';
+  return 'Critical space';
 }
 </script>
 
 <template lang="pug">
-div.LFM-drives-page
-  .LFM-drives-header
-    h1 Storage Overview
-    p View available storage on all mounted partitions and drives.
+AppLayout
+  div.LFM-drives-page
+    .LFM-drives-header
+      h1 Storage Overview
+      p View available storage on all mounted partitions and drives.
 
-  .LFM-drives-loading(v-if="loading")
-    p Loading drives...
+    .LFM-drives-loading(v-if="loading")
+      p Loading drives...
 
-  .LFM-drives-error(v-if="error && !loading")
-    p {{ error }}
+    .LFM-drives-error(v-if="error && !loading")
+      p {{ error }}
 
-  .LFM-drives-grid(v-if="!loading && !error && drives.length > 0")
-    .LFM-drive-card(v-for="drive in drives" :key="drive.name")
-      .LFM-drive-header
-        h2.LFM-drive-name {{ drive.name || drive.mount_point }}
-        p.LFM-drive-path {{ drive.mount_point }}
+    .LFM-drives-grid(v-if="!loading && !error && driveCards.length > 0")
+      RouterLink.LFM-drive-card(v-for="drive in driveCards" :key="drive.id" :to="drive.id")
+        .LFM-drive-header
+          DriveIcon(:type="drive.driveType" :is-mounted="drive.isMounted" :size="36")
+          .LFM-drive-title
+            h2.LFM-drive-name {{ drive.mountName }}
+            p.LFM-drive-path {{ drive.devicePath }}
+          span.LFM-drive-state(:class="getDriveColor(drive.usedPercent)") {{ getDriveHealth(drive.usedPercent) }}
 
-      .LFM-drive-info
-        .LFM-info-row
-          span Type:
-          strong {{ drive.file_system }}
-        .LFM-info-row(v-if="!drive.is_removable")
-          span Status:
-          strong Fixed
-        .LFM-info-row(v-else)
-          span Status:
-          strong Removable
+        .LFM-drive-info
+          .LFM-info-row
+            span Identifier
+            strong {{ drive.id }}
+          .LFM-info-row
+            span Filesystem
+            strong {{ drive.filesystem }}
+          .LFM-info-row
+            span Mount
+            strong {{ drive.isRemovable ? 'Removable' : 'Fixed' }}
 
-      .LFM-drive-usage
-        .LFM-usage-label
-          span.LFM-usage-used {{ formatBytes(drive.total_space - drive.available_space) }} used
-          span.LFM-usage-available {{ formatBytes(drive.available_space) }} free
-          span.LFM-usage-percent {{ getUsagePercent(drive.total_space - drive.available_space, drive.total_space) }}%
+        .LFM-drive-usage
+          .LFM-usage-label
+            span.LFM-usage-used {{ drive.usedLabel }}
+            span.LFM-usage-available {{ drive.freeLabel }}
+            span.LFM-usage-percent {{ drive.usedPercent }}%
 
-        .LFM-usage-bar
-          .LFM-usage-bar-used(
-            :style="{ width: `${getUsagePercent(drive.total_space - drive.available_space, drive.total_space)}%` }"
-            :class="getDriveColor(getUsagePercent(drive.total_space - drive.available_space, drive.total_space))"
-          )
+          .LFM-usage-bar
+            .LFM-usage-bar-used(
+              :style="{ width: `${drive.usedPercent}%` }"
+              :class="getDriveColor(drive.usedPercent)"
+            )
 
-        .LFM-usage-total
-          span {{ formatBytes(drive.total_space) }} Total
+          .LFM-usage-total
+            span {{ drive.capacityLabel }}
 
-  .LFM-drives-empty(v-if="!loading && drives.length === 0 && !error")
-    p No drives detected.
+    .LFM-drives-empty(v-if="!loading && drives.length === 0 && !error")
+      p No drives detected.
 </template>
 
 <style scoped lang="sass">
@@ -137,25 +135,49 @@ div.LFM-drives-page
   padding: 1.5rem
   background: var(--LFM-panel)
   transition: all 150ms ease
+  cursor: pointer
 
   &:hover
     border-color: var(--LFM-blue)
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)
 
 .LFM-drive-header
+  display: grid
+  grid-template-columns: auto minmax(0, 1fr) auto
+  align-items: center
+  gap: 0.875rem
   margin-bottom: 1rem
   padding-bottom: 1rem
   border-bottom: 1px solid var(--LFM-border)
+
+.LFM-drive-title
+  min-width: 0
 
 .LFM-drive-name
   font-size: 1.125rem
   font-weight: 600
   margin: 0 0 0.25rem 0
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
 
 .LFM-drive-path
   font-size: 0.875rem
   color: var(--LFM-text-secondary, #888)
   margin: 0
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+
+.LFM-drive-state
+  align-self: start
+  border-radius: 999px
+  color: white
+  font-size: 0.6875rem
+  font-weight: 700
+  line-height: 1
+  padding: 0.35rem 0.5rem
+  white-space: nowrap
 
 .LFM-drive-info
   display: flex
@@ -167,6 +189,7 @@ div.LFM-drives-page
 .LFM-info-row
   display: flex
   justify-content: space-between
+  gap: 1rem
   padding: 0.25rem 0
 
   span
@@ -175,6 +198,10 @@ div.LFM-drives-page
   strong
     font-weight: 600
     color: var(--LFM-text)
+    overflow: hidden
+    text-align: right
+    text-overflow: ellipsis
+    white-space: nowrap
 
 .LFM-drive-usage
   display: flex

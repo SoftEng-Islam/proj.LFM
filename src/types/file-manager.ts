@@ -77,6 +77,15 @@ export interface DriveCard {
 	freeLabel: string;
 	usedPercent: number;
 	accent: AccentTone;
+	deviceLabel: string;
+	mountPoint: string;
+	mountName: string;
+	devicePath: string;
+	filesystem: string;
+	driveType: 'root' | 'internal' | 'hdd' | 'ssd' | 'usb' | 'external' | 'sdcard' | 'network' | 'removable';
+	capacityLabel: string;
+	isMounted: boolean;
+	isRemovable: boolean;
 }
 
 export interface FileEntry {

@@ -20,7 +20,7 @@ import { acceptHMRUpdate, defineStore } from 'pinia';
 
 import { defaultPath, createNavigationGroups, createInitialTabs, driveCards as initialDriveCards } from '@/features/navigation/navigation';
 import { initHomeDirFromStorage } from '@/composables/useFilesystem';
-import { mapTrashMetaToEntry } from '@/services/mappers';
+import { mapDriveInfoToCard, mapTrashMetaToEntry } from '@/services/mappers';
 import {
 	convertFileSrc,
 	copy as tauriCopy,
@@ -67,6 +67,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	const selectedItemId = ref<string | null>(null);
 	const viewMode = useStorage<ViewMode>('lfm-view-mode', 'grid');
 	const sortMode = useStorage<SortMode>('lfm-sort-mode', 'modified');
+	const settingsOpen = ref(false);
 
 	// ── Clipboard ─────────────────────────────────────────────────────────────
 	const clipboard = ref<{ paths: string[]; mode: 'copy' | 'cut' | null }>({
@@ -245,8 +246,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		// Snapshot so we can roll back if the read fails
 		const prevPath = currentPath.value;
 		const prevEntries = currentEntries.value;
+		const normalizedPath = path === '/root' ? '/' : path;
 
-		currentPath.value = path;
+		currentPath.value = normalizedPath;
 		searchQuery.value = '';
 		isLoading.value = true;
 		navError.value = null;
@@ -258,7 +260,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 				return;
 			}
 
-			const res = await readDirectory(path);
+			const res = await readDirectory(normalizedPath);
 
 			currentEntries.value = res.files.map((file) => {
 				const parseTime = (t: unknown): string => {
@@ -385,32 +387,22 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		sortMode.value = order[(currentIndex + 1) % order.length] ?? 'modified';
 	}
 
+	function openSettings() {
+		settingsOpen.value = true;
+	}
+
+	function closeSettings() {
+		settingsOpen.value = false;
+	}
+
+	function toggleSettings() {
+		settingsOpen.value = !settingsOpen.value;
+	}
+
 	async function fetchDrives() {
 		try {
 			const res = await getDrives();
-			driveCards.value = res.array_of_drives.map((drive) => {
-				const used = drive.total_space - drive.available_space;
-				const usedPercent = Math.round((used / drive.total_space) * 100);
-
-				let label = drive.name;
-				const mountParts = drive.mount_point.split('/').filter(Boolean);
-
-				if (drive.mount_point === '/') {
-					label = 'System';
-				} else if (mountParts.length > 0) {
-					const last = mountParts[mountParts.length - 1] || 'Disk';
-					label = last.charAt(0).toUpperCase() + last.slice(1);
-				}
-
-				return {
-					id: drive.mount_point,
-					label: label || 'Disk',
-					usedLabel: formatBytes(used) + ' used',
-					freeLabel: formatBytes(drive.available_space) + ' free',
-					usedPercent,
-					accent: drive.is_removable ? 'amber' : drive.mount_point === '/' ? 'sky' : 'emerald',
-				} as DriveCard;
-			});
+			driveCards.value = res.array_of_drives.map(mapDriveInfoToCard);
 		} catch (e) {
 			console.error('Failed to fetch drives:', e);
 		}
@@ -584,6 +576,10 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		navigationGroups: navigationGroupsWithCounts,
 		windowTabs: tabsWithAccent,
 		driveCards,
+		openSettings,
+		closeSettings,
+		toggleSettings,
+		settingsOpen,
 
 		// Preview Mode State
 		previewMode,
@@ -615,7 +611,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		getPreferredModeForCategory,
 		updateSelectedItemMetadata,
 		expandedPreviewId,
-		setExpandedPreviewId: (id: string | null) => { expandedPreviewId.value = id; },
+		setExpandedPreviewId: (id: string | null) => {
+			expandedPreviewId.value = id;
+		},
 		async saveFileContent(path: string, content: string) {
 			try {
 				const success = await writeTextFile(path, content);

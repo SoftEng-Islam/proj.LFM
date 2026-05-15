@@ -39,6 +39,8 @@ export type DriveColor = keyof typeof DRIVE_COLORS | string;
 export type DriveType = 
 	| 'root'      // Root filesystem /
 	| 'internal' // Internal drive (HDD, SSD, NVMe)
+	| 'hdd'      // Internal or external hard disk drive
+	| 'ssd'      // Internal or external solid state drive
 	| 'usb'      // USB flash drive
 	| 'external' // External HDD/SSD
 	| 'sdcard'   // SD card

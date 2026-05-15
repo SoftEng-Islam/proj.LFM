@@ -7,15 +7,25 @@ export class Themes {
 	static #storageKey = 'theme';
 	static defaultTheme = 'system'; // Automatická detekcia
 	static availableThemes = [
-		{ name: 'system', icon: iconAutoDetect },
-		{ name: 'light', icon: iconSun },
-		{ name: 'dark', icon: iconMoon },
-		{ name: 'cupcake' },
-		{ name: 'retro' },
-		{ name: 'valentine' },
-		{ name: 'business' },
-		{ name: 'coffee' },
-		{ name: 'nord' },
+		{ name: 'system', label: 'System', icon: iconAutoDetect },
+		{ name: 'dark', label: 'Default Dark', icon: iconMoon },
+		{ name: 'light', label: 'Default Light', icon: iconSun },
+		{ name: 'lsrosepine-dark', label: 'RosePine Dark' },
+		{ name: 'lsrosepine', label: 'RosePine Light' },
+		{ name: 'lsgrouvbox-dark', label: 'Gruvbox Dark' },
+		{ name: 'lsgrouvbox', label: 'Gruvbox Light' },
+		{ name: 'lsnord-dark', label: 'Nord Dark' },
+		{ name: 'lsnord', label: 'Nord Light' },
+		{ name: 'lsatom-dark', label: 'Atom Dark' },
+		{ name: 'lsatom', label: 'Atom Light' },
+		{ name: 'lsvscode-dark', label: 'VSCode Dark' },
+		{ name: 'lsvscode', label: 'VSCode Light' },
+		{ name: 'cupcake-dark', label: 'Cupcake Dark' },
+		{ name: 'cupcake', label: 'Cupcake Light' },
+		{ name: 'valentine-dark', label: 'Valentine Dark' },
+		{ name: 'valentine', label: 'Valentine Light' },
+		{ name: 'coffee', label: 'Coffee Dark' },
+		{ name: 'coffee-light', label: 'Coffee Light' },
 	];
 	static currentTheme = ref(Themes.detect());
 

@@ -26,24 +26,68 @@
 	--LFM-context-hover: rgba(255,255,255,0.08)
 	--LFM-context-text: #f0f0f0
 	--LFM-context-divider: rgba(255,255,255,0.1)
-	// Default accent color (orange) - only active for default theme
-	--LFM-default-accent: #d96b26
-	--LFM-default-accent-subtle: rgba(217, 107, 38, 0.12)
+	// Default accent color palette - only active for default theme.
+	--LFM-accent-orange: #d96b26
+	--LFM-accent-yellow: #d9a026
+	--LFM-accent-green: #26d947
+	--LFM-accent-teal: #26bed9
+	--LFM-accent-slate: #2682d9
+	--LFM-accent-blue: #2677d9
+	--LFM-accent-purple: #ac26d9
+	--LFM-accent-pink: #d9267d
+	--LFM-accent-red: #d9263b
+	--LFM-default-accent: var(--LFM-accent-orange)
+	--LFM-default-accent-subtle: color-mix(in srgb, var(--LFM-default-accent) 12%, transparent)
 
 	html[data-theme="light"],
 	html[data-theme="dark"]
 		--LFM-accent: var(--LFM-default-accent)
 		--LFM-accent-subtle: var(--LFM-default-accent-subtle)
 
-	// Disable accent for non-default themes (RosePine, Grouvbox, Atom, VSCode, etc.)
+	html[data-accent="orange"]
+		--LFM-default-accent: var(--LFM-accent-orange)
+
+	html[data-accent="yellow"]
+		--LFM-default-accent: var(--LFM-accent-yellow)
+
+	html[data-accent="green"]
+		--LFM-default-accent: var(--LFM-accent-green)
+
+	html[data-accent="teal"]
+		--LFM-default-accent: var(--LFM-accent-teal)
+
+	html[data-accent="slate"]
+		--LFM-default-accent: var(--LFM-accent-slate)
+
+	html[data-accent="blue"]
+		--LFM-default-accent: var(--LFM-accent-blue)
+
+	html[data-accent="purple"]
+		--LFM-default-accent: var(--LFM-accent-purple)
+
+	html[data-accent="pink"]
+		--LFM-default-accent: var(--LFM-accent-pink)
+
+	html[data-accent="red"]
+		--LFM-default-accent: var(--LFM-accent-red)
+
+	// Disable the default accent palette for named non-default themes.
 	html[data-theme="lsrosepine"],
 	html[data-theme="lsrosepine-dark"],
 	html[data-theme="lsgrouvbox"],
 	html[data-theme="lsgrouvbox-dark"],
+	html[data-theme="lsnord"],
+	html[data-theme="lsnord-dark"],
 	html[data-theme="lsatom"],
 	html[data-theme="lsatom-dark"],
 	html[data-theme="lsvscode"],
-	html[data-theme="lsvscode-dark"]
+	html[data-theme="lsvscode-dark"],
+	html[data-theme="cupcake"],
+	html[data-theme="cupcake-dark"],
+	html[data-theme="valentine"],
+	html[data-theme="valentine-dark"],
+	html[data-theme="coffee-light"],
+	html[data-theme="coffee"]
 		--LFM-accent: var(--color-primary, inherit)
 		--LFM-accent-subtle: color-mix(in srgb, var(--color-primary, inherit) 12%, transparent)
 

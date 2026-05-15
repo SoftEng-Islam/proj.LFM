@@ -29,7 +29,7 @@ const setTheme = (newTheme: string) => {
 					:checked="theme === t.name" 
 					@change="setTheme(t.name)"
 				)
-				| {{ t.name }}
+				| {{ t.label }}
 </template>
 
 <style lang="sass" scoped>

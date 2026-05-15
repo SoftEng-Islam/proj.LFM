@@ -8,6 +8,7 @@ import AppNavigationBar from './components/AppNavigationBar.vue';
 import AiChatSidebar from './components/AiChatSidebar.vue';
 import PreviewPane from '@/features/explorer/components/PreviewPane.vue';
 import ExpandedPreview from '@/components/ui/ExpandedPreview.vue';
+import SettingsView from '@/features/settings/views/SettingsView.vue';
 
 const store = useFileManagerStore();
 
@@ -114,6 +115,7 @@ onUnmounted(() => {
 
 		<StatusBar />
 		<ExpandedPreview />
+		<SettingsView v-if="store.settingsOpen" @close="store.closeSettings" />
 	</div>
 </template>
 
@@ -147,7 +149,8 @@ onUnmounted(() => {
 
 .LFM-content {
 	flex: 1;
-	overflow: hidden;
+	overflow-y: auto;
+	overflow-x: hidden;
 	display: flex;
 	flex-direction: column;
 	background: var(--LFM-panel);

@@ -1,85 +1,141 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { defineEmits, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useConfigStore } from '@/stores/config';
+import IconClose from '~icons/material-symbols/close';
 
+const emit = defineEmits<{
+	(e: 'close'): void;
+}>();
 const toast = useToast();
 const store = useConfigStore();
 
+function closeSettings() {
+	emit('close');
+}
+
 onMounted(async () => {
-    await store.loadConfig();
-    if (store.error) {
-        toast.error(store.error);
-    }
+	await store.loadConfig();
+	if (store.error) {
+		toast.error(store.error);
+	}
 });
 
 const saveSettings = async (): Promise<void> => {
-    await store.saveConfig();
-    if (store.error) {
-        toast.error(store.error);
-        return;
-    }
-    toast.success(store.saveMessage || 'Settings saved');
+	await store.saveConfig();
+	if (store.error) {
+		toast.error(store.error);
+		return;
+	}
+	toast.success(store.saveMessage || 'Settings saved');
 };
 </script>
 
 <template lang="pug">
-div.LFM-settings-page
-  .LFM-settings-header
-    h1 LFM Settings
-    p Manage core application configuration and persistence.
+div.LFM-settings-shell
+    .LFM-settings-window
+      button.LFM-settings-close(type="button" @click="closeSettings" aria-label="Close settings")
+        IconClose
 
-  form.LFM-settings-form(@submit.prevent="saveSettings")
-    fieldset.LFM-settings-group
-      legend Appearance
-      .LFM-control
-        label(for="theme") Theme
-        select#theme(v-model="store.config.appearance.theme")
-          option(value="dark") Dark
-          option(value="light") Light
-      .LFM-control
-        label(for="iconSet") Icon set
-        input#iconSet(type="text" v-model="store.config.appearance.icon_set" placeholder="Papirus")
-      .LFM-control
-        label(for="fontSize") Font size
-        input#fontSize(type="number" min="10" max="24" v-model.number="store.config.appearance.font_size")
-      .LFM-control
-        label
-          input(type="checkbox" v-model="store.config.appearance.show_hidden_files")
-          | Show hidden files
+      div.LFM-settings-page
+        .LFM-settings-header
+          h1 LFM Settings
+          p Manage core application configuration and persistence.
 
-    fieldset.LFM-settings-group
-      legend Behavior
-      .LFM-control
-        label(for="defaultPath") Default path
-        input#defaultPath(type="text" v-model="store.config.behavior.default_path" placeholder="/home/user")
-      .LFM-control
-        label
-          input(type="checkbox" v-model="store.config.behavior.confirm_delete")
-          | Confirm before delete
-      .LFM-control
-        label
-          input(type="checkbox" v-model="store.config.behavior.single_click_open")
-          | Single click to open files
+        form.LFM-settings-form(@submit.prevent="saveSettings")
+          fieldset.LFM-settings-group
+            legend Appearance
+            .LFM-control
+              label(for="theme") Theme
+              select#theme(v-model="store.config.appearance.theme")
+                option(value="dark") Dark
+                option(value="light") Light
+            .LFM-control
+              label(for="iconSet") Icon set
+              input#iconSet(type="text" v-model="store.config.appearance.icon_set" placeholder="Papirus")
+            .LFM-control
+              label(for="fontSize") Font size
+              input#fontSize(type="number" min="10" max="24" v-model.number="store.config.appearance.font_size")
+            .LFM-control
+              label
+                input(type="checkbox" v-model="store.config.appearance.show_hidden_files")
+                | Show hidden files
 
-    fieldset.LFM-settings-group
-      legend Terminal
-      .LFM-control
-        label(for="emulator") Terminal emulator
-        input#emulator(type="text" v-model="store.config.terminal.emulator" placeholder="kitty")
+          fieldset.LFM-settings-group
+            legend Behavior
+            .LFM-control
+              label(for="defaultPath") Default path
+              input#defaultPath(type="text" v-model="store.config.behavior.default_path" placeholder="/home/user")
+            .LFM-control
+              label
+                input(type="checkbox" v-model="store.config.behavior.confirm_delete")
+                | Confirm before delete
+            .LFM-control
+              label
+                input(type="checkbox" v-model="store.config.behavior.single_click_open")
+                | Single click to open files
 
-    button.LFM-button(type="submit" :disabled="store.isSaving || store.isLoading")
-      | Save configuration
+          fieldset.LFM-settings-group
+            legend Terminal
+            .LFM-control
+              label(for="emulator") Terminal emulator
+              input#emulator(type="text" v-model="store.config.terminal.emulator" placeholder="kitty")
+
+          button.LFM-button(type="submit" :disabled="store.isSaving || store.isLoading")
+            | Save configuration
 </template>
 
 <style scoped lang="sass">
 @reference "tailwindcss";
 
+.LFM-settings-shell
+  position: fixed
+  inset: 0
+  z-index: 40
+  display: flex
+  justify-content: center
+  align-items: flex-start
+  padding: 2rem 1rem 1rem
+  width: 100%
+  background: transparent
+  pointer-events: none
+
+.LFM-settings-window
+  pointer-events: auto
+  position: relative
+  width: min(100%, 760px)
+  margin: 0 auto
+  border: 1px solid var(--LFM-border)
+  border-radius: 1.5rem
+  background: var(--LFM-panel)
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08)
+  overflow: hidden
+
+.LFM-settings-close
+  position: absolute
+  top: 1rem
+  right: 1rem
+  width: 2.5rem
+  height: 2.5rem
+  border: 1px solid var(--LFM-border)
+  border-radius: 999px
+  background: var(--LFM-bg)
+  color: var(--LFM-text)
+  display: inline-flex
+  align-items: center
+  justify-content: center
+  cursor: pointer
+  transition: all 150ms ease
+
+  &:hover
+    background: var(--LFM-hover)
+    border-color: var(--LFM-blue)
+
 .LFM-settings-page
   display: flex
   flex-direction: column
   gap: 1.5rem
-  padding: 1.5rem
+  padding: 2.5rem 2rem 2rem
 
 .LFM-settings-header
   display: flex

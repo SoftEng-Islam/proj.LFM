@@ -38,7 +38,7 @@ function persistTheme(theme: UiTheme) {
 
 export const useUiStore = defineStore('ui', {
 	state: () => ({
-		theme: defaultTheme,
+		theme: defaultTheme as UiTheme,
 		hasHydratedTheme: false,
 	}),
 	getters: {
