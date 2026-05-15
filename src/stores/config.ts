@@ -11,6 +11,7 @@ theme: 'dark',
 icon_size: 'medium',
 font_size: 14,
 show_hidden_files: false,
+window_controls: true,
 },
 behavior: {
 default_path: '',

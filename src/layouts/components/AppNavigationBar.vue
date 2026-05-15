@@ -71,16 +71,18 @@ onUnmounted(() => window.removeEventListener('keydown', handleGlobalKeydown));
             <button class="LFM-nav-btn" title="Expand address bar">
                 <IconMoreVert />
             </button>
-            <div class="LFM-search-box hidden md:flex items-center">
-                <IconSearch class="ml-2 opacity-50" />
-                <input 
+            <div class="LFM-search-box hidden md:flex items-center relative">
+	                <IconSearch class="ml-2 opacity-50" />
+				<input 
                     ref="searchRef"
                     v-model="store.searchQuery"
                     type="text" 
-                    placeholder="Search" 
-                    class="bg-transparent border-none outline-none px-2 py-1 w-32 focus:w-48 transition-all duration-300"
+                    placeholder="Search files..." 
+                    class="bg-transparent border-none outline-none px-2 py-1 w-32 focus:w-64 transition-all duration-300"
+					@keydown.enter="store.search()"
                 />
-            </div>
+				<span class="text-xs text-muted mr-2 hidden lg:inline">Ctrl+F</span>
+			</div>
             <button 
                 class="LFM-nav-btn" 
                 :class="{ 'LFM-nav-btn--active': store.aiChatOpen }"

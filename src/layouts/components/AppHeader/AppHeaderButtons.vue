@@ -1,15 +1,17 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { minimizeWindow, toggleMaximize, closeWindow } from '@/services/tauri-bridge';
+import { useConfigStore } from '@/stores/config';
 import IconMinimize from '~icons/material-symbols/minimize';
 import IconMaximize from '~icons/material-symbols/maximize';
 import IconClose from '~icons/material-symbols/close';
 
-// This can be synced with a store or config later
-const appButtons = true;
+const configStore = useConfigStore();
+const { config } = storeToRefs(configStore);
 </script>
 
 <template lang="pug">
-.LFM-header-buttons(v-if="appButtons")
+.LFM-header-buttons(v-if="config.appearance.window_controls")
 	button.LFM-header-btn.LFM-header-btn--minimize(title="Minimize" @click="minimizeWindow")
 		IconMinimize
 	button.LFM-header-btn.LFM-header-btn--maximize(title="Maximize" @click="toggleMaximize")

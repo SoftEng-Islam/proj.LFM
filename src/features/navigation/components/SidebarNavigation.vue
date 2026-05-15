@@ -332,9 +332,14 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 		transform: rotate(0deg)
 
 .LFM-sbar-settings
+	position: sticky
+	bottom: 0
 	margin-top: auto
 	padding-top: 8px
+	padding-bottom: 8px
 	border-top: 1px solid var(--LFM-border)
+	background: var(--LFM-panel)
+	z-index: 10
 
 .LFM-sbar-item--settings
 	background: transparent

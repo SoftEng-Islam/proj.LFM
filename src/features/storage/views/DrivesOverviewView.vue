@@ -3,8 +3,46 @@ import { computed, onMounted, ref } from 'vue';
 import { getDrives } from '@/services/tauri-bridge';
 import type { DriveInformation } from '@/services/tauri-bridge';
 import { mapDriveInfoToCard } from '@/services/mappers';
-import DriveIcon from '@/components/VueIcons/Drive/DriveIcon.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import IconHomeStorage from '~icons/material-symbols/home-storage';
+import IconHardDrive from '~icons/material-symbols/hard-drive';
+import IconHardDisk from '~icons/material-symbols/hard-disk';
+import IconStorage from '~icons/material-symbols/storage';
+import IconUsb from '~icons/material-symbols/usb';
+import IconSdCard from '~icons/material-symbols/sd-card';
+import IconDns from '~icons/material-symbols/dns';
+
+const iconComponents: Record<string, any> = {
+  root: IconHomeStorage,
+  internal: IconHardDrive,
+  hdd: IconHardDisk,
+  ssd: IconStorage,
+  usb: IconUsb,
+  external: IconHardDrive,
+  sdcard: IconSdCard,
+  network: IconDns,
+  removable: IconUsb,
+};
+
+const iconColors: Record<string, string> = {
+  root: 'text-teal-500',
+  internal: 'text-slate-500',
+  hdd: 'text-amber-600',
+  ssd: 'text-emerald-500',
+  usb: 'text-blue-500',
+  external: 'text-violet-500',
+  sdcard: 'text-pink-500',
+  network: 'text-cyan-500',
+  removable: 'text-blue-500',
+};
+
+function getDriveIconComponent(type: string) {
+  return iconComponents[type] || IconHardDrive;
+}
+
+function getDriveIconColor(type: string) {
+  return iconColors[type] || 'text-slate-500';
+}
 
 const drives = ref<DriveInformation[]>([]);
 const loading = ref(false);
@@ -53,7 +91,8 @@ AppLayout
     .LFM-drives-grid(v-if="!loading && !error && driveCards.length > 0")
       RouterLink.LFM-drive-card(v-for="drive in driveCards" :key="drive.id" :to="drive.id")
         .LFM-drive-header
-          DriveIcon(:type="drive.driveType" :is-mounted="drive.isMounted" :size="36")
+          span.LFM-drive-icon
+            component(:is="getDriveIconComponent(drive.driveType)" :class="getDriveIconColor(drive.driveType)")
           .LFM-drive-title
             h2.LFM-drive-name {{ drive.mountName }}
             p.LFM-drive-path {{ drive.devicePath }}
@@ -149,6 +188,14 @@ AppLayout
   margin-bottom: 1rem
   padding-bottom: 1rem
   border-bottom: 1px solid var(--LFM-border)
+
+.LFM-drive-icon
+  display: flex
+  align-items: center
+  justify-content: center
+  width: 40px
+  height: 40px
+  font-size: 28px
 
 .LFM-drive-title
   min-width: 0
