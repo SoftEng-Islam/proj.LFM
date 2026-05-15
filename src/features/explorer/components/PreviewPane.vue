@@ -15,8 +15,8 @@ import IconFullscreen from '~icons/material-symbols/fullscreen';
 import IconInfo from '~icons/material-symbols/info-outline';
 import IconShield from '~icons/material-symbols/shield';
 import IconMovie from '~icons/material-symbols/movie';
-import IconChevronDown from '~icons/material-symbols/chevron-down';
-import IconChevronUp from '~icons/material-symbols/chevron-up';
+import IconChevronDown from '~icons/material-symbols/expand-more';
+import IconChevronUp from '~icons/material-symbols/expand-less';
 import IconPause from '~icons/material-symbols/pause';
 
 import { useFileManagerStore } from '@/stores/file-manager';
