@@ -45,3 +45,14 @@
    1. [@vue/compiler-sfc] `defineEmits` is a compiler macro and no longer needs to be imported.
    2. Warning: 'ozone-platform-hint' is not in the list of known options, but still passed to Electron/Chromium. Warning: 'enable-features' is not in the list of known options, but still passed to Electron/Chromium. Warning: 'enable-wayland-ime' is not in the list of known options, but still passed to Electron/Chromium. Warning: 'wayland-text-input-version' is not in the list of known options, but still passed to Electron/Chromium.
    3. VM 0x79a236416000 on pid 1306771 received NeedDebuggerBreak trap, VM 0x79a236416000 on pid 1306771 received NeedDebuggerBreak trap, VM 0x79a236416000 on pid 1306771 received NeedDebuggerBreak trap
+9. The Rename
+   1. For one file/folder its just a simple rename input with submit button.
+   2. For files/folders its an Advanced rename with a lot of options like:
+      1. Find and replace text
+         1. Existing Text input
+         2. Replace with input
+      2. rename using a template "[Original file name]" with Automatic Numbers
+         1. rename with 1,2,3,.. in specific place in the name
+         2. rename with 01,02,03,.. in specific place in the name
+         3. rename with 001,002,003,.. in specific place in the name
+      3. There is a preview Section to see the names before and names after
