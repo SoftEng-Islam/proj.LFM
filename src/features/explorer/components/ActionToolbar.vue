@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useFileManagerStore } from '@/stores/file-manager';
+import { useConfigStore } from '@/stores/config';
+import { createFile as createFileCmd, createDirRecursive as createDirCmd } from '@/services/tauri-bridge';
 
 // Icons
 import IconAdd from '~icons/material-symbols/add';
@@ -21,11 +23,38 @@ import IconSideNavigation from '~icons/material-symbols/side-navigation';
 import IconFolder from '~icons/material-symbols/folder';
 import IconDescription from '~icons/material-symbols/description';
 import IconTerminal from '~icons/material-symbols/terminal';
+import IconUploadFile from '~icons/material-symbols/upload-file';
 
 const store = useFileManagerStore();
+const configStore = useConfigStore();
 const toast = useToast();
 
+// Dropdown states
 const showNewDropdown = ref(false);
+const showSortDropdown = ref(false);
+const showIconSizeDropdown = ref(false);
+const showFilterDropdown = ref(false);
+
+// Icon sizes
+const iconSizes = ['small', 'medium', 'large', 'extra-large'];
+const iconSizeLabels: Record<string, string> = {
+  small: 'Small',
+  medium: 'Medium',
+  large: 'Large',
+  'extra-large': 'Extra Large',
+};
+
+// Sort options
+const sortOptions: Record<string, string> = {
+  name: 'Name',
+  size: 'Size',
+  kind: 'Type',
+  modified: 'Date modified',
+  created: 'Date created',
+};
+
+const currentIconSize = computed(() => configStore.config.appearance.icon_size);
+const currentSortMode = computed(() => store.sortMode);
 
 const sortLabel = computed(() => {
 	switch (store.sortMode) {
@@ -39,18 +68,41 @@ const sortLabel = computed(() => {
 
 function createDirectory() {
 	const dir = store.createDirectory();
-	toast.success(`${dir.name} created.`);
 	showNewDropdown.value = false;
+	toast.success(`Directory "${dir.name}" created.`);
 }
 
-function createFile(type: string) {
-	toast.info(`Creating new ${type}...`);
+async function createNewFile(type: string) {
+	const baseName = type === 'Document' ? 'Untitled.txt' : 'Untitled.sh';
+	const fullPath = `${store.currentPath}/${baseName}`;
+	try {
+		await createFileCmd(fullPath);
+		await store.refreshCurrentDirectory();
+		toast.success(`File "${baseName}" created.`);
+	} catch (error) {
+		toast.error(`Failed to create file: ${error}`);
+	}
 	showNewDropdown.value = false;
-	// Implementation for specific file types would go here
 }
 
 function cycleSort() { store.cycleSortMode(); }
 function setView(mode: 'grid' | 'list') { store.setViewMode(mode); }
+
+function setSortMode(mode: string) {
+	store.cycleSortMode(); // For now cycle through - can be expanded to set specific mode
+	showSortDropdown.value = false;
+}
+
+function setIconSize(size: string) {
+	configStore.config.appearance.icon_size = size;
+	configStore.applyLiveConfig();
+	showIconSizeDropdown.value = false;
+}
+
+function toggleViewMode() {
+	const newMode = store.viewMode === 'grid' ? 'list' : 'grid';
+	store.setViewMode(newMode);
+}
 
 const emit = defineEmits<{
 	rename: [path: string];
@@ -122,10 +174,10 @@ async function triggerPaste() {
 						IconFolder.text-amber-500
 						span Directory
 					.LFM-dropdown-divider
-					button.LFM-dropdown-item(@click="createFile('Document')")
+					button.LFM-dropdown-item(@click="createNewFile('Document')")
 						IconDescription.text-blue-400
 						span Text Document
-					button.LFM-dropdown-item(@click="createFile('Script')")
+					button.LFM-dropdown-item(@click="createNewFile('Script')")
 						IconTerminal.text-emerald-500
 						span Bash Script
 
@@ -149,20 +201,59 @@ async function triggerPaste() {
 				IconMoreHoriz.opacity-50
 
 		.LFM-ribbon-right
-			button.LFM-ribbon-btn(title="Filter")
-				IconFilterAlt.text-violet-500
+			//- Filter dropdown
+			.relative
+				button.LFM-ribbon-btn(title="Filter" @click="showFilterDropdown = !showFilterDropdown")
+					IconFilterAlt.text-violet-500
+				
+				.LFM-dropdown-menu(v-if="showFilterDropdown")
+					button.LFM-dropdown-item
+						input.LFM-filter-input(type="text" placeholder="Filter files...")
+					.LFM-dropdown-divider
+					button.LFM-dropdown-item Filter by name
+					button.LFM-dropdown-item Filter by type
+					button.LFM-dropdown-item Filter by size
 
-			button.LFM-ribbon-btn.LFM-ribbon-btn--dropdown(title="Sort by" @click="cycleSort")
-				IconSort.text-sky-500
-				span.LFM-ribbon-btn-label {{ sortLabel }}
-				span.LFM-ribbon-btn-arrow ▾
+			//- Sort dropdown
+			.relative
+				button.LFM-ribbon-btn.LFM-ribbon-btn--dropdown(title="Sort by" @click="showSortDropdown = !showSortDropdown")
+					IconSort.text-sky-500
+					span.LFM-ribbon-btn-label {{ sortOptions[store.sortMode] || 'Modified' }}
+					span.LFM-ribbon-btn-arrow ▾
+				
+				.LFM-dropdown-menu(v-if="showSortDropdown")
+					button.LFM-dropdown-item(
+						v-for="(label, mode) in sortOptions"
+						:key="mode"
+						:class="{ 'LFM-dropdown-item--active': store.sortMode === mode }"
+						@click="setSortMode(mode)"
+					) {{ label }}
 
 			.LFM-ribbon-sep
 
-			button.LFM-ribbon-btn(:class="{ 'LFM-ribbon-btn--active': store.viewMode !== 'list' }" title="Grid View" @click="setView('grid')")
-				IconGridView.text-indigo-500
-			button.LFM-ribbon-btn(:class="{ 'LFM-ribbon-btn--active': store.viewMode === 'list' }" title="List View" @click="setView('list')")
-				IconTableRows.text-indigo-500
+			//- Icon size dropdown
+			.relative
+				button.LFM-ribbon-btn.LFM-ribbon-btn--dropdown(title="Icon size" @click="showIconSizeDropdown = !showIconSizeDropdown")
+					span.LFM-ribbon-btn-label {{ iconSizeLabels[currentIconSize] || 'Medium' }}
+					span.LFM-ribbon-btn-arrow ▾
+				
+				.LFM-dropdown-menu(v-if="showIconSizeDropdown")
+					button.LFM-dropdown-item(
+						v-for="size in iconSizes"
+						:key="size"
+						:class="{ 'LFM-dropdown-item--active': currentIconSize === size }"
+						@click="setIconSize(size)"
+					) {{ iconSizeLabels[size] }}
+
+			.LFM-ribbon-sep
+
+			//- Combined view mode toggle button
+			button.LFM-ribbon-btn(
+				:class="{ 'LFM-ribbon-btn--active': store.viewMode !== 'list' }"
+				:title="store.viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'"
+				@click="toggleViewMode"
+			)
+				component(:is="store.viewMode === 'grid' ? IconTableRows : IconGridView").text-indigo-500
 
 			.LFM-ribbon-sep
 
@@ -278,6 +369,24 @@ async function triggerPaste() {
 
 	&:hover
 		background: var(--LFM-hover)
+
+.LFM-filter-input
+	width: 100%
+	padding: 8px 12px
+	border: 1px solid var(--LFM-border)
+	border-radius: 4px
+	background: var(--LFM-bg)
+	color: var(--LFM-text)
+	font-size: 13px
+	outline: none
+
+	&:focus
+		border-color: hsl(var(--p))
+
+.LFM-dropdown-item--active
+	background: var(--LFM-blue-subtle)
+	color: hsl(var(--p))
+	font-weight: 600
 
 .LFM-dropdown-divider
 	height: 1px

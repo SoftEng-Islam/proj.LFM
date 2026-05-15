@@ -1,12 +1,22 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFileManagerStore } from '@/stores/file-manager';
+import { useConfigStore } from '@/stores/config';
+import { storeToRefs } from 'pinia';
 import IconAdd from '~icons/material-symbols/add';
 import IconFolder from '~icons/material-symbols/folder';
 import IconClose from '~icons/material-symbols/close';
+import IconArrowBack from '~icons/material-symbols/arrow-back';
+import IconArrowForward from '~icons/material-symbols/arrow-forward';
 
 const store = useFileManagerStore();
+const configStore = useConfigStore();
 const router = useRouter();
+const { config } = storeToRefs(configStore);
+
+// Default path from config
+const defaultTabPath = computed(() => config.value.behavior.default_path || '/drives');
 
 function handleCloseTab(tabId: string) {
 	const idx = store.windowTabs.findIndex((t: any) => t.id === tabId);
@@ -22,7 +32,7 @@ function handleCloseTab(tabId: string) {
 }
 
 function handleNewTab() {
-	const id = store.addTab();
+	const id = store.addTab(defaultTabPath.value);
 	const tab = store.windowTabs.find((t: any) => t.id === id);
 	if (tab) router.push(tab.path);
 }
@@ -96,6 +106,7 @@ function handleNewTab() {
 	&--active
 		background: var(--LFM-panel)
 		z-index: 2
+		color: hsl(var(--p))
 		
 		&::after
 			content: ''
@@ -103,9 +114,9 @@ function handleNewTab() {
 			bottom: -1px
 			left: 0
 			right: 0
-			height: 2px
-			background: var(--LFM-blue)
-			box-shadow: 0 -2px 10px var(--LFM-blue)
+			height: 3px
+			background: hsl(var(--p))
+			box-shadow: 0 -2px 12px hsl(var(--p) / 0.5)
 
 .LFM-tab-content
 	display: flex

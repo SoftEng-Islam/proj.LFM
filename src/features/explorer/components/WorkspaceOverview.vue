@@ -12,10 +12,12 @@ import FolderIcon from '@/components/VueIcons/Folder/FolderIcon.vue';
 import FileIcon from '@/components/VueIcons/File/FileIcon.vue';
 
 import { useFileManagerStore } from '@/stores/file-manager';
+import { useConfigStore } from '@/stores/config';
 import type { FileEntry } from '@/types/file-manager';
 import { useToast } from 'vue-toastification';
 
 const store = useFileManagerStore();
+const configStore = useConfigStore();
 const router = useRouter();
 const toast = useToast();
 const selectedId = computed(() => store.selectedItem?.id ?? '');

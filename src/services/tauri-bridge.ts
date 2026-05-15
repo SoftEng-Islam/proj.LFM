@@ -126,9 +126,10 @@ export interface StorageData {
 
 export interface LfmConfigAppearance {
 	theme: 'light' | 'dark';
-	icon_set: string;
+	icon_size: string;
 	font_size: number;
 	show_hidden_files: boolean;
+	window_controls: boolean;
 }
 
 export interface LfmConfigBehavior {

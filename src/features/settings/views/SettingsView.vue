@@ -56,6 +56,7 @@ div.LFM-settings-shell
                 option(value="small") Small (16px)
                 option(value="medium") Medium (24px)
                 option(value="large") Large (32px)
+                option(value="extra-large") Extra Large (48px)
             .LFM-control
               label(for="fontSize") Font size
               select#fontSize(v-model="store.config.appearance.font_size" @change="store.applyLiveConfig()")
@@ -67,6 +68,10 @@ div.LFM-settings-shell
               label
                 input(type="checkbox" v-model="store.config.appearance.show_hidden_files" @change="store.applyLiveConfig()")
                 | Show hidden files
+            .LFM-control
+              label
+                input(type="checkbox" v-model="store.config.appearance.window_controls")
+                | Show window controls (close/minimize/maximize)
 
           fieldset.LFM-settings-group
             legend Behavior
@@ -116,7 +121,7 @@ div.LFM-settings-shell
   border-radius: 1.5rem
   background: var(--LFM-panel)
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08)
-  overflow: hidden
+  overflow: auto
 
 .LFM-settings-close
   position: absolute
