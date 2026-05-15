@@ -94,11 +94,11 @@ div.LFM-settings-shell
   z-index: 40
   display: flex
   justify-content: center
-  align-items: flex-start
-  padding: 2rem 1rem 1rem
+  align-items: center
   width: 100%
-  background: transparent
-  pointer-events: none
+  height: 100%
+  background: rgba(0, 0, 0, 0.5)
+  pointer-events: auto
 
 .LFM-settings-window
   pointer-events: auto

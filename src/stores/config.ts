@@ -13,7 +13,7 @@ function createDefaultConfig(): LfmConfig {
 			show_hidden_files: false,
 		},
 		behavior: {
-			default_path: '/home/user',
+			default_path: '', // Will be resolved dynamically at runtime
 			confirm_delete: true,
 			single_click_open: false,
 		},
