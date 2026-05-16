@@ -123,3 +123,38 @@ export interface WorkspaceStat {
 	helper: string;
 	accent: AccentTone;
 }
+
+// ── Advanced Rename Types ─────────────────────────────────────────────────────
+
+export type RenameMode = 'simple' | 'advanced';
+
+export type NumberFormat = '1' | '01' | '001';
+
+export type RenameOperation = 'find-replace' | 'template';
+
+export interface RenamePreview {
+	originalPath: string;
+	originalName: string;
+	newName: string;
+}
+
+export interface AdvancedRenameConfig {
+	operation: RenameOperation;
+	// Find and replace
+	findText?: string;
+	replaceText?: string;
+	// Template
+	template?: string;
+	numberFormat?: NumberFormat;
+	numberPosition?: 'prefix' | 'suffix' | 'custom';
+	customNumberPosition?: number; // Index in template where number should be inserted
+	startNumber?: number;
+}
+
+export interface RenameDialogState {
+	visible: boolean;
+	mode: RenameMode;
+	items: Array<{ path: string; currentName: string }>;
+	simpleName?: string;
+	advancedConfig?: AdvancedRenameConfig;
+}

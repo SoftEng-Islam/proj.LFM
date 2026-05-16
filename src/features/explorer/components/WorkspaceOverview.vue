@@ -14,7 +14,7 @@ import FileIcon from '@/components/VueIcons/File/FileIcon.vue';
 
 import { useFileManagerStore } from '@/stores/file-manager';
 import { useConfigStore } from '@/stores/config';
-import type { FileEntry } from '@/types/file-manager';
+import type { FileEntry, RenameDialogState, RenameMode } from '@/types/file-manager';
 import { useToast } from 'vue-toastification';
 
 const store = useFileManagerStore();
@@ -32,10 +32,11 @@ const contextMenu = ref<{ visible: boolean; x: number; y: number; itemId: string
 	itemId: '',
 });
 
-const renameDialog = ref<{ visible: boolean; path: string; currentName: string }>({
+const renameDialog = ref<RenameDialogState>({
 	visible: false,
-	path: '',
-	currentName: '',
+	mode: 'simple',
+	items: [],
+	simpleName: '',
 });
 
 const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null }>({
@@ -43,11 +44,137 @@ const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null }>({
 	item: null,
 });
 
+// ── Drag selection state ─────────────────────────────────────────────────────
+
+const isDragging = ref(false);
+const dragStart = ref<{ x: number; y: number } | null>(null);
+const dragEnd = ref<{ x: number; y: number } | null>(null);
+const workspaceRef = ref<HTMLElement>();
+
+// Computed style for the selection box
+const selectionBoxStyle = computed(() => {
+	if (!dragStart.value || !dragEnd.value) return {};
+	const startX = Math.min(dragStart.value.x, dragEnd.value.x);
+	const startY = Math.min(dragStart.value.y, dragEnd.value.y);
+	const width = Math.abs(dragEnd.value.x - dragStart.value.x);
+	const height = Math.abs(dragEnd.value.y - dragStart.value.y);
+
+	return {
+		left: `${startX}px`,
+		top: `${startY}px`,
+		width: `${width}px`,
+		height: `${height}px`,
+	};
+});
+
+function handleMouseDown(e: MouseEvent) {
+	// Only start drag if clicking on the workspace background
+	if (e.target === workspaceRef.value || (e.target as HTMLElement).classList.contains('LFM-workspace-content')) {
+		e.preventDefault(); // Prevent default text selection
+		isDragging.value = true;
+		dragStart.value = { x: e.clientX, y: e.clientY };
+		dragEnd.value = { x: e.clientX, y: e.clientY };
+	}
+}
+
+function handleMouseMove(e: MouseEvent) {
+	if (isDragging.value && dragStart.value) {
+		dragEnd.value = { x: e.clientX, y: e.clientY };
+
+		// Real-time selection update during drag
+		const startX = Math.min(dragStart.value.x, dragEnd.value.x);
+		const startY = Math.min(dragStart.value.y, dragEnd.value.y);
+		const endX = Math.max(dragStart.value.x, dragEnd.value.x);
+		const endY = Math.max(dragStart.value.y, dragEnd.value.y);
+
+		const itemsToSelect: string[] = [];
+
+		store.currentEntries.forEach((entry) => {
+			const element = document.querySelector(`[data-item-id="${entry.id}"]`) as HTMLElement;
+			if (element) {
+				const rect = element.getBoundingClientRect();
+				const itemCenterX = rect.left + rect.width / 2;
+				const itemCenterY = rect.top + rect.height / 2;
+
+				if (itemCenterX >= startX && itemCenterX <= endX && itemCenterY >= startY && itemCenterY <= endY) {
+					itemsToSelect.push(entry.id);
+				}
+			}
+		});
+
+		// Update selection in real-time (only if not holding Ctrl)
+		if (!(e.ctrlKey || e.metaKey)) {
+			store.clearSelection();
+			itemsToSelect.forEach((id) => store.selectedItemIds.add(id));
+		}
+	}
+}
+
+function handleMouseUp(e: MouseEvent) {
+	if (isDragging.value && dragStart.value && dragEnd.value) {
+		// Calculate selection box
+		const startX = Math.min(dragStart.value.x, dragEnd.value.x);
+		const startY = Math.min(dragStart.value.y, dragEnd.value.y);
+		const endX = Math.max(dragStart.value.x, dragEnd.value.x);
+		const endY = Math.max(dragStart.value.y, dragEnd.value.y);
+
+		// Find items within the selection box
+		const workspaceRect = workspaceRef.value?.getBoundingClientRect();
+		if (workspaceRect) {
+			const itemsToSelect: string[] = [];
+
+			store.currentEntries.forEach((entry) => {
+				const element = document.querySelector(`[data-item-id="${entry.id}"]`) as HTMLElement;
+				if (element) {
+					const rect = element.getBoundingClientRect();
+					const itemCenterX = rect.left + rect.width / 2;
+					const itemCenterY = rect.top + rect.height / 2;
+
+					if (itemCenterX >= startX && itemCenterX <= endX && itemCenterY >= startY && itemCenterY <= endY) {
+						itemsToSelect.push(entry.id);
+					}
+				}
+			});
+
+			// Update selection (Ctrl adds to selection, otherwise replace)
+			if (e.ctrlKey || e.metaKey) {
+				// Add to existing selection
+				itemsToSelect.forEach((id) => store.toggleItemSelection(id));
+			} else {
+				// Replace selection with final selection
+				store.clearSelection();
+				itemsToSelect.forEach((id) => store.selectedItemIds.add(id));
+			}
+		}
+
+		// Mark that we just finished a drag selection
+		wasDragging.value = true;
+	}
+
+	isDragging.value = false;
+	dragStart.value = null;
+	dragEnd.value = null;
+}
+
+// Track if we just finished a drag to prevent click event from clearing selection
+const wasDragging = ref(false);
+
+function handleWorkspaceClick() {
+	// Only clear selection if we weren't just dragging
+	if (!wasDragging.value) {
+		store.clearSelection();
+	}
+	wasDragging.value = false;
+}
+
 // ── Context menu helpers ────────────────────────────────────────────────────
 
 function openContextMenu(e: MouseEvent, itemId: string) {
 	e.preventDefault();
-	store.selectItem(itemId);
+	// Only select the item if it's not already selected
+	if (!store.selectedItemIds.has(itemId)) {
+		store.selectItem(itemId);
+	}
 	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId };
 }
 
@@ -57,16 +184,34 @@ function closeContextMenu() {
 
 function openEmptyContextMenu(e: MouseEvent) {
 	e.preventDefault();
-	store.selectItem('');
+	store.clearSelection();
 	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId: '' };
 }
 
 // ── Dialog openers ──────────────────────────────────────────────────────────
 
-function openRenameDialog(path: string) {
-	const name = path.split('/').pop() || '';
-	renameDialog.value = { visible: true, path, currentName: name };
+function openRenameDialog(itemId?: string) {
 	closeContextMenu();
+
+	// If itemId is provided, only select it if it's not already selected
+	if (itemId && !store.selectedItemIds.has(itemId)) {
+		store.selectItem(itemId);
+	}
+
+	const selectedItems = store.selectedItems;
+	const mode: RenameMode = selectedItems.length === 1 ? 'simple' : 'advanced';
+
+	const items = selectedItems.map((item) => ({
+		path: item.id,
+		currentName: item.name,
+	}));
+
+	renameDialog.value = {
+		visible: true,
+		mode,
+		items,
+		simpleName: selectedItems[0]?.name || '',
+	};
 }
 
 function openPropertiesDialog(itemId?: string) {
@@ -77,8 +222,17 @@ function openPropertiesDialog(itemId?: string) {
 	closeContextMenu();
 }
 
-async function handleRename(newName: string) {
-	const success = await store.renameItem(renameDialog.value.path, newName);
+async function handleSimpleRename(newName: string) {
+	if (renameDialog.value.items.length === 0) return;
+	const item = renameDialog.value.items[0];
+	if (!item) return;
+	const success = await store.renameItem(item.path, newName);
+	toast[success ? 'success' : 'error'](success ? 'Renamed successfully' : 'Failed to rename');
+	renameDialog.value.visible = false;
+}
+
+async function handleAdvancedRename(renames: Array<{ oldPath: string; newName: string }>) {
+	const success = await store.batchRename(renames);
 	toast[success ? 'success' : 'error'](success ? 'Renamed successfully' : 'Failed to rename');
 	renameDialog.value.visible = false;
 }
@@ -87,6 +241,14 @@ async function handleRename(newName: string) {
 
 function isFolder(entry: { kind: string }) {
 	return entry.kind === 'folder';
+}
+
+function handleItemClick(entry: FileEntry, e: MouseEvent) {
+	if (e.ctrlKey || e.metaKey) {
+		store.toggleItemSelection(entry.id);
+	} else {
+		store.selectItem(entry.id);
+	}
 }
 
 /**
@@ -112,8 +274,6 @@ const formatDate = (dateStr: string) =>
 	);
 
 // ── Keyboard shortcuts ──────────────────────────────────────────────────────
-
-const workspaceRef = ref<HTMLElement>();
 
 function handleKeydown(e: KeyboardEvent) {
 	// Skip if typing in an input
@@ -197,6 +357,9 @@ function handleKeydown(e: KeyboardEvent) {
 onMounted(() => window.addEventListener('keydown', handleKeydown));
 onMounted(() => {
 	window.addEventListener('keydown', handleKeydown);
+	window.addEventListener('mousedown', handleMouseDown);
+	window.addEventListener('mousemove', handleMouseMove);
+	window.addEventListener('mouseup', handleMouseUp);
 
 	// Listen for global rename shortcut (F2) and open rename dialog
 	busOn('shortcut:rename', () => {
@@ -210,6 +373,9 @@ onMounted(() => {
 
 onUnmounted(() => {
 	window.removeEventListener('keydown', handleKeydown);
+	window.removeEventListener('mousedown', handleMouseDown);
+	window.removeEventListener('mousemove', handleMouseMove);
+	window.removeEventListener('mouseup', handleMouseUp);
 	busOff('shortcut:rename');
 });
 </script>
@@ -218,7 +384,12 @@ onUnmounted(() => {
 .LFM-workspace(ref="workspaceRef")
 	ActionToolbar(@rename="openRenameDialog" @properties="openPropertiesDialog")
 
-	.LFM-workspace-content(@contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
+	.LFM-workspace-content(@contextmenu.self="openEmptyContextMenu" @click.self="handleWorkspaceClick")
+		//- Selection box overlay
+		.LFM-selection-box(
+			v-if="isDragging && dragStart && dragEnd"
+			:style="selectionBoxStyle"
+		)
 
 		//- ── Permission / read error empty state ─────────────────────────
 		.LFM-nav-error(v-if="store.navError")
@@ -243,16 +414,17 @@ onUnmounted(() => {
 		//- ── Normal file view ────────────────────────────────────────────
 		template(v-else)
 			//- Grid view
-			.LFM-grid(v-if="store.viewMode !== 'list'" @contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
+			.LFM-grid(v-if="store.viewMode !== 'list'" @contextmenu.self="openEmptyContextMenu" @click.self="handleWorkspaceClick")
 				button(
 					v-for="entry in store.currentEntries"
 					:key="entry.id"
 					type="button"
 					class="LFM-grid-item"
-					:class="{ 'LFM-grid-item--selected': selectedId === entry.id }"
-					:aria-selected="selectedId === entry.id"
+					:class="{ 'LFM-grid-item--selected': store.selectedItemIds.has(entry.id) }"
+					:aria-selected="store.selectedItemIds.has(entry.id)"
 					:title="entry.name"
-					@click="store.selectItem(entry.id)"
+					:data-item-id="entry.id"
+					@click="handleItemClick(entry, $event)"
 					@dblclick="openItem(entry)"
 					@contextmenu="(e) => openContextMenu(e, entry.id)"
 				)
@@ -263,7 +435,7 @@ onUnmounted(() => {
 					span.LFM-grid-item-name {{ entry.name }}
 
 			//- List view
-			.LFM-list(v-else @contextmenu.self="openEmptyContextMenu" @click.self="store.selectItem('')")
+			.LFM-list(v-else @contextmenu.self="openEmptyContextMenu" @click.self="handleWorkspaceClick")
 				.LFM-list-header
 					span.LFM-list-col.LFM-list-col--name Name
 					span.LFM-list-col Date modified
@@ -274,8 +446,9 @@ onUnmounted(() => {
 					:key="row.id"
 					type="button"
 					class="LFM-list-row"
-					:class="{ 'LFM-list-row--selected': selectedId === row.id }"
-					@click="store.selectItem(row.id)"
+					:class="{ 'LFM-list-row--selected': store.selectedItemIds.has(row.id) }"
+					:data-item-id="row.id"
+					@click="handleItemClick(row, $event)"
 					@dblclick="openItem(row)"
 					@contextmenu="(e) => openContextMenu(e, row.id)"
 				)
@@ -301,10 +474,10 @@ onUnmounted(() => {
 	)
 	RenameModal(
 		v-if="renameDialog.visible"
-		:show="renameDialog.visible"
-		:current-name="renameDialog.currentName"
+		:state="renameDialog"
 		@close="renameDialog.visible = false"
-		@submit="handleRename"
+		@submit-simple="handleSimpleRename"
+		@submit-advanced="handleAdvancedRename"
 	)
 	PropertiesModal(
 		v-if="propertiesDialog.visible && propertiesDialog.item"
@@ -326,6 +499,15 @@ onUnmounted(() => {
 	overflow-y: auto
 	overflow-x: hidden
 	padding: 8px
+	position: relative
+	user-select: none
+
+.LFM-selection-box
+	position: fixed
+	border: 1px solid var(--LFM-blue)
+	background: rgba(43, 124, 211, 0.1)
+	pointer-events: none
+	z-index: 1000
 
 .LFM-grid
 	display: flex

@@ -35,7 +35,6 @@ import {
 	openFile,
 	openInTerminal as tauriOpenTerminal,
 	readDirectory,
-	readTextFile,
 	rename as tauriMove,
 	writeTextFile,
 } from '@/services/tauri-bridge';
@@ -64,7 +63,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	const homePath = ref<string>(defaultPath);
 	const currentEntries = ref<FileEntry[]>([]);
 	const searchQuery = ref('');
-	const selectedItemId = ref<string | null>(null);
+	const selectedItemIds = ref<Set<string>>(new Set());
 	const viewMode = useStorage<ViewMode>('lfm-view-mode', 'grid');
 	const sortMode = useStorage<SortMode>('lfm-sort-mode', 'modified');
 	const settingsOpen = ref(false);
@@ -162,13 +161,19 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		});
 	});
 
-	// ── Computed: selected item ───────────────────────────────────────────────
+	// ── Computed: selected item (first selected for backward compatibility) ──
 	const selectedItem = computed<FileEntry | null>(() => {
-		if (selectedItemId.value) {
-			const match = sortedAndFilteredEntries.value.find((e) => e.id === selectedItemId.value);
+		const firstId = selectedItemIds.value.values().next().value;
+		if (firstId) {
+			const match = sortedAndFilteredEntries.value.find((e) => e.id === firstId);
 			if (match) return match;
 		}
 		return sortedAndFilteredEntries.value[0] ?? null;
+	});
+
+	// ── Computed: selected items array ─────────────────────────────────────────
+	const selectedItems = computed<FileEntry[]>(() => {
+		return sortedAndFilteredEntries.value.filter((e) => selectedItemIds.value.has(e.id));
 	});
 
 	// ── Computed: spotlight (top 3 directories or files) ─────────────────────
@@ -209,14 +214,18 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	// ── Auto-select first item when entries change ────────────────────────────
 	watch(
-		selectedItemId,
-		async (newId) => {
+		selectedItemIds,
+		async (newIds) => {
 			selectedItemPermissions.value = null;
 			selectedItemMediaInfo.value = null;
 
-			if (newId) {
+			const firstId = newIds.values().next().value;
+			if (firstId) {
 				try {
-					const [perms, media] = await Promise.all([getFilePermissions(newId).catch(() => null), getMediaInfo(newId).catch(() => null)]);
+					const [perms, media] = await Promise.all([
+						getFilePermissions(firstId).catch(() => null),
+						getMediaInfo(firstId).catch(() => null),
+					]);
 					selectedItemPermissions.value = perms;
 					selectedItemMediaInfo.value = media;
 				} catch (err) {
@@ -224,16 +233,14 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 				}
 			}
 		},
-		{ immediate: true }
+		{ immediate: true, deep: true }
 	);
 
 	async function updateSelectedItemMetadata() {
-		if (selectedItemId.value) {
+		const firstId = selectedItemIds.value.values().next().value;
+		if (firstId) {
 			try {
-				const [perms, media] = await Promise.all([
-					getFilePermissions(selectedItemId.value).catch(() => null),
-					getMediaInfo(selectedItemId.value).catch(() => null),
-				]);
+				const [perms, media] = await Promise.all([getFilePermissions(firstId).catch(() => null), getMediaInfo(firstId).catch(() => null)]);
 				selectedItemPermissions.value = perms;
 				selectedItemMediaInfo.value = media;
 			} catch (err) {
@@ -373,7 +380,24 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	function selectItem(itemId: string) {
-		selectedItemId.value = itemId;
+		selectedItemIds.value.clear();
+		selectedItemIds.value.add(itemId);
+	}
+
+	function toggleItemSelection(itemId: string) {
+		if (selectedItemIds.value.has(itemId)) {
+			selectedItemIds.value.delete(itemId);
+		} else {
+			selectedItemIds.value.add(itemId);
+		}
+	}
+
+	function selectAllItems() {
+		selectedItemIds.value = new Set(sortedAndFilteredEntries.value.map((e) => e.id));
+	}
+
+	function clearSelection() {
+		selectedItemIds.value.clear();
 	}
 
 	function setSearchQuery(value: string) {
@@ -439,8 +463,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	function togglePinnedForSelection() {
-		if (!selectedItemId.value) return;
-		const match = currentEntries.value.find((e) => e.id === selectedItemId.value);
+		const firstId = selectedItemIds.value.values().next().value;
+		if (!firstId) return;
+		const match = currentEntries.value.find((e) => e.id === firstId);
 		if (match) match.pinned = !match.pinned;
 	}
 
@@ -458,10 +483,13 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		const idx = windowTabs.value.findIndex((t) => t.id === tabId);
 		if (idx === -1) return;
 		const resolvedPath = path && path.startsWith('@') ? (path === '@drives' ? '/drives' : path) : path;
-		windowTabs.value[idx].path = resolvedPath;
-		windowTabs.value[idx].sectionId = resolvedPath;
-		windowTabs.value[idx].subtitle = resolvedPath;
-		windowTabs.value[idx].label = getTabLabel(path);
+		const tab = windowTabs.value[idx];
+		if (tab) {
+			tab.path = resolvedPath;
+			tab.sectionId = resolvedPath;
+			tab.subtitle = resolvedPath;
+			tab.label = getTabLabel(path);
+		}
 	}
 
 	function updateActiveTabPath(path: string) {
@@ -509,10 +537,14 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	async function deleteSelection() {
-		if (!selectedItemId.value) return false;
+		if (selectedItemIds.value.size === 0) return false;
 		try {
-			const success = await deleteFile([selectedItemId.value]);
-			if (success) await fetchDirectory(currentPath.value);
+			const paths = Array.from(selectedItemIds.value);
+			const success = await deleteFile(paths);
+			if (success) {
+				selectedItemIds.value.clear();
+				await fetchDirectory(currentPath.value);
+			}
 			return success;
 		} catch (e) {
 			console.error('Failed to delete selection:', e);
@@ -537,6 +569,26 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 			return success;
 		} catch (e) {
 			console.error('Failed to rename item:', e);
+			return false;
+		}
+	}
+
+	async function batchRename(renames: Array<{ oldPath: string; newName: string }>) {
+		try {
+			// Process renames sequentially to avoid conflicts
+			for (const { oldPath, newName } of renames) {
+				const parentDir = oldPath.substring(0, oldPath.lastIndexOf('/') + 1);
+				const newPath = parentDir + newName;
+				const success = await tauriMove(oldPath, newPath);
+				if (!success) {
+					console.error(`Failed to rename ${oldPath} to ${newName}`);
+					return false;
+				}
+			}
+			await fetchDirectory(currentPath.value);
+			return true;
+		} catch (e) {
+			console.error('Failed to batch rename:', e);
 			return false;
 		}
 	}
@@ -584,6 +636,8 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		currentEntries: sortedAndFilteredEntries,
 		navError,
 		selectedItem,
+		selectedItems,
+		selectedItemIds,
 		searchQuery,
 		viewMode,
 		sortMode,
@@ -637,6 +691,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		fetchDrives,
 		openSection,
 		selectItem,
+		toggleItemSelection,
+		selectAllItems,
+		clearSelection,
 		setSearchQuery,
 		setViewMode,
 		cycleSortMode,
@@ -649,6 +706,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		deleteSelection,
 		openInTerminal,
 		renameItem,
+		batchRename,
 		setClipboard,
 		paste,
 		setPreviewMode,
