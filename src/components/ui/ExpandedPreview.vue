@@ -1,7 +1,6 @@
 <script setup lang="ts">
 /**
  * ExpandedPreview Component — Floating mini-window for detailed file interaction
- * Implements Section 1 expansion from Roadmap.
  */
 import { computed, onMounted, ref, watch } from 'vue';
 import { useFileManagerStore } from '@/stores/file-manager';
@@ -128,7 +127,7 @@ function stopCrop() {
 
 function applyCrop() {
 	if (cropRect.value.width === 0 || cropRect.value.height === 0) return;
-	
+
 	const img = document.querySelector('.LFM-expanded-image') as HTMLImageElement;
 	if (!img) return;
 
@@ -138,7 +137,7 @@ function applyCrop() {
 	const canvas = document.createElement('canvas');
 	canvas.width = cropRect.value.width * scaleX;
 	canvas.height = cropRect.value.height * scaleY;
-	
+
 	const context = canvas.getContext('2d');
 	if (!context) return;
 
@@ -158,7 +157,7 @@ function applyCrop() {
 	link.download = `cropped_${item.value?.name || 'image.png'}`;
 	link.href = canvas.toDataURL('image/png');
 	link.click();
-	
+
 	toast.success('Cropped image saved to downloads');
 	isCropping.value = false;
 }
@@ -238,7 +237,7 @@ Teleport(to="body")
 					.LFM-expanded-title-group
 						span.LFM-expanded-symbol {{ item.category === 'folder' ? '📁' : '📄' }}
 						h2.LFM-expanded-title {{ item.name }}
-					
+
 					.LFM-expanded-actions
 						//- Type-specific tools
 						template(v-if="isCode || isMarkdown")
@@ -246,7 +245,7 @@ Teleport(to="body")
 								component(:is="isEditing ? IconVisibility : IconEdit")
 							button.LFM-action-btn(v-if="isEditing" @click="handleSave" title="Save Changes")
 								IconSave.text-emerald-500
-						
+
 						template(v-if="isImage")
 							button.LFM-action-btn(@click="toggleDrawing" :class="{ 'is-active': isDrawing }" title="Draw on image")
 								IconBrush
@@ -254,7 +253,7 @@ Teleport(to="body")
 								IconCrop
 
 						.LFM-divider-v
-						
+
 						button.LFM-action-btn(@click="toggleFullscreen" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'")
 							component(:is="isFullscreen ? IconFullscreenExit : IconFullscreen")
 						button.LFM-action-btn(@click="isMinimized = true" title="Minimize")
@@ -275,7 +274,7 @@ Teleport(to="body")
 									@mouseleave="stopCrop"
 								)
 									img.LFM-expanded-image(:src="item.preview" alt="Full Preview" draggable="false")
-									
+
 									canvas.LFM-drawing-canvas(
 										v-if="isDrawing"
 										ref="canvasRef"
@@ -299,7 +298,7 @@ Teleport(to="body")
 							OfficePreview(v-else-if="isOffice" :src="item.preview" :filename="item.name")
 							.LFM-expanded-fallback(v-else)
 								span No expanded preview available for this file type.
-						
+
 						//- Edit Mode
 						template(v-else)
 							.LFM-editor-container
@@ -307,7 +306,7 @@ Teleport(to="body")
 									span.text-xs.opacity-50 Editing {{ item.name }}
 									.flex.gap-2(v-if="isMarkdown")
 										button.btn.btn-xs(@click="showPreview = !showPreview") {{ showPreview ? 'Hide Preview' : 'Show Preview' }}
-								
+
 								.LFM-editor-layout(:class="{ 'is-split': isMarkdown && showPreview }")
 									textarea.LFM-editor-textarea(v-model="editContent" spellcheck="false")
 									.LFM-editor-preview(v-if="isMarkdown && showPreview")
@@ -322,7 +321,7 @@ Teleport(to="body")
 					.LFM-expanded-info
 						span(v-if="isEditing") Editing...
 						span(v-else) Viewing
-	
+
 	Transition(name="pill-slide")
 		.LFM-minimized-pill(v-if="item && isMinimized" @click="isMinimized = false")
 			.LFM-pill-content

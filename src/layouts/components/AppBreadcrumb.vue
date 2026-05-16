@@ -31,7 +31,7 @@ const breadcrumbSegments = computed(() => appRouteAliasBreadcrumbs.value ?? stor
 </script>
 
 <template>
-	<div class="LFM-breadcrumb-bar" role="navigation" aria-label="Breadcrumb">
+	<div class="LFM-breadcrumb-bar rounded-full" role="navigation" aria-label="Breadcrumb">
 		<RouterLink to="/" class="LFM-breadcrumb-home" title="Home">
 			<IconHome />
 		</RouterLink>
@@ -57,17 +57,9 @@ const breadcrumbSegments = computed(() => appRouteAliasBreadcrumbs.value ?? stor
 @reference "tailwindcss";
 
 .LFM-breadcrumb-bar {
-	display: flex;
-	align-items: center;
-	flex: 1;
-	height: 32px;
-	padding: 0 10px;
 	background: var(--LFM-panel);
 	border: 1px solid var(--LFM-border);
-	border-radius: 8px;
-	margin: 0 8px;
-	overflow: hidden;
-	@apply shadow-inner;
+	@apply flex items-center flex-1 h-8 px-2.5 overflow-hidden mx-2 my-0 shadow-inner;
 }
 
 .LFM-breadcrumb-home {

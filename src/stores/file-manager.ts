@@ -97,8 +97,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	const selectedItemMediaInfo = ref<MediaInfo | null>(null);
 
 	// ── Preview Pane State ────────────────────────────────────────────────────
-	const previewMode = useStorage<'automatic' | 'full' | 'compact' | 'sticky'>('lfm-preview-mode', 'automatic');
-	const categoryPreferredMode = useStorage<Record<string, 'automatic' | 'full' | 'compact' | 'sticky'>>('lfm-category-preview-modes', {});
 	const expandedPreviewId = ref<string | null>(null);
 
 	/**
@@ -617,19 +615,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		}
 	}
 
-	// ── Preview Mode Actions ──────────────────────────────────────────────────
-	function setPreviewMode(mode: 'automatic' | 'full' | 'compact' | 'sticky') {
-		previewMode.value = mode;
-	}
-
-	function setPreferredModeForCategory(category: string, mode: 'automatic' | 'full' | 'compact' | 'sticky') {
-		categoryPreferredMode.value[category] = mode;
-	}
-
-	function getPreferredModeForCategory(category: string): 'automatic' | 'full' | 'compact' | 'sticky' {
-		return categoryPreferredMode.value[category] ?? previewMode.value;
-	}
-
 	return {
 		// Path & entries
 		currentPath,
@@ -680,10 +665,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		toggleSettings,
 		settingsOpen,
 
-		// Preview Mode State
-		previewMode,
-		categoryPreferredMode,
-
 		// Actions
 		initializeHomeDir,
 		fetchDirectory,
@@ -709,9 +690,6 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		batchRename,
 		setClipboard,
 		paste,
-		setPreviewMode,
-		setPreferredModeForCategory,
-		getPreferredModeForCategory,
 		updateSelectedItemMetadata,
 		expandedPreviewId,
 		setExpandedPreviewId: (id: string | null) => {

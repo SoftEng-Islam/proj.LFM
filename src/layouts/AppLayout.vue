@@ -6,7 +6,7 @@ import { useFileManagerStore } from '@/stores/file-manager';
 import AppHeader from './components/AppHeader/AppHeader.vue';
 import AppNavigationBar from './components/AppNavigationBar.vue';
 import AiChatSidebar from './components/AiChatSidebar.vue';
-import PreviewPane from '@/features/explorer/components/PreviewPane.vue';
+import PreviewPane from '@/features/explorer/components/PreviewPane/PreviewPane.vue';
 import ExpandedPreview from '@/components/ui/ExpandedPreview.vue';
 import SettingsView from '@/features/settings/views/SettingsView.vue';
 
