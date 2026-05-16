@@ -13,65 +13,68 @@ import IconSdCard from '~icons/material-symbols/sd-card';
 import IconDns from '~icons/material-symbols/dns';
 
 const iconComponents: Record<string, any> = {
-  root: IconHomeStorage,
-  internal: IconHardDrive,
-  hdd: IconHardDisk,
-  ssd: IconStorage,
-  usb: IconUsb,
-  external: IconHardDrive,
-  sdcard: IconSdCard,
-  network: IconDns,
-  removable: IconUsb,
-};
-
-const iconColors: Record<string, string> = {
-  root: 'text-teal-500',
-  internal: 'text-slate-500',
-  hdd: 'text-amber-600',
-  ssd: 'text-emerald-500',
-  usb: 'text-blue-500',
-  external: 'text-violet-500',
-  sdcard: 'text-pink-500',
-  network: 'text-cyan-500',
-  removable: 'text-blue-500',
+	root: IconHardDrive,
+	internal: IconHardDrive,
+	hdd: IconHardDrive,
+	ssd: IconHardDrive,
+	usb: IconUsb,
+	external: IconUsb,
+	sdcard: IconSdCard,
+	network: IconDns,
+	removable: IconUsb,
 };
 
 function getDriveIconComponent(type: string) {
-  return iconComponents[type] || IconHardDrive;
-}
-
-function getDriveIconColor(type: string) {
-  return iconColors[type] || 'text-slate-500';
+	return iconComponents[type] || IconHardDrive;
 }
 
 const drives = ref<DriveInformation[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
-const driveCards = computed(() => drives.value.map(mapDriveInfoToCard));
+const driveCards = computed(() => {
+	return drives.value
+		.map(mapDriveInfoToCard)
+		.filter((card) => {
+			const mountName = card.mountName.toLowerCase();
+
+			// Filter out system partitions ('Boot', 'store')
+			// Filter bind-mounts/pseudo-fs (like Waydroid) by checking for 'none' fsType
+			return !['boot', 'store'].includes(mountName) && card.filesystem !== 'none';
+		})
+		.map((card) => {
+			// Normalize path: Resolve duplicated /dev/ prefix and remove redundant slashes
+			let path = card.devicePath.replace(/\/+/g, '/');
+			if (path.startsWith('/dev/dev/')) {
+				path = path.replace('/dev/dev/', '/dev/');
+			}
+			card.devicePath = path;
+			return card;
+		});
+});
 
 onMounted(async () => {
-  loading.value = true;
-  error.value = null;
-  try {
-    const result = await getDrives();
-    drives.value = result.array_of_drives;
-  } catch (err) {
-    error.value = String(err ?? 'Failed to load drives');
-  } finally {
-    loading.value = false;
-  }
+	loading.value = true;
+	error.value = null;
+	try {
+		const result = await getDrives();
+		drives.value = result.array_of_drives;
+	} catch (err) {
+		error.value = String(err ?? 'Failed to load drives');
+	} finally {
+		loading.value = false;
+	}
 });
 
 function getDriveColor(percent: number): string {
-  if (percent < 50) return 'bg-emerald-500';
-  if (percent < 80) return 'bg-amber-500';
-  return 'bg-rose-500';
+	if (percent < 50) return 'bg-emerald-500';
+	if (percent < 80) return 'bg-amber-500';
+	return 'bg-rose-500';
 }
 
 function getDriveHealth(percent: number): string {
-  if (percent < 70) return 'Healthy';
-  if (percent < 90) return 'Limited space';
-  return 'Critical space';
+	if (percent < 70) return 'Healthy';
+	if (percent < 90) return 'Limited space';
+	return 'Critical space';
 }
 </script>
 
@@ -92,7 +95,7 @@ AppLayout
       RouterLink.LFM-drive-card(v-for="drive in driveCards" :key="drive.id" :to="drive.id")
         .LFM-drive-header
           span.LFM-drive-icon
-            component(:is="getDriveIconComponent(drive.driveType)" :class="getDriveIconColor(drive.driveType)")
+            component(:is="getDriveIconComponent(drive.driveType)")
           .LFM-drive-title
             h2.LFM-drive-name {{ drive.mountName }}
             p.LFM-drive-path {{ drive.devicePath }}
@@ -196,6 +199,7 @@ AppLayout
   width: 40px
   height: 40px
   font-size: 28px
+  color: var(--LFM-accent)
 
 .LFM-drive-title
   min-width: 0

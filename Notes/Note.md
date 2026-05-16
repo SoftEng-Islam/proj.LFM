@@ -46,6 +46,3 @@
    2. Warning: 'ozone-platform-hint' is not in the list of known options, but still passed to Electron/Chromium. Warning: 'enable-features' is not in the list of known options, but still passed to Electron/Chromium. Warning: 'enable-wayland-ime' is not in the list of known options, but still passed to Electron/Chromium. Warning: 'wayland-text-input-version' is not in the list of known options, but still passed to Electron/Chromium.
    3. VM 0x79a236416000 on pid 1306771 received NeedDebuggerBreak trap, VM 0x79a236416000 on pid 1306771 received NeedDebuggerBreak trap, VM 0x79a236416000 on pid 1306771 received NeedDebuggerBreak trap
 9. .wmv video files doesn't show thumbnails
-10. In Storage Overview `src/features/storage/views/DrivesOverviewView.vue` I don't want the "Boot" and the "store". and the waydroid not a disk is folder in my home user (/home/softeng/Waydroid) I use it to share files between the pc and waydroid. Also fix the paths because they all like: "/dev//dev/sdc2", "/dev//dev/sdc2", "/dev//dev/sdb1". make sure everything is dynamic and flexible and work in all situations.
-11. Check on the typescript configs because I have a lot of this warn "is declared but its value is never read.ts-plugin(6133)".
-12. Check on .gitignore if its good for our project, and improve it.

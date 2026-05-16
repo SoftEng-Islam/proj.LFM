@@ -1,28 +1,28 @@
 :root
 	--lfm-icon-size: 24px
 	--lfm-font-size: 14px
-	--LFM-bg: #f3f3f3
-	--LFM-panel: #ffffff
-	--LFM-sidebar: #f3f3f3
-	--LFM-toolbar: #eeeeee
+	--LFM-bg: var(--color-base-200)
+	--LFM-panel: var(--color-base-100)
+	--LFM-sidebar: var(--color-base-200)
+	--LFM-toolbar: var(--color-base-300)
 	// Right panes reuse navigation / command chrome so they read as part of the same shell
-	--LFM-preview-pane-bg: var(--LFM-sidebar)
-	--LFM-ai-pane-bg: var(--LFM-toolbar)
-	--LFM-title-bar: #e8e8e8
-	--LFM-border: rgba(0, 0, 0, 0.09)
-	--LFM-blue: #0067c0
-	--LFM-blue-subtle: rgba(0, 103, 192, 0.11)
-	--LFM-hover: rgba(0, 0, 0, 0.055)
-	--LFM-active: rgba(0, 0, 0, 0.09)
-	--LFM-selected: rgba(0, 103, 192, 0.14)
-	--LFM-text: #1a1a1a
-	--LFM-text-muted: #5c5c5c
-	--LFM-accent-bar: #0067c0
+	--LFM-preview-pane-bg: var(--color-base-200)
+	--LFM-ai-pane-bg: var(--color-base-300)
+	--LFM-title-bar: var(--color-base-300)
+	--LFM-border: color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	--LFM-blue: var(--color-primary)
+	--LFM-blue-subtle: color-mix(in srgb, var(--color-primary) 12%, transparent)
+	--LFM-hover: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+	--LFM-active: color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	--LFM-selected: color-mix(in srgb, var(--color-primary) 14%, transparent)
+	--LFM-text: var(--color-base-content)
+	--LFM-text-muted: color-mix(in srgb, var(--color-base-content) 60%, transparent)
+	--LFM-accent-bar: var(--color-primary)
 	--LFM-folder: #ffc83d
-	--LFM-item-bg: #fafafa
-	--LFM-item-hover: rgba(0, 103, 192, 0.08)
-	--LFM-item-selected-border: #0067c0
-	--LFM-status-bg: #f3f3f3
+	--LFM-item-bg: var(--color-base-100)
+	--LFM-item-hover: color-mix(in srgb, var(--color-primary) 8%, transparent)
+	--LFM-item-selected-border: var(--color-primary)
+	--LFM-status-bg: var(--color-base-200)
 	--LFM-context-bg: #2c2c2c
 	--LFM-context-border: rgba(255,255,255,0.12)
 	--LFM-context-hover: rgba(255,255,255,0.08)
@@ -92,34 +92,6 @@
 	html[data-theme="coffee"]
 		--LFM-accent: var(--color-primary, inherit)
 		--LFM-accent-subtle: color-mix(in srgb, var(--color-primary, inherit) 12%, transparent)
-
-.dark
-	--LFM-bg: #202020
-	--LFM-panel: #2b2b2b
-	--LFM-sidebar: #202020
-	--LFM-toolbar: #292929
-	--LFM-preview-pane-bg: var(--LFM-sidebar)
-	--LFM-ai-pane-bg: var(--LFM-toolbar)
-	--LFM-title-bar: #1e1e1e
-	--LFM-border: rgba(255, 255, 255, 0.09)
-	--LFM-blue: #60aaef
-	--LFM-blue-subtle: rgba(96, 170, 239, 0.16)
-	--LFM-hover: rgba(255, 255, 255, 0.06)
-	--LFM-active: rgba(255, 255, 255, 0.10)
-	--LFM-selected: rgba(96, 170, 239, 0.18)
-	--LFM-text: #f3f3f3
-	--LFM-text-muted: #9d9d9d
-	--LFM-accent-bar: #60aaef
-	--LFM-folder: #ffc83d
-	--LFM-item-bg: #2b2b2b
-	--LFM-item-hover: rgba(96, 170, 239, 0.10)
-	--LFM-item-selected-border: #60aaef
-	--LFM-status-bg: #1e1e1e
-	--LFM-context-bg: #2c2c2c
-	--LFM-context-border: rgba(255,255,255,0.12)
-	--LFM-context-hover: rgba(255,255,255,0.08)
-	--LFM-context-text: #f0f0f0
-	--LFM-context-divider: rgba(255,255,255,0.1)
 
 html,
 body,

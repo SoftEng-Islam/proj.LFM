@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineEmits, onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useConfigStore } from '@/stores/config';
 import IconClose from '~icons/material-symbols/close';
@@ -9,6 +9,49 @@ const emit = defineEmits<{
 }>();
 const toast = useToast();
 const store = useConfigStore();
+
+const themes = [
+	{ label: 'Dark', value: 'dark' },
+	{ label: 'Light', value: 'light' },
+	{ label: 'Rose Pine', value: 'lsrosepine' },
+	{ label: 'Rose Pine Dark', value: 'lsrosepine-dark' },
+	{ label: 'Gruvbox', value: 'lsgrouvbox' },
+	{ label: 'Gruvbox Dark', value: 'lsgrouvbox-dark' },
+	{ label: 'Nord', value: 'lsnord' },
+	{ label: 'Nord Dark', value: 'lsnord-dark' },
+	{ label: 'Atom One', value: 'lsatom' },
+	{ label: 'Atom One Dark', value: 'lsatom-dark' },
+	{ label: 'VSCode', value: 'lsvscode' },
+	{ label: 'VSCode Dark', value: 'lsvscode-dark' },
+	{ label: 'Cupcake', value: 'cupcake' },
+	{ label: 'Cupcake Dark', value: 'cupcake-dark' },
+	{ label: 'Valentine', value: 'valentine' },
+	{ label: 'Valentine Dark', value: 'valentine-dark' },
+	{ label: 'Coffee', value: 'coffee' },
+	{ label: 'Coffee Light', value: 'coffee-light' },
+];
+
+const accentColors = [
+	{ name: 'Orange', id: 'orange', hex: '#d96b26' },
+	{ name: 'Yellow', id: 'yellow', hex: '#d9a026' },
+	{ name: 'Green', id: 'green', hex: '#26d947' },
+	{ name: 'Teal', id: 'teal', hex: '#26bed9' },
+	{ name: 'Slate', id: 'slate', hex: '#2682d9' },
+	{ name: 'Blue', id: 'blue', hex: '#2677d9' },
+	{ name: 'Purple', id: 'purple', hex: '#ac26d9' },
+	{ name: 'Pink', id: 'pink', hex: '#d9267d' },
+	{ name: 'Red', id: 'red', hex: '#d9263b' },
+];
+
+const isDefaultTheme = computed(() => {
+	const t = store.config.appearance.theme;
+	return t === 'light' || t === 'dark';
+});
+
+function setAccent(id: string) {
+	store.config.appearance.accent = id;
+	store.applyLiveConfig();
+}
 
 function closeSettings() {
 	emit('close');
@@ -46,10 +89,16 @@ div.LFM-settings-shell
           fieldset.LFM-settings-group
             legend Appearance
             .LFM-control
-              label(for="theme") Theme
+              label(for="theme") UI Theme
               select#theme(v-model="store.config.appearance.theme" @change="store.applyLiveConfig()")
-                option(value="dark") Dark
-                option(value="light") Light
+                option(v-for="t in themes" :key="t.value" :value="t.value") {{ t.label }}
+            .LFM-control
+              label Accent Color Palette
+              .LFM-accent-list(:class="{ 'is-disabled': !isDefaultTheme }")
+                .LFM-accent-item(v-for="color in accentColors" :key="color.id")
+                  button.LFM-accent-btn(type="button" :style="{ background: color.hex }" :class="{ 'is-active': store.config.appearance.accent === color.id }" @click="setAccent(color.id)" :disabled="!isDefaultTheme")
+                  span.LFM-accent-name {{ color.name }}
+              p.LFM-settings-hint(v-if="!isDefaultTheme") Accent colors are only available for default themes.
             .LFM-control
               label(for="iconSize") Icon size
               select#iconSize(v-model="store.config.appearance.icon_size" @change="store.applyLiveConfig()")
@@ -117,9 +166,9 @@ div.LFM-settings-shell
   position: relative
   width: min(100%, 760px)
   margin: 0 auto
-  border: 1px solid var(--LFM-border)
+  border: 1px solid var(--color-base-300)
   border-radius: 1.5rem
-  background: var(--LFM-panel)
+  background: var(--color-base-100)
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08)
   overflow: auto
 
@@ -129,10 +178,10 @@ div.LFM-settings-shell
   right: 1rem
   width: 2.5rem
   height: 2.5rem
-  border: 1px solid var(--LFM-border)
+  border: 1px solid var(--color-base-300)
   border-radius: 999px
-  background: var(--LFM-bg)
-  color: var(--LFM-text)
+  background: var(--color-base-200)
+  color: var(--color-base-content)
   display: inline-flex
   align-items: center
   justify-content: center
@@ -140,8 +189,8 @@ div.LFM-settings-shell
   transition: all 150ms ease
 
   &:hover
-    background: var(--LFM-hover)
-    border-color: var(--LFM-blue)
+    background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+    border-color: var(--color-primary)
 
 .LFM-settings-page
   display: flex
@@ -163,10 +212,10 @@ div.LFM-settings-shell
   gap: 1.25rem
 
 .LFM-settings-group
-  border: 1px solid var(--LFM-border)
+  border: 1px solid var(--color-base-300)
   border-radius: 1rem
   padding: 1rem
-  background: var(--LFM-panel)
+  background: var(--color-base-100)
 
 .LFM-control
   display: grid
@@ -175,20 +224,58 @@ div.LFM-settings-shell
 
 .LFM-control label
   font-weight: 600
-  color: var(--LFM-text)
+  color: var(--color-base-content)
+
+.LFM-accent-list
+  display: flex
+  flex-wrap: wrap
+  gap: 1rem
+  padding: 0.5rem 0
+
+  &.is-disabled
+    opacity: 0.5
+    pointer-events: none
+
+.LFM-accent-item
+  display: flex
+  align-items: center
+  gap: 0.5rem
+
+.LFM-accent-btn
+  width: 1.5rem
+  height: 1.5rem
+  border-radius: 999px
+  border: 2px solid transparent
+  cursor: pointer
+  transition: transform 100ms ease
+
+  &:hover
+    transform: scale(1.1)
+
+  &.is-active
+    border-color: var(--color-base-content)
+    box-shadow: 0 0 0 2px var(--color-base-100), 0 0 0 4px var(--color-primary)
+
+.LFM-accent-name
+  font-size: 0.875rem
 
 .LFM-control input,
 .LFM-control select
   width: 100%
   padding: 0.75rem 1rem
   border-radius: 0.75rem
-  border: 1px solid var(--LFM-border)
-  background: var(--LFM-bg)
-  color: var(--LFM-text)
+  border: 1px solid var(--color-base-300)
+  background: var(--color-base-200)
+  color: var(--color-base-content)
 
 .LFM-control input[type="checkbox"]
   width: auto
   margin-right: 0.5rem
+
+.LFM-settings-hint
+  font-size: 0.75rem
+  color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
+  margin-top: -0.5rem
 
 .LFM-button
   @apply inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed
