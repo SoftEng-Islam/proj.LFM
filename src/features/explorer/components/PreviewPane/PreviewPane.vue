@@ -183,48 +183,138 @@ watch(() => selectedItemPermissions.value, (perms) => {
 	}
 }, { immediate: true });
 
-const media = true;
-const video = false;
-const audio = false;
-// const media = true;
+const isEditingName = ref(false);
+const editedName = ref('');
 
+function startRenaming() {
+	if (!selectedItem.value) return;
+	editedName.value = selectedItem.value.name;
+	isEditingName.value = true;
+}
+
+function cancelRenaming() {
+	isEditingName.value = false;
+}
+
+function handleRename() {
+	// Implementation for renaming would call the store/tauri bridge
+	toast.success('File renamed (placeholder)');
+	isEditingName.value = false;
+}
+
+function resetRename() {
+	if (selectedItem.value) editedName.value = selectedItem.value.name;
+}
 </script>
 
 <template lang="pug">
-//- LFM-preview-pane
-div(class="LFM-preview-pane w-full h-full p-4 flex flex-col bg-(--color-base-300)")
+div(class="LFM-preview-pane w-full h-full p-5 flex flex-col gap-y-8 overflow-y-auto bg-(--color-base-200)/80 backdrop-blur-xl border-l border-white/5")
 	div(v-if="!selectedItem" class="LFM-preview-empty")
 		IconFile.LFM-empty-icon
 		h3 No Selection
 		p Select a file or directory to preview
 
-	div(v-else class="w-full h-full flex flex-col gap-y-4")
-		//- Preview Media/files section
-		div(class="relative w-full h-auto min-h-50 rounded-lg bg-(--color-base-100)")
-			//- expand buttons in the top right corner for files like files only like [Videos, Images, icons, text/scripts] not Directories.
-			button(v-show="!isDirectory" @click="" class="absolute right-5 top-4 cursor-pointer hover:opacity-50")
-				IconFullscreen.text-lg
-			//- If its an Image/photo or video
-			div(v-if="media")
-				div(v-if="isImage")
-					img(:src="previewSrc")
-				div(v-if="isVideo")
-				div(v-if="isAudio")
-			//- Show the Selected files if its just and Icons or a Folder
-			div(v-if="file")
-			//- If they multiple Files/Directories
-			div(v-if="multiple")
-				//- Show an beautiful SVG that describe it.
-		//- The Name of the file/Directory not multiple selected Items
-		//- Double click to edit the name with reset,save,close without save buttons
-		div(v-if="!multiple" class="w-full h-auto flex flex-col items-center bg-(--color-base-100)")
-			//- The Name
-			input(type="text", placeholder="The Name of the file", :value="selectedItem.name" class="w-full p-2 px-4 font-bold text-white")
-			//- Edit Buttons
-			ul(class="w-full h-12 flex items-center justify-end px-4 gap-x-4 bg-(--color-base-200)")
-				button(type="button" class="px-2 py-1 font-bold text-shadow-2xs bg-green-500 rounded-full") Save
-				button(type="button" class="px-2 py-1 font-bold text-shadow-2xs bg-yellow-500 rounded-full") Reset
-				button(type="button" class="px-2 py-1 font-bold text-shadow-2xs bg-red-500 rounded-full") Close
+	div(v-else class="flex flex-col gap-y-8")
+		//- Section 1: File Preview & Immersive Canvas
+		section.LFM-preview-section
+			div(class="relative w-full min-h-[240px] rounded-2xl overflow-hidden bg-black/20 backdrop-blur-md border border-white/10 shadow-inner flex items-center justify-center")
+				button(v-if="!isDirectory" @click="handleExpand" class="absolute right-3 top-3 z-10 p-2 rounded-xl bg-(--color-base-100)/20 hover:bg-(--color-base-100)/40 text-white backdrop-blur-md transition-all active:scale-95")
+					IconFullscreen
+
+				div(v-if="isImage" class="w-full h-full flex items-center justify-center")
+					img(:src="previewSrc" class="max-w-full max-h-[420px] object-contain drop-shadow-2xl")
+				div(v-else-if="isVideo && previewSrc" class="w-full h-full flex items-center justify-center")
+					video(:key="previewSrc" controls playsinline webkit-playsinline class="w-full max-h-[420px] bg-black/40" preload="metadata")
+						source(:src="previewSrc")
+				div(v-else-if="isAudio && previewSrc" class="w-full p-8 flex flex-col items-center gap-4")
+					.LFM-audio-visualizer(class="w-16 h-16 rounded-full bg-(--color-primary)/20 flex items-center justify-center border border-(--color-primary)/30")
+						IconMusic(class="text-3xl text-(--color-primary)")
+					audio(:key="previewSrc" controls class="w-full max-w-xs" preload="metadata")
+						source(:src="previewSrc")
+				div(v-else class="flex flex-col items-center gap-2 opacity-40")
+					IconFile(v-if="!isDirectory" class="text-7xl")
+					IconFolder(v-else class="text-7xl")
+					span(v-if="isDirectory" class="font-bold tracking-widest text-xs uppercase") Directory
+
+			//- Name Editing Section
+			div(class="mt-5 p-5 rounded-2xl bg-(--color-base-100)/40 backdrop-blur-md shadow-lg border border-white/10")
+				div(v-if="!isEditingName" @dblclick="startRenaming" class="group flex items-center justify-between cursor-pointer")
+					h2(class="text-base font-bold truncate pr-4 text-(--color-base-content)") {{ selectedItem.name }}
+					button(@click="startRenaming" class="opacity-0 group-hover:opacity-100 p-2 transition-opacity hover:text-(--color-primary)")
+						IconEdit
+				div(v-else class="flex flex-col gap-4")
+					input(type="text" v-model="editedName" class="input input-bordered bg-(--color-base-100)/60 w-full font-bold focus:ring-2 focus:ring-(--color-primary)/50" @keyup.enter="handleRename" @keyup.esc="cancelRenaming")
+					div(class="flex justify-end gap-2")
+						button(class="btn btn-sm rounded-lg btn-success text-white px-4" @click="handleRename") Save
+						button(class="btn btn-sm rounded-lg btn-ghost bg-white/5" @click="resetRename") Reset
+						button(class="btn btn-sm rounded-lg btn-error text-white px-4" @click="cancelRenaming") Close
+
+		//- Section 2: General Information
+		section.LFM-preview-section
+			h4.LFM-section-title General Information
+			.LFM-info-card
+				.LFM-info-row
+					label Type
+					span {{ isDirectory ? 'Directory' : selectedItem.category || 'File' }}
+				.LFM-info-row
+					label Size
+					span {{ formatSize(selectedItem.size) }}
+				.LFM-info-row(v-if="selectedItem.modifiedAt")
+					label Modified
+					span {{ formatDate(selectedItem.modifiedAt) }}
+				.LFM-info-row(v-if="isDirectory && selectedItem.childCount")
+					label Items
+					span {{ selectedItem.childCount }}
+
+		//- Section 3: Advanced Media Information
+		section.LFM-preview-section(v-if="(isVideo || isAudio) && selectedItemMediaInfo")
+			h4.LFM-section-title Media Information
+			.LFM-info-card
+				.LFM-info-row(v-if="selectedItemMediaInfo.format")
+					label Format
+					span {{ selectedItemMediaInfo.format }}
+				.LFM-info-row(v-if="selectedItemMediaInfo.duration")
+					label Duration
+					span {{ formatDuration(selectedItemMediaInfo.duration) }}
+				.LFM-info-row(v-if="selectedItemMediaInfo.bitrate")
+					label Bitrate
+					span {{ formatBitrate(selectedItemMediaInfo.bitrate) }}
+
+		//- Section 4: Permissions
+		section.LFM-preview-section
+			div(class="flex items-center justify-between mb-4")
+				h4.LFM-section-title Permissions
+				div(class="flex items-center gap-2")
+					span(class="text-[10px] font-bold opacity-40 uppercase") Octal
+					input(type="text" v-model="permMode" @input="handlePermModeChange" class="input input-xs input-bordered w-14 text-center font-mono bg-white/5 border-white/10")
+
+			.LFM-permissions-grid(class="p-4 rounded-2xl bg-(--color-base-100)/30 border border-white/5 shadow-sm")
+				.LFM-perm-header Group
+				.LFM-perm-header(class="text-center") R
+				.LFM-perm-header(class="text-center") W
+				.LFM-perm-header(class="text-center") X
+
+				//- Owner
+				span Owner
+				input(type="checkbox" v-model="ownerRead" @change="updatePermMode" class="checkbox checkbox-sm checkbox-primary")
+				input(type="checkbox" v-model="ownerWrite" @change="updatePermMode" class="checkbox checkbox-sm checkbox-primary")
+				input(type="checkbox" v-model="ownerExecute" @change="updatePermMode" class="checkbox checkbox-sm checkbox-primary")
+
+				//- Group
+				span Group
+				input(type="checkbox" v-model="groupRead" @change="updatePermMode" class="checkbox checkbox-sm")
+				input(type="checkbox" v-model="groupWrite" @change="updatePermMode" class="checkbox checkbox-sm")
+				input(type="checkbox" v-model="groupExecute" @change="updatePermMode" class="checkbox checkbox-sm")
+
+				//- Other
+				span Other
+				input(type="checkbox" v-model="otherRead" @change="updatePermMode" class="checkbox checkbox-sm")
+				input(type="checkbox" v-model="otherWrite" @change="updatePermMode" class="checkbox checkbox-sm")
+				input(type="checkbox" v-model="otherExecute" @change="updatePermMode" class="checkbox checkbox-sm")
+
+			div(class="flex justify-end gap-2 mt-4")
+				button(@click="handleResetPermissions" class="btn btn-xs btn-ghost hover:bg-white/5 rounded-lg") Reset
+				button(@click="handleApplyPermissions" class="btn btn-xs btn-primary rounded-lg px-4") Apply
 </template>
 
 <style scoped lang="sass">
@@ -234,6 +324,7 @@ div(class="LFM-preview-pane w-full h-full p-4 flex flex-col bg-(--color-base-300
 	flex-direction: column
 	align-items: center
 	justify-content: center
+	flex: 1
 	height: 100%
 	color: hsl(var(--bc) / 0.4)
 	gap: 1.5rem
@@ -254,4 +345,58 @@ div(class="LFM-preview-pane w-full h-full p-4 flex flex-col bg-(--color-base-300
 		margin: 0
 		color: hsl(var(--bc) / 0.5)
 		line-height: 1.5
+
+.LFM-preview-section
+	display: flex
+	flex-direction: column
+
+.LFM-section-title
+	font-size: 0.7rem
+	font-weight: 800
+	text-transform: uppercase
+	letter-spacing: 0.1em
+	color: var(--color-base-content)
+	opacity: 0.4
+	margin-bottom: 1rem
+
+.LFM-info-card
+	display: flex
+	flex-direction: column
+	gap: 0.75rem
+	padding: 1.25rem
+	border-radius: 1.25rem
+	background: color-mix(in srgb, var(--color-base-100) 40%, transparent)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 5%, transparent)
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03)
+
+.LFM-info-row
+	display: flex
+	justify-content: space-between
+	align-items: center
+	font-size: 0.875rem
+	label
+		opacity: 0.5
+		font-weight: 500
+	span, strong
+		font-weight: 600
+		color: var(--color-base-content)
+
+.LFM-permissions-grid
+	display: grid
+	grid-template-columns: 2fr 1fr 1fr 1fr
+	align-items: center
+	row-gap: 1rem
+	column-gap: 0.5rem
+	font-size: 0.875rem
+	span
+		font-weight: 600
+		opacity: 0.8
+	input[type="checkbox"]
+		justify-self: center
+
+.LFM-perm-header
+	font-size: 0.65rem
+	font-weight: 900
+	opacity: 0.3
+	text-transform: uppercase
 </style>
