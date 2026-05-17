@@ -4,7 +4,7 @@
  * Dynamic layout modes: Automatic, Full, Compact
  * Immersive media canvas with skeleton loaders
  */
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, useTemplateRef } from 'vue';
 import { useToast } from 'vue-toastification';
 import { storeToRefs } from 'pinia';
 
@@ -34,13 +34,17 @@ import { convertFileSrc } from '@/services/tauri-bridge';
 
 const store = useFileManagerStore();
 const { selectedItem, selectedItemMediaInfo, selectedItemPermissions } = storeToRefs(store);
+const videoRef = useTemplateRef<HTMLVideoElement>('videoRef');
+const audioRef = useTemplateRef<HTMLAudioElement>('audioRef');
 const toast = useToast();
 
 const isImage = computed(() => selectedItem.value?.category === 'image');
 const isVideo = computed(() => selectedItem.value?.category === 'video');
 const isAudio = computed(() => selectedItem.value?.category === 'audio');
 const isDirectory = computed(() => selectedItem.value?.kind === 'folder');
-const isText = computed(() => ['text', 'code', 'markdown'].includes(selectedItem.value?.category || ''));
+const isText = computed(() =>
+	['text', 'code', 'markdown', 'script'].includes(selectedItem.value?.category || '')
+);
 const isPdf = computed(() => selectedItem.value?.category === 'pdf');
 
 const previewSrc = computed(() => {
@@ -56,7 +60,21 @@ const isExpanded = ref(false);
 const isTelemetryExpanded = ref(false);
 const isLoading = ref(false);
 
-function togglePlay() { isPlaying.value = !isPlaying.value; }
+function togglePlay() {
+	const media = videoRef.value || audioRef.value;
+	if (!media) return;
+
+	if (media.paused) {
+		media.play().catch(err => {
+			console.error('Playback failed:', err);
+			toast.error('Codec error: GStreamer cannot link this format.');
+		});
+	} else {
+		media.pause();
+	}
+	isPlaying.value = !media.paused;
+}
+
 function handleExpand() { isExpanded.value = !isExpanded.value; }
 function toggleTelemetry() { isTelemetryExpanded.value = !isTelemetryExpanded.value; }
 
@@ -183,6 +201,13 @@ watch(() => selectedItemPermissions.value, (perms) => {
 	}
 }, { immediate: true });
 
+// Watch for source changes to reset play state
+watch(previewSrc, () => {
+	isPlaying.value = false;
+	isLoading.value = true;
+	// The :key on the element handles the actual remount/reload
+});
+
 const isEditingName = ref(false);
 const editedName = ref('');
 
@@ -223,14 +248,35 @@ div(class="LFM-preview-pane w-full h-full p-5 flex flex-col gap-y-8 overflow-y-a
 
 				div(v-if="isImage" class="w-full h-full flex items-center justify-center")
 					img(:src="previewSrc" class="max-w-full max-h-[420px] object-contain drop-shadow-2xl")
-				div(v-else-if="isVideo && previewSrc" class="w-full h-full flex items-center justify-center")
-					video(:key="previewSrc" controls playsinline webkit-playsinline class="w-full max-h-[420px] bg-black/40" preload="metadata")
-						source(:src="previewSrc")
-				div(v-else-if="isAudio && previewSrc" class="w-full p-8 flex flex-col items-center gap-4")
+				div(v-else-if="isVideo && previewSrc" class="group/media relative w-full h-full flex items-center justify-center bg-black/40")
+					video(
+						ref="videoRef"
+						:key="previewSrc"
+						:src="previewSrc"
+						playsinline
+						class="w-full max-h-[420px]"
+						preload="metadata"
+						@play="isPlaying = true"
+						@pause="isPlaying = false"
+						@loadedmetadata="isLoading = false"
+					)
+					//- Big Play Overlay (Roadmap Section 1)
+					button(v-show="!isPlaying" @click="togglePlay" class="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover/media:opacity-100 transition-opacity")
+						.p-4.rounded-full.bg-white/10.backdrop-blur-md.border.border-white/20.text-white
+							IconPlay.text-4xl
+				div(v-else-if="isAudio && previewSrc" class="w-full p-8 flex flex-col items-center gap-4 bg-(--color-base-100)/20")
 					.LFM-audio-visualizer(class="w-16 h-16 rounded-full bg-(--color-primary)/20 flex items-center justify-center border border-(--color-primary)/30")
 						IconMusic(class="text-3xl text-(--color-primary)")
-					audio(:key="previewSrc" controls class="w-full max-w-xs" preload="metadata")
-						source(:src="previewSrc")
+					audio(
+						ref="audioRef"
+						:key="previewSrc"
+						:src="previewSrc"
+						controls
+						class="w-full max-w-xs"
+						preload="metadata"
+						@play="isPlaying = true"
+						@pause="isPlaying = false"
+					)
 				div(v-else class="flex flex-col items-center gap-2 opacity-40")
 					IconFile(v-if="!isDirectory" class="text-7xl")
 					IconFolder(v-else class="text-7xl")
