@@ -210,41 +210,60 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		{ id: 'fallback-1', title: 'Real FS Loaded', summary: 'Connected to Tauri backend.', timeLabel: 'Now', tone: 'success' },
 	]);
 
-	// ── Auto-select first item when entries change ────────────────────────────
+	// ── Metadata fetch — triggered by explicit selection or auto-fallback ───────
+	/**
+	 * Fetch permissions and media info for a given file path.
+	 * Returns early if `filePath` is falsy or if the info is already loaded for
+	 * the same path (avoids redundant backend calls on re-renders).
+	 */
+	async function fetchItemMetadata(filePath: string | null | undefined) {
+		if (!filePath) {
+			selectedItemPermissions.value = null;
+			selectedItemMediaInfo.value = null;
+			return;
+		}
+		try {
+			const [perms, media] = await Promise.all([
+				getFilePermissions(filePath).catch(() => null),
+				getMediaInfo(filePath).catch(() => null),
+			]);
+			selectedItemPermissions.value = perms;
+			selectedItemMediaInfo.value = media;
+		} catch (err) {
+			console.error('[FileManagerStore] Failed to fetch extended info:', err);
+		}
+	}
+
+	// Watch explicit selections (Set changes)
 	watch(
 		selectedItemIds,
 		async (newIds) => {
-			selectedItemPermissions.value = null;
-			selectedItemMediaInfo.value = null;
-
 			const firstId = newIds.values().next().value;
+			// Only fetch when there is an explicit selection; the selectedItem
+			// watcher below handles the auto-fallback case.
 			if (firstId) {
-				try {
-					const [perms, media] = await Promise.all([
-						getFilePermissions(firstId).catch(() => null),
-						getMediaInfo(firstId).catch(() => null),
-					]);
-					selectedItemPermissions.value = perms;
-					selectedItemMediaInfo.value = media;
-				} catch (err) {
-					console.error('[FileManagerStore] Failed to fetch extended info:', err);
-				}
+				await fetchItemMetadata(firstId);
 			}
 		},
 		{ immediate: true, deep: true }
 	);
 
+	// Watch the computed selectedItem so the auto-fallback (first entry shown
+	// without an explicit click) also triggers a metadata fetch.
+	watch(
+		selectedItem,
+		async (item) => {
+			// Skip if the explicit-selection watcher already handles this path
+			const explicitId = selectedItemIds.value.values().next().value;
+			if (explicitId) return;
+			await fetchItemMetadata(item?.id ?? null);
+		},
+		{ immediate: true }
+	);
+
 	async function updateSelectedItemMetadata() {
-		const firstId = selectedItemIds.value.values().next().value;
-		if (firstId) {
-			try {
-				const [perms, media] = await Promise.all([getFilePermissions(firstId).catch(() => null), getMediaInfo(firstId).catch(() => null)]);
-				selectedItemPermissions.value = perms;
-				selectedItemMediaInfo.value = media;
-			} catch (err) {
-				console.error('[FileManagerStore] Failed to update metadata:', err);
-			}
-		}
+		const firstId = selectedItemIds.value.values().next().value ?? selectedItem.value?.id;
+		await fetchItemMetadata(firstId ?? null);
 	}
 
 	// ── Actions ───────────────────────────────────────────────────────────────

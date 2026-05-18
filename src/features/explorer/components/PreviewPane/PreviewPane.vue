@@ -37,15 +37,18 @@ const { selectedItem, selectedItemMediaInfo, selectedItemPermissions } = storeTo
 const videoRef = useTemplateRef<HTMLVideoElement>('videoRef');
 const audioRef = useTemplateRef<HTMLAudioElement>('audioRef');
 const toast = useToast();
+const expandedText = ref('');
+const isMarkdownEditing = ref(false);
 
-const isImage = computed(() => selectedItem.value?.category === 'image');
-const isVideo = computed(() => selectedItem.value?.category === 'video');
-const isAudio = computed(() => selectedItem.value?.category === 'audio');
+const isImage = computed(() => selectedItem.value?.category?.toLowerCase() === 'image');
+const isVideo = computed(() => selectedItem.value?.category?.toLowerCase() === 'video');
+const isAudio = computed(() => selectedItem.value?.category?.toLowerCase() === 'audio');
 const isDirectory = computed(() => selectedItem.value?.kind === 'folder');
 const isText = computed(() =>
-	['text', 'code', 'markdown', 'script'].includes(selectedItem.value?.category || '')
+	['text', 'code', 'markdown', 'script', 'json', 'xml', 'yaml'].includes(selectedItem.value?.category?.toLowerCase() || '')
 );
 const isPdf = computed(() => selectedItem.value?.category === 'pdf');
+const isMarkdown = computed(() => selectedItem.value?.category?.toLowerCase() === 'markdown');
 
 const previewSrc = computed(() => {
 	if (!selectedItem.value) return '';
@@ -55,8 +58,15 @@ const previewSrc = computed(() => {
 	return '';
 });
 
+const thumbnailSrc = computed(() => {
+	if (!selectedItem.value?.thumbnail) return '';
+	return convertFileSrc(selectedItem.value.thumbnail);
+});
+
 const isPlaying = ref(false);
 const isExpanded = ref(false);
+const isMaximized = ref(false);
+const isMinimized = ref(false);
 const isTelemetryExpanded = ref(false);
 const isLoading = ref(false);
 
@@ -75,7 +85,15 @@ function togglePlay() {
 	isPlaying.value = !media.paused;
 }
 
-function handleExpand() { isExpanded.value = !isExpanded.value; }
+function handleExpand() {
+	isExpanded.value = true;
+	isMinimized.value = false;
+	// In a real scenario, we would fetch the file content here if isText is true
+	if (isText.value) expandedText.value = "/* File content loading placeholder... */";
+}
+
+function toggleMaximize() { isMaximized.value = !isMaximized.value; }
+function toggleMinimize() { isMinimized.value = !isMinimized.value; }
 function toggleTelemetry() { isTelemetryExpanded.value = !isTelemetryExpanded.value; }
 
 const formatSize = (bytes?: number) => {
@@ -106,6 +124,11 @@ const formatBitrate = (bitrate?: number | null) => {
 	return bitrate + ' bps';
 };
 
+const formatSampleRate = (rate?: number | null) => {
+	if (!rate) return '-';
+	return (rate / 1000).toFixed(1) + ' kHz';
+};
+
 function handleOpen() { if (selectedItem.value) store.openItem(selectedItem.value.id); }
 
 function handleCopyName() {
@@ -113,6 +136,10 @@ function handleCopyName() {
 		navigator.clipboard.writeText(selectedItem.value.name);
 		toast.success('Name copied to clipboard');
 	}
+}
+
+function handleSaveContent() {
+	toast.success('Changes saved to disk');
 }
 
 function handleShare() {
@@ -230,6 +257,11 @@ function handleRename() {
 function resetRename() {
 	if (selectedItem.value) editedName.value = selectedItem.value.name;
 }
+
+console.log("The thumbnail: ", thumbnailSrc.value);
+// The Result in the console after selecting a video:
+// The thumbnail: ""
+
 </script>
 
 <template lang="pug">
@@ -242,28 +274,20 @@ div(class="LFM-preview-pane w-full h-full p-5 flex flex-col gap-y-8 overflow-y-a
 	div(v-else class="flex flex-col gap-y-8")
 		//- Section 1: File Preview & Immersive Canvas
 		section.LFM-preview-section
-			div(class="relative w-full min-h-[240px] rounded-2xl overflow-hidden bg-black/20 backdrop-blur-md border border-white/10 shadow-inner flex items-center justify-center")
+			div(class="relative w-full min-h-[240px] rounded-2xl overflow-hidden bg-(--color-base-100)/20 backdrop-blur-md border border-white/10 shadow-inner flex items-center justify-center")
 				button(v-if="!isDirectory" @click="handleExpand" class="absolute right-3 top-3 z-10 p-2 rounded-xl bg-(--color-base-100)/20 hover:bg-(--color-base-100)/40 text-white backdrop-blur-md transition-all active:scale-95")
 					IconFullscreen
 
 				div(v-if="isImage" class="w-full h-full flex items-center justify-center")
 					img(:src="previewSrc" class="max-w-full max-h-[420px] object-contain drop-shadow-2xl")
-				div(v-else-if="isVideo && previewSrc" class="group/media relative w-full h-full flex items-center justify-center bg-black/40")
-					video(
-						ref="videoRef"
-						:key="previewSrc"
-						:src="previewSrc"
-						playsinline
-						class="w-full max-h-[420px]"
-						preload="metadata"
-						@play="isPlaying = true"
-						@pause="isPlaying = false"
-						@loadedmetadata="isLoading = false"
-					)
+				div(v-else-if="isVideo && previewSrc" class="group/media relative w-full h-full flex items-center justify-center bg-transparent")
+					//- Fallback thumbnail layer for when video is not playing
+					img(v-if="thumbnailSrc" :src="thumbnailSrc" class="absolute inset-0 w-full h-full object-cover opacity-20 blur-md pointer-events-none")
+					video(ref="videoRef" :key="previewSrc" :src="previewSrc" :poster="thumbnailSrc" playsinline class="w-full max-h-[420px]" preload="metadata" @play="isPlaying = true" @pause="isPlaying = false" @loadedmetadata="isLoading = false" )
 					//- Big Play Overlay (Roadmap Section 1)
-					button(v-show="!isPlaying" @click="togglePlay" class="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover/media:opacity-100 transition-opacity")
-						.p-4.rounded-full.bg-white/10.backdrop-blur-md.border.border-white/20.text-white
-							IconPlay.text-4xl
+					button(v-show="!isPlaying" @click="togglePlay" class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover/media:opacity-100 transition-opacity")
+						div(class="p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white")
+							IconPlay(class="text-4xl")
 				div(v-else-if="isAudio && previewSrc" class="w-full p-8 flex flex-col items-center gap-4 bg-(--color-base-100)/20")
 					.LFM-audio-visualizer(class="w-16 h-16 rounded-full bg-(--color-primary)/20 flex items-center justify-center border border-(--color-primary)/30")
 						IconMusic(class="text-3xl text-(--color-primary)")
@@ -305,26 +329,61 @@ div(class="LFM-preview-pane w-full h-full p-5 flex flex-col gap-y-8 overflow-y-a
 				.LFM-info-row
 					label Size
 					span {{ formatSize(selectedItem.size) }}
+				.LFM-info-row(v-if="selectedItemMediaInfo?.width && selectedItemMediaInfo?.height")
+					label Dimensions
+					span {{ selectedItemMediaInfo.width }} × {{ selectedItemMediaInfo.height }}
+				.LFM-info-row(v-if="(isVideo || isAudio) && selectedItemMediaInfo?.duration")
+					label Duration
+					span {{ formatDuration(selectedItemMediaInfo.duration) }}
+				.LFM-info-row(v-if="selectedItem.createdAt")
+					label Created
+					span {{ formatDate(selectedItem.createdAt) }}
 				.LFM-info-row(v-if="selectedItem.modifiedAt")
-					label Modified
+					label Updated
 					span {{ formatDate(selectedItem.modifiedAt) }}
 				.LFM-info-row(v-if="isDirectory && selectedItem.childCount")
 					label Items
 					span {{ selectedItem.childCount }}
 
 		//- Section 3: Advanced Media Information
-		section.LFM-preview-section(v-if="(isVideo || isAudio) && selectedItemMediaInfo")
-			h4.LFM-section-title Media Information
-			.LFM-info-card
+		section.LFM-preview-section(v-if="isVideo || isAudio" class="animate__animated animate__fadeIn")
+			h4.LFM-section-title Advanced Information (Media)
+			.LFM-info-card(v-if="selectedItemMediaInfo")
+				//- Container / Format (Roadmap Phase 2)
 				.LFM-info-row(v-if="selectedItemMediaInfo.format")
-					label Format
+					label Container
 					span {{ selectedItemMediaInfo.format }}
-				.LFM-info-row(v-if="selectedItemMediaInfo.duration")
-					label Duration
-					span {{ formatDuration(selectedItemMediaInfo.duration) }}
-				.LFM-info-row(v-if="selectedItemMediaInfo.bitrate")
-					label Bitrate
-					span {{ formatBitrate(selectedItemMediaInfo.bitrate) }}
+
+				//- Video Sub-section
+				template(v-if="isVideo")
+					.LFM-info-row(v-if="selectedItemMediaInfo.videoCodec || selectedItemMediaInfo.codec")
+						label Video codec
+						span {{ selectedItemMediaInfo.videoCodec || selectedItemMediaInfo.codec }}
+					.LFM-info-row(v-if="selectedItemMediaInfo.videoBitrate || selectedItemMediaInfo.bitrate")
+						label Video bit rate
+						span {{ formatBitrate(selectedItemMediaInfo.videoBitrate || selectedItemMediaInfo.bitrate) }}
+					.LFM-info-row(v-if="selectedItemMediaInfo.frameRate || selectedItemMediaInfo.fps")
+						label Frame rate
+						span {{ selectedItemMediaInfo.frameRate || selectedItemMediaInfo.fps }} fps
+
+				//- Audio Sub-section
+				.LFM-info-row(v-if="selectedItemMediaInfo.audioCodec || (isAudio && selectedItemMediaInfo.codec)")
+					label Audio codec
+					span {{ selectedItemMediaInfo.audioCodec || (isAudio ? selectedItemMediaInfo.codec : null) }}
+				.LFM-info-row(v-if="selectedItemMediaInfo.audioBitrate || (isAudio && selectedItemMediaInfo.bitrate)")
+					label Audio bit rate
+					span {{ formatBitrate(selectedItemMediaInfo.audioBitrate || (isAudio ? selectedItemMediaInfo.bitrate : null)) }}
+				.LFM-info-row(v-if="selectedItemMediaInfo.sampleRate")
+					label Sample rate
+					span {{ formatSampleRate(selectedItemMediaInfo.sampleRate) }}
+				.LFM-info-row(v-if="selectedItemMediaInfo.channels")
+					label Channels
+					span {{ selectedItemMediaInfo.channels }}
+
+			//- Empty/Loading state for metadata
+			div(v-else class="p-6 rounded-2xl bg-(--color-base-100)/20 border border-white/5 flex flex-col items-center justify-center gap-2 opacity-40 italic")
+				span(class="loading loading-spinner loading-xs text-(--color-primary)")
+				span(class="text-[10px] uppercase tracking-widest font-bold") Probing Media Metadata...
 
 		//- Section 4: Permissions
 		section.LFM-preview-section

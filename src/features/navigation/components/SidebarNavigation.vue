@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type Component } from 'vue';
+import { ref, computed, type Component } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
@@ -28,6 +28,20 @@ import IconLinux from '~icons/material-symbols/terminal';
 const store = useFileManagerStore();
 const { driveCards, navigationGroups, currentPath, homePath, settingsOpen } = storeToRefs(store);
 const route = useRoute();
+
+/**
+ * System partitions that should be hidden from the sidebar drive list.
+ * These are internal Linux mount points that users typically should not browse.
+ */
+const HIDDEN_MOUNT_POINTS = new Set(['/boot', '/boot/efi', '/store', '/nix/store', '/run', '/sys', '/proc', '/dev', '/snap']);
+
+const visibleDrives = computed(() =>
+	driveCards.value.filter((drive) => {
+		const mount = drive.mountPoint?.toLowerCase() ?? '';
+		// Hide exact matches and any sub-paths of hidden mount points
+		return !Array.from(HIDDEN_MOUNT_POINTS).some((hidden) => mount === hidden || mount.startsWith(hidden + '/'));
+	})
+);
 
 // Collapsible section state
 const collapsed = ref<Record<string, boolean>>({});
@@ -134,7 +148,7 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 
 		template(v-if="!collapsed['drives']")
 			RouterLink.LFM-sbar-item.LFM-sbar-item--drive(
-				v-for="drive in driveCards"
+				v-for="drive in visibleDrives"
 				:key="drive.id"
 				:to="drive.id"
 				:class="{ 'LFM-sbar-item--active': isActive(drive.id) }"

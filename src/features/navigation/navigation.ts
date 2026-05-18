@@ -17,26 +17,32 @@ export const defaultPath: string = '/';
 
 /**
  * Generate navigation groups based on a specific home directory.
+ *
+ * Guards against producing `//Downloads` paths when `home` is `/` or empty
+ * by normalising the home path before building XDG directory paths.
  */
 export function createNavigationGroups(home: string): NavigationGroup[] {
+	// Ensure we never concatenate an extra slash when home is bare root.
+	const normalizedHome = home.endsWith('/') ? home.slice(0, -1) : home;
+
 	return [
 		{
 			title: 'Quick Access',
 			description: 'The spaces you use daily.',
 			items: [
-				{ id: 'home', label: 'Home', caption: 'Pinned directories and suggested work', path: home, accent: 'sky' },
-				{ id: 'downloads', label: 'Downloads', caption: 'Recent packages and imports', path: `${home}/Downloads`, accent: 'amber' },
+				{ id: 'home', label: 'Home', caption: 'Pinned directories and suggested work', path: normalizedHome || '/', accent: 'sky' },
+				{ id: 'downloads', label: 'Downloads', caption: 'Recent packages and imports', path: `${normalizedHome}/Downloads`, accent: 'amber' },
 			],
 		},
 		{
 			title: 'Libraries',
 			description: 'Structured content areas.',
 			items: [
-				{ id: 'documents', label: 'Documents', caption: 'Notes, contracts, and reports', path: `${home}/Documents`, accent: 'violet' },
-				{ id: 'videos', label: 'Videos', caption: 'videos, and motion assets', path: `${home}/Videos`, accent: 'violet' },
-				{ id: 'pictures', label: 'Pictures', caption: 'Photos, Images', path: `${home}/Pictures`, accent: 'rose' },
-				{ id: 'music', label: 'Music', caption: 'Music, and sound assets', path: `${home}/Music`, accent: 'rose' },
-				{ id: 'shared', label: 'Shared', caption: 'Design reviews and cross-team drops', path: `${home}/Public`, accent: 'cyan' },
+				{ id: 'documents', label: 'Documents', caption: 'Notes, contracts, and reports', path: `${normalizedHome}/Documents`, accent: 'violet' },
+				{ id: 'videos', label: 'Videos', caption: 'videos, and motion assets', path: `${normalizedHome}/Videos`, accent: 'violet' },
+				{ id: 'pictures', label: 'Pictures', caption: 'Photos, Images', path: `${normalizedHome}/Pictures`, accent: 'rose' },
+				{ id: 'music', label: 'Music', caption: 'Music, and sound assets', path: `${normalizedHome}/Music`, accent: 'rose' },
+				{ id: 'shared', label: 'Shared', caption: 'Design reviews and cross-team drops', path: `${normalizedHome}/Public`, accent: 'cyan' },
 			],
 		},
 		{

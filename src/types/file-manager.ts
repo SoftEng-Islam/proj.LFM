@@ -30,6 +30,7 @@ export interface MediaInfo {
 	width: number | null;
 	height: number | null;
 	duration: number | null;
+	/** Container format name (e.g. "matroska,webm", "mp4"). */
 	container: string | null;
 	video_codec: string | null;
 	audio_codec: string | null;
@@ -100,6 +101,7 @@ export interface FileEntry {
 	createdAt?: string;
 	accessedAt?: string;
 	readonly?: boolean;
+	thumbnail?: string;
 	preview: string;
 	status: FileStatus;
 	accent: AccentTone;

@@ -123,11 +123,14 @@ pub struct ReturnInformation {
 pub struct FileSystemUtils;
 
 impl FileSystemUtils {
-    /// Get basename of the path given
+    /// Get basename of the path given.
+    ///
+    /// Uses `to_string_lossy` to safely handle any Unicode or non-UTF-8 name
+    /// (e.g. Arabic, Chinese, Cyrillic, emoji) without panicking.
     #[inline]
     pub fn get_basename(file_path: &str) -> String {
         match Path::new(&file_path).file_name() {
-            Some(basename) => basename.to_str().unwrap().to_string(),
+            Some(basename) => basename.to_string_lossy().into_owned(),
             None => file_path.to_string(),
         }
     }
@@ -533,7 +536,9 @@ pub async fn read_directory(dir: String) -> Result<FolderInformation, String> {
 
     for path in paths {
         number_of_files += 1;
-        let file_path = path.unwrap().path().display().to_string();
+        // Use to_string_lossy so non-ASCII names (Arabic, Chinese, etc.) are
+        // preserved instead of triggering a panic or being silently dropped.
+        let file_path = path.unwrap().path().to_string_lossy().into_owned();
         let file_info = get_file_properties(&file_path).await;
         match file_info {
             Ok(file_info) => {
@@ -587,7 +592,7 @@ pub async fn get_files_in_directory(dir: String) -> Result<Vec<String>, String> 
     let paths = fs::read_dir(dir).map_err(|err| err.to_string())?;
     let mut files = Vec::new();
     for path in paths {
-        files.push(path.unwrap().path().display().to_string());
+        files.push(path.unwrap().path().to_string_lossy().into_owned());
     }
 
     Ok(files)
