@@ -3,7 +3,7 @@
  * This solution is lighter than the lodash get-version.
  * Source: http://stackoverflow.com/a/6491621/6942210
  */
-export const get = <T>(obj: Object, path: string): T | undefined => {
+export const get = <T>(obj: object, path: string): T | undefined => {
   const pathArray = path
     .replace(/\[(\w+)\]/g, '.$1') // convert indexes to properties
     .replace(/^\./, '') // strip a leading dot
@@ -18,7 +18,7 @@ export const get = <T>(obj: Object, path: string): T | undefined => {
   for (let i = 0; i < pathArray.length; ++i) {
     const k = pathArray[i];
     if (isObject(result) && k in result) {
-      result = (result as Record<string, T>)[k] as Object;
+      result = (result as Record<string, T>)[k] as object;
     } else {
       return;
     }

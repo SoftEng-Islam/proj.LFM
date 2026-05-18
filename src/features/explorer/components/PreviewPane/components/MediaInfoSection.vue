@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * MediaInfoSection — Section 3 of the Preview Pane.
  *

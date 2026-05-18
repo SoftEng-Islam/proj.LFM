@@ -28,7 +28,7 @@ export function emit<T = any>(event: string, payload?: T): void {
 		} catch (e) {
 			// swallow errors to avoid breaking other listeners
 			// consumers can log if needed
-			// eslint-disable-next-line no-console
+			 
 			console.error('[bus] handler error for', event, e);
 		}
 	}

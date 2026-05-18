@@ -1,239 +1,43 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
- * Premium Preview Pane — Glassmorphic & Contextual
- * Dynamic layout modes: Automatic, Full, Compact
- * Immersive media canvas with skeleton loaders
+ * Premium Preview Pane — Glassmorphic & Contextual (Modular Refactored)
+ *
+ * This component acts as the main container for the file preview system.
+ * It is split into focused modular sub-components:
+ *   1. PreviewCanvas - File / media rendering canvas
+ *   2. GeneralInfoSection - Basic properties card
+ *   3. MediaInfoSection - Deep ffprobe technical metadata
+ *   4. PermissionsSection - Interactive Unix rwx permissions editor
+ *
+ * Path formatting, date conversions and bitwise math are delegated to the
+ * global OOP utility FileInfoService.
  */
-import { computed, ref, watch, useTemplateRef } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useToast } from 'vue-toastification';
 import { storeToRefs } from 'pinia';
 
-// import ExpandedPreview from '@/components/ui/ExpandedPreview.vue';
-
-import IconOpenInNew from '~icons/material-symbols/open-in-new';
-import IconFullscreen from '~icons/material-symbols/fullscreen';
-import IconClose from '~icons/material-symbols/close';
-import IconMinimize from '~icons/material-symbols/minimize';
-import IconCopy from '~icons/material-symbols/content-copy';
-import IconEdit from '~icons/material-symbols/edit';
-import IconFolder from '~icons/material-symbols/folder';
-import IconImage from '~icons/material-symbols/image';
-import IconVideo from '~icons/material-symbols/videocam';
-import IconMusic from '~icons/material-symbols/music-note';
-import IconCode from '~icons/material-symbols/code';
 import IconFile from '~icons/material-symbols/description';
-import IconPlay from '~icons/material-symbols/play-arrow';
-import IconPause from '~icons/material-symbols/pause';
-import IconChevronDown from '~icons/material-symbols/expand-more';
-import IconChevronUp from '~icons/material-symbols/expand-less';
-import IconShare from '~icons/material-symbols/share';
-import IconDuplicate from '~icons/material-symbols/content-copy';
+import IconEdit from '~icons/material-symbols/edit';
 
 import { useFileManagerStore } from '@/stores/file-manager';
-import { convertFileSrc } from '@/services/tauri-bridge';
+
+// Sub-components
+import PreviewCanvas from './components/PreviewCanvas.vue';
+import GeneralInfoSection from './components/GeneralInfoSection.vue';
+import MediaInfoSection from './components/MediaInfoSection.vue';
+import PermissionsSection from './components/PermissionsSection.vue';
 
 const store = useFileManagerStore();
 const { selectedItem, selectedItemMediaInfo, selectedItemPermissions } = storeToRefs(store);
-const videoRef = useTemplateRef<HTMLVideoElement>('videoRef');
-const audioRef = useTemplateRef<HTMLAudioElement>('audioRef');
 const toast = useToast();
-const expandedText = ref('');
-const isMarkdownEditing = ref(false);
 
-const isImage = computed(() => selectedItem.value?.category?.toLowerCase() === 'image');
+// ── Computed category flags ─────────────────────────────────────────────────
+
 const isVideo = computed(() => selectedItem.value?.category?.toLowerCase() === 'video');
 const isAudio = computed(() => selectedItem.value?.category?.toLowerCase() === 'audio');
-const isDirectory = computed(() => selectedItem.value?.kind === 'folder');
-const isText = computed(() =>
-	['text', 'code', 'markdown', 'script', 'json', 'xml', 'yaml'].includes(selectedItem.value?.category?.toLowerCase() || '')
-);
-const isPdf = computed(() => selectedItem.value?.category === 'pdf');
-const isMarkdown = computed(() => selectedItem.value?.category?.toLowerCase() === 'markdown');
 
-const previewSrc = computed(() => {
-	if (!selectedItem.value) return '';
-	if (isImage.value || isVideo.value || isAudio.value) {
-		return convertFileSrc(selectedItem.value.id);
-	}
-	return '';
-});
-
-const thumbnailSrc = computed(() => {
-	if (!selectedItem.value?.thumbnail) return '';
-	return convertFileSrc(selectedItem.value.thumbnail);
-});
-
-const isPlaying = ref(false);
-const isExpanded = ref(false);
-const isMaximized = ref(false);
-const isMinimized = ref(false);
-const isTelemetryExpanded = ref(false);
-const isLoading = ref(false);
-
-function togglePlay() {
-	const media = videoRef.value || audioRef.value;
-	if (!media) return;
-
-	if (media.paused) {
-		media.play().catch(err => {
-			console.error('Playback failed:', err);
-			toast.error('Codec error: GStreamer cannot link this format.');
-		});
-	} else {
-		media.pause();
-	}
-	isPlaying.value = !media.paused;
-}
-
-function handleExpand() {
-	isExpanded.value = true;
-	isMinimized.value = false;
-	// In a real scenario, we would fetch the file content here if isText is true
-	if (isText.value) expandedText.value = "/* File content loading placeholder... */";
-}
-
-function toggleMaximize() { isMaximized.value = !isMaximized.value; }
-function toggleMinimize() { isMinimized.value = !isMinimized.value; }
-function toggleTelemetry() { isTelemetryExpanded.value = !isTelemetryExpanded.value; }
-
-const formatSize = (bytes?: number) => {
-	if (!bytes) return '-';
-	const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-	let i = 0;
-	while (bytes >= 1024 && i < units.length - 1) { bytes /= 1024; i++; }
-	return bytes.toFixed(1) + ' ' + units[i];
-};
-
-const formatDate = (dateStr?: string) => {
-	if (!dateStr) return '-';
-	return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(dateStr));
-};
-
-const formatDuration = (seconds?: number | null) => {
-	if (!seconds) return '-';
-	const h = Math.floor(seconds / 3600);
-	const m = Math.floor((seconds % 3600) / 60);
-	const s = Math.floor(seconds % 60);
-	return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':').replace(/^00:/, '');
-};
-
-const formatBitrate = (bitrate?: number | null) => {
-	if (!bitrate) return '-';
-	if (bitrate >= 1000000) return (bitrate / 1000000).toFixed(2) + ' Mbps';
-	if (bitrate >= 1000) return (bitrate / 1000).toFixed(2) + ' kbps';
-	return bitrate + ' bps';
-};
-
-const formatSampleRate = (rate?: number | null) => {
-	if (!rate) return '-';
-	return (rate / 1000).toFixed(1) + ' kHz';
-};
-
-function handleOpen() { if (selectedItem.value) store.openItem(selectedItem.value.id); }
-
-function handleCopyName() {
-	if (selectedItem.value) {
-		navigator.clipboard.writeText(selectedItem.value.name);
-		toast.success('Name copied to clipboard');
-	}
-}
-
-function handleSaveContent() {
-	toast.success('Changes saved to disk');
-}
-
-function handleShare() {
-	if (selectedItem.value) {
-		navigator.clipboard.writeText(selectedItem.value.id);
-		toast.success('Path copied to clipboard');
-	}
-}
-
-function handleDuplicate() {
-	toast.success('Duplicate feature coming soon');
-}
-
-// Permissions state
-const permMode = ref('755');
-const ownerRead = ref(true);
-const ownerWrite = ref(true);
-const ownerExecute = ref(true);
-const groupRead = ref(true);
-const groupWrite = ref(false);
-const groupExecute = ref(true);
-const otherRead = ref(true);
-const otherWrite = ref(false);
-const otherExecute = ref(true);
-
-function updatePermMode() {
-	let mode = 0;
-	if (ownerRead.value) mode += 4 << 6;
-	if (ownerWrite.value) mode += 2 << 6;
-	if (ownerExecute.value) mode += 1 << 6;
-	if (groupRead.value) mode += 4 << 3;
-	if (groupWrite.value) mode += 2 << 3;
-	if (groupExecute.value) mode += 1 << 3;
-	if (otherRead.value) mode += 4;
-	if (otherWrite.value) mode += 2;
-	if (otherExecute.value) mode += 1;
-	permMode.value = mode.toString(8).padStart(3, '0');
-}
-
-function handlePermModeChange(e: Event) {
-	const value = (e.target as HTMLInputElement).value;
-	permMode.value = value;
-	const mode = parseInt(value, 8);
-	ownerRead.value = !!(mode & (4 << 6));
-	ownerWrite.value = !!(mode & (2 << 6));
-	ownerExecute.value = !!(mode & (1 << 6));
-	groupRead.value = !!(mode & (4 << 3));
-	groupWrite.value = !!(mode & (2 << 3));
-	groupExecute.value = !!(mode & (1 << 3));
-	otherRead.value = !!(mode & 4);
-	otherWrite.value = !!(mode & 2);
-	otherExecute.value = !!(mode & 1);
-}
-
-function handleResetPermissions() {
-	permMode.value = '755';
-	ownerRead.value = true;
-	ownerWrite.value = true;
-	ownerExecute.value = true;
-	groupRead.value = true;
-	groupWrite.value = false;
-	groupExecute.value = true;
-	otherRead.value = true;
-	otherWrite.value = false;
-	otherExecute.value = true;
-}
-
-function handleApplyPermissions() {
-	toast.success('Permissions applied');
-}
-
-// Initialize permissions from store
-watch(() => selectedItemPermissions.value, (perms) => {
-	if (perms) {
-		const mode = perms.mode;
-		permMode.value = mode.toString(8).padStart(3, '0');
-		ownerRead.value = !!(mode & (4 << 6));
-		ownerWrite.value = !!(mode & (2 << 6));
-		ownerExecute.value = !!(mode & (1 << 6));
-		groupRead.value = !!(mode & (4 << 3));
-		groupWrite.value = !!(mode & (2 << 3));
-		groupExecute.value = !!(mode & (1 << 3));
-		otherRead.value = !!(mode & 4);
-		otherWrite.value = !!(mode & 2);
-		otherExecute.value = !!(mode & 1);
-	}
-}, { immediate: true });
-
-// Watch for source changes to reset play state
-watch(previewSrc, () => {
-	isPlaying.value = false;
-	isLoading.value = true;
-	// The :key on the element handles the actual remount/reload
-});
+// ── Renaming logic ──────────────────────────────────────────────────────────
 
 const isEditingName = ref(false);
 const editedName = ref('');
@@ -248,20 +52,26 @@ function cancelRenaming() {
 	isEditingName.value = false;
 }
 
-function handleRename() {
-	// Implementation for renaming would call the store/tauri bridge
-	toast.success('File renamed (placeholder)');
-	isEditingName.value = false;
+async function handleRename() {
+	if (!selectedItem.value) return;
+	const oldPath = selectedItem.value.id;
+	const success = await store.renameItem(oldPath, editedName.value);
+	if (success) {
+		toast.success('File renamed successfully');
+		isEditingName.value = false;
+	} else {
+		toast.error('Failed to rename file');
+	}
 }
 
 function resetRename() {
 	if (selectedItem.value) editedName.value = selectedItem.value.name;
 }
 
-console.log("The thumbnail: ", thumbnailSrc.value);
-// The Result in the console after selecting a video:
-// The thumbnail: ""
-
+// Watch for selection change to cancel renaming automatically
+watch(selectedItem, () => {
+	isEditingName.value = false;
+});
 </script>
 
 <template lang="pug">
@@ -274,156 +84,54 @@ div(class="LFM-preview-pane w-full h-full p-5 flex flex-col gap-y-8 overflow-y-a
 	div(v-else class="flex flex-col gap-y-8")
 		//- Section 1: File Preview & Immersive Canvas
 		section.LFM-preview-section
-			div(class="relative w-full min-h-[240px] rounded-2xl overflow-hidden bg-(--color-base-100)/20 backdrop-blur-md border border-white/10 shadow-inner flex items-center justify-center")
-				button(v-if="!isDirectory" @click="handleExpand" class="absolute right-3 top-3 z-10 p-2 rounded-xl bg-(--color-base-100)/20 hover:bg-(--color-base-100)/40 text-white backdrop-blur-md transition-all active:scale-95")
-					IconFullscreen
+			//- Modular media/fallback canvas
+			PreviewCanvas(
+				:item="selectedItem"
+				@expand="store.setExpandedPreviewId(selectedItem.id)"
+			)
 
-				div(v-if="isImage" class="w-full h-full flex items-center justify-center")
-					img(:src="previewSrc" class="max-w-full max-h-[420px] object-contain drop-shadow-2xl")
-				div(v-else-if="isVideo && previewSrc" class="group/media relative w-full h-full flex items-center justify-center bg-transparent")
-					//- Fallback thumbnail layer for when video is not playing
-					img(v-if="thumbnailSrc" :src="thumbnailSrc" class="absolute inset-0 w-full h-full object-cover opacity-20 blur-md pointer-events-none")
-					video(ref="videoRef" :key="previewSrc" :src="previewSrc" :poster="thumbnailSrc" playsinline class="w-full max-h-[420px]" preload="metadata" @play="isPlaying = true" @pause="isPlaying = false" @loadedmetadata="isLoading = false" )
-					//- Big Play Overlay (Roadmap Section 1)
-					button(v-show="!isPlaying" @click="togglePlay" class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover/media:opacity-100 transition-opacity")
-						div(class="p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white")
-							IconPlay(class="text-4xl")
-				div(v-else-if="isAudio && previewSrc" class="w-full p-8 flex flex-col items-center gap-4 bg-(--color-base-100)/20")
-					.LFM-audio-visualizer(class="w-16 h-16 rounded-full bg-(--color-primary)/20 flex items-center justify-center border border-(--color-primary)/30")
-						IconMusic(class="text-3xl text-(--color-primary)")
-					audio(
-						ref="audioRef"
-						:key="previewSrc"
-						:src="previewSrc"
-						controls
-						class="w-full max-w-xs"
-						preload="metadata"
-						@play="isPlaying = true"
-						@pause="isPlaying = false"
-					)
-				div(v-else class="flex flex-col items-center gap-2 opacity-40")
-					IconFile(v-if="!isDirectory" class="text-7xl")
-					IconFolder(v-else class="text-7xl")
-					span(v-if="isDirectory" class="font-bold tracking-widest text-xs uppercase") Directory
-
-			//- Name Editing Section
+			//- Contextual name editor below canvas
 			div(class="mt-5 p-5 rounded-2xl bg-(--color-base-100)/40 backdrop-blur-md shadow-lg border border-white/10")
 				div(v-if="!isEditingName" @dblclick="startRenaming" class="group flex items-center justify-between cursor-pointer")
 					h2(class="text-base font-bold truncate pr-4 text-(--color-base-content)") {{ selectedItem.name }}
 					button(@click="startRenaming" class="opacity-0 group-hover:opacity-100 p-2 transition-opacity hover:text-(--color-primary)")
 						IconEdit
 				div(v-else class="flex flex-col gap-4")
-					input(type="text" v-model="editedName" class="input input-bordered bg-(--color-base-100)/60 w-full font-bold focus:ring-2 focus:ring-(--color-primary)/50" @keyup.enter="handleRename" @keyup.esc="cancelRenaming")
+					input(
+						type="text"
+						v-model="editedName"
+						class="input input-bordered bg-(--color-base-100)/60 w-full font-bold focus:ring-2 focus:ring-(--color-primary)/50"
+						@keyup.enter="handleRename"
+						@keyup.esc="cancelRenaming"
+					)
 					div(class="flex justify-end gap-2")
 						button(class="btn btn-sm rounded-lg btn-success text-white px-4" @click="handleRename") Save
 						button(class="btn btn-sm rounded-lg btn-ghost bg-white/5" @click="resetRename") Reset
 						button(class="btn btn-sm rounded-lg btn-error text-white px-4" @click="cancelRenaming") Close
 
 		//- Section 2: General Information
-		section.LFM-preview-section
-			h4.LFM-section-title General Information
-			.LFM-info-card
-				.LFM-info-row
-					label Type
-					span {{ isDirectory ? 'Directory' : selectedItem.category || 'File' }}
-				.LFM-info-row
-					label Size
-					span {{ formatSize(selectedItem.size) }}
-				.LFM-info-row(v-if="selectedItemMediaInfo?.width && selectedItemMediaInfo?.height")
-					label Dimensions
-					span {{ selectedItemMediaInfo.width }} × {{ selectedItemMediaInfo.height }}
-				.LFM-info-row(v-if="(isVideo || isAudio) && selectedItemMediaInfo?.duration")
-					label Duration
-					span {{ formatDuration(selectedItemMediaInfo.duration) }}
-				.LFM-info-row(v-if="selectedItem.createdAt")
-					label Created
-					span {{ formatDate(selectedItem.createdAt) }}
-				.LFM-info-row(v-if="selectedItem.modifiedAt")
-					label Updated
-					span {{ formatDate(selectedItem.modifiedAt) }}
-				.LFM-info-row(v-if="isDirectory && selectedItem.childCount")
-					label Items
-					span {{ selectedItem.childCount }}
+		GeneralInfoSection(
+			:item="selectedItem"
+			:media-info="selectedItemMediaInfo"
+		)
 
-		//- Section 3: Advanced Media Information
-		section.LFM-preview-section(v-if="isVideo || isAudio" class="animate__animated animate__fadeIn")
-			h4.LFM-section-title Advanced Information (Media)
-			.LFM-info-card(v-if="selectedItemMediaInfo")
-				//- Container / Format (Roadmap Phase 2)
-				.LFM-info-row(v-if="selectedItemMediaInfo.format")
-					label Container
-					span {{ selectedItemMediaInfo.format }}
+		//- Section 3: Advanced Media Information (ffprobe)
+		MediaInfoSection(
+			v-if="isVideo || isAudio"
+			:is-video="isVideo"
+			:is-audio="isAudio"
+			:media-info="selectedItemMediaInfo"
+		)
 
-				//- Video Sub-section
-				template(v-if="isVideo")
-					.LFM-info-row(v-if="selectedItemMediaInfo.videoCodec || selectedItemMediaInfo.codec")
-						label Video codec
-						span {{ selectedItemMediaInfo.videoCodec || selectedItemMediaInfo.codec }}
-					.LFM-info-row(v-if="selectedItemMediaInfo.videoBitrate || selectedItemMediaInfo.bitrate")
-						label Video bit rate
-						span {{ formatBitrate(selectedItemMediaInfo.videoBitrate || selectedItemMediaInfo.bitrate) }}
-					.LFM-info-row(v-if="selectedItemMediaInfo.frameRate || selectedItemMediaInfo.fps")
-						label Frame rate
-						span {{ selectedItemMediaInfo.frameRate || selectedItemMediaInfo.fps }} fps
-
-				//- Audio Sub-section
-				.LFM-info-row(v-if="selectedItemMediaInfo.audioCodec || (isAudio && selectedItemMediaInfo.codec)")
-					label Audio codec
-					span {{ selectedItemMediaInfo.audioCodec || (isAudio ? selectedItemMediaInfo.codec : null) }}
-				.LFM-info-row(v-if="selectedItemMediaInfo.audioBitrate || (isAudio && selectedItemMediaInfo.bitrate)")
-					label Audio bit rate
-					span {{ formatBitrate(selectedItemMediaInfo.audioBitrate || (isAudio ? selectedItemMediaInfo.bitrate : null)) }}
-				.LFM-info-row(v-if="selectedItemMediaInfo.sampleRate")
-					label Sample rate
-					span {{ formatSampleRate(selectedItemMediaInfo.sampleRate) }}
-				.LFM-info-row(v-if="selectedItemMediaInfo.channels")
-					label Channels
-					span {{ selectedItemMediaInfo.channels }}
-
-			//- Empty/Loading state for metadata
-			div(v-else class="p-6 rounded-2xl bg-(--color-base-100)/20 border border-white/5 flex flex-col items-center justify-center gap-2 opacity-40 italic")
-				span(class="loading loading-spinner loading-xs text-(--color-primary)")
-				span(class="text-[10px] uppercase tracking-widest font-bold") Probing Media Metadata...
-
-		//- Section 4: Permissions
-		section.LFM-preview-section
-			div(class="flex items-center justify-between mb-4")
-				h4.LFM-section-title Permissions
-				div(class="flex items-center gap-2")
-					span(class="text-[10px] font-bold opacity-40 uppercase") Octal
-					input(type="text" v-model="permMode" @input="handlePermModeChange" class="input input-xs input-bordered w-14 text-center font-mono bg-white/5 border-white/10")
-
-			.LFM-permissions-grid(class="p-4 rounded-2xl bg-(--color-base-100)/30 border border-white/5 shadow-sm")
-				.LFM-perm-header Group
-				.LFM-perm-header(class="text-center") R
-				.LFM-perm-header(class="text-center") W
-				.LFM-perm-header(class="text-center") X
-
-				//- Owner
-				span Owner
-				input(type="checkbox" v-model="ownerRead" @change="updatePermMode" class="checkbox checkbox-sm checkbox-primary")
-				input(type="checkbox" v-model="ownerWrite" @change="updatePermMode" class="checkbox checkbox-sm checkbox-primary")
-				input(type="checkbox" v-model="ownerExecute" @change="updatePermMode" class="checkbox checkbox-sm checkbox-primary")
-
-				//- Group
-				span Group
-				input(type="checkbox" v-model="groupRead" @change="updatePermMode" class="checkbox checkbox-sm")
-				input(type="checkbox" v-model="groupWrite" @change="updatePermMode" class="checkbox checkbox-sm")
-				input(type="checkbox" v-model="groupExecute" @change="updatePermMode" class="checkbox checkbox-sm")
-
-				//- Other
-				span Other
-				input(type="checkbox" v-model="otherRead" @change="updatePermMode" class="checkbox checkbox-sm")
-				input(type="checkbox" v-model="otherWrite" @change="updatePermMode" class="checkbox checkbox-sm")
-				input(type="checkbox" v-model="otherExecute" @change="updatePermMode" class="checkbox checkbox-sm")
-
-			div(class="flex justify-end gap-2 mt-4")
-				button(@click="handleResetPermissions" class="btn btn-xs btn-ghost hover:bg-white/5 rounded-lg") Reset
-				button(@click="handleApplyPermissions" class="btn btn-xs btn-primary rounded-lg px-4") Apply
+		//- Section 4: Linux Permissions
+		PermissionsSection(
+			:permissions="selectedItemPermissions"
+		)
 </template>
 
 <style scoped lang="sass">
 @reference 'tailwindcss'
+
 .LFM-preview-empty
 	display: flex
 	flex-direction: column
@@ -454,54 +162,4 @@ div(class="LFM-preview-pane w-full h-full p-5 flex flex-col gap-y-8 overflow-y-a
 .LFM-preview-section
 	display: flex
 	flex-direction: column
-
-.LFM-section-title
-	font-size: 0.7rem
-	font-weight: 800
-	text-transform: uppercase
-	letter-spacing: 0.1em
-	color: var(--color-base-content)
-	opacity: 0.4
-	margin-bottom: 1rem
-
-.LFM-info-card
-	display: flex
-	flex-direction: column
-	gap: 0.75rem
-	padding: 1.25rem
-	border-radius: 1.25rem
-	background: color-mix(in srgb, var(--color-base-100) 40%, transparent)
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 5%, transparent)
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03)
-
-.LFM-info-row
-	display: flex
-	justify-content: space-between
-	align-items: center
-	font-size: 0.875rem
-	label
-		opacity: 0.5
-		font-weight: 500
-	span, strong
-		font-weight: 600
-		color: var(--color-base-content)
-
-.LFM-permissions-grid
-	display: grid
-	grid-template-columns: 2fr 1fr 1fr 1fr
-	align-items: center
-	row-gap: 1rem
-	column-gap: 0.5rem
-	font-size: 0.875rem
-	span
-		font-weight: 600
-		opacity: 0.8
-	input[type="checkbox"]
-		justify-self: center
-
-.LFM-perm-header
-	font-size: 0.65rem
-	font-weight: 900
-	opacity: 0.3
-	text-transform: uppercase
 </style>

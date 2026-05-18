@@ -217,16 +217,23 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	 * the same path (avoids redundant backend calls on re-renders).
 	 */
 	async function fetchItemMetadata(filePath: string | null | undefined) {
+		console.log('[FileManagerStore] fetchItemMetadata started for:', filePath);
 		if (!filePath) {
 			selectedItemPermissions.value = null;
 			selectedItemMediaInfo.value = null;
 			return;
 		}
 		try {
-			const [perms, media] = await Promise.all([
-				getFilePermissions(filePath).catch(() => null),
-				getMediaInfo(filePath).catch(() => null),
-			]);
+			const permsPromise = getFilePermissions(filePath).catch((err) => {
+				console.error('[FileManagerStore] getFilePermissions error:', err);
+				return null;
+			});
+			const mediaPromise = getMediaInfo(filePath).catch((err) => {
+				console.error('[FileManagerStore] getMediaInfo error:', err);
+				return null;
+			});
+			const [perms, media] = await Promise.all([permsPromise, mediaPromise]);
+			console.log('[FileManagerStore] fetchItemMetadata finished for:', filePath, 'perms:', perms, 'media:', media);
 			selectedItemPermissions.value = perms;
 			selectedItemMediaInfo.value = media;
 		} catch (err) {
@@ -234,28 +241,11 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		}
 	}
 
-	// Watch explicit selections (Set changes)
-	watch(
-		selectedItemIds,
-		async (newIds) => {
-			const firstId = newIds.values().next().value;
-			// Only fetch when there is an explicit selection; the selectedItem
-			// watcher below handles the auto-fallback case.
-			if (firstId) {
-				await fetchItemMetadata(firstId);
-			}
-		},
-		{ immediate: true, deep: true }
-	);
-
-	// Watch the computed selectedItem so the auto-fallback (first entry shown
-	// without an explicit click) also triggers a metadata fetch.
+	// Watch the selectedItem computed property (fully covers explicit selections,
+	// auto-selections, tab switches, and search filtering).
 	watch(
 		selectedItem,
 		async (item) => {
-			// Skip if the explicit-selection watcher already handles this path
-			const explicitId = selectedItemIds.value.values().next().value;
-			if (explicitId) return;
 			await fetchItemMetadata(item?.id ?? null);
 		},
 		{ immediate: true }
@@ -272,7 +262,8 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		// Snapshot so we can roll back if the read fails
 		const prevPath = currentPath.value;
 		const prevEntries = currentEntries.value;
-		const normalizedPath = path === '/root' ? '/' : path;
+		const decodedPath = decodeURIComponent(path);
+		const normalizedPath = decodedPath === '/root' ? '/' : decodedPath;
 
 		currentPath.value = normalizedPath;
 		searchQuery.value = '';
@@ -280,7 +271,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		navError.value = null;
 
 		try {
-			if (path === '/trash') {
+			if (normalizedPath === '/trash') {
 				const info = await getTrashedItems();
 				currentEntries.value = info.files.map((meta) => mapTrashMetaToEntry(meta, 'slate'));
 				return;
@@ -347,6 +338,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 					getVideoThumbnail(id)
 						.then((thumbPath) => {
 							entry.preview = convertFileSrc(thumbPath);
+							entry.thumbnail = thumbPath;
 						})
 						.catch((err) => {
 							console.error(`Video thumbnail failed for ${file.basename}:`, err);
@@ -355,6 +347,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 					getImageThumbnail(id)
 						.then((thumbPath) => {
 							entry.preview = convertFileSrc(thumbPath);
+							entry.thumbnail = thumbPath;
 						})
 						.catch((err) => {
 							console.error(`Image thumbnail failed for ${file.basename}:`, err);
@@ -386,10 +379,11 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	function openSection(path: string) {
-		currentPath.value = path;
+		const decodedPath = decodeURIComponent(path);
+		currentPath.value = decodedPath;
 		searchQuery.value = '';
-		updateActiveTabPath(path);
-		fetchDirectory(path);
+		updateActiveTabPath(decodedPath);
+		fetchDirectory(decodedPath);
 	}
 
 	function refresh() {
@@ -397,16 +391,21 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	function selectItem(itemId: string) {
-		selectedItemIds.value.clear();
-		selectedItemIds.value.add(itemId);
+		selectedItemIds.value = new Set([itemId]);
+	}
+
+	function setSelectedItems(itemIds: string[]) {
+		selectedItemIds.value = new Set(itemIds);
 	}
 
 	function toggleItemSelection(itemId: string) {
-		if (selectedItemIds.value.has(itemId)) {
-			selectedItemIds.value.delete(itemId);
+		const next = new Set(selectedItemIds.value);
+		if (next.has(itemId)) {
+			next.delete(itemId);
 		} else {
-			selectedItemIds.value.add(itemId);
+			next.add(itemId);
 		}
+		selectedItemIds.value = next;
 	}
 
 	function selectAllItems() {
@@ -414,7 +413,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	function clearSelection() {
-		selectedItemIds.value.clear();
+		selectedItemIds.value = new Set();
 	}
 
 	function setSearchQuery(value: string) {
@@ -497,15 +496,16 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	function updateTabPath(tabId: string, path: string) {
+		const decodedPath = decodeURIComponent(path);
 		const idx = windowTabs.value.findIndex((t) => t.id === tabId);
 		if (idx === -1) return;
-		const resolvedPath = path && path.startsWith('@') ? (path === '@drives' ? '/drives' : path) : path;
+		const resolvedPath = decodedPath && decodedPath.startsWith('@') ? (decodedPath === '@drives' ? '/drives' : decodedPath) : decodedPath;
 		const tab = windowTabs.value[idx];
 		if (tab) {
 			tab.path = resolvedPath;
 			tab.sectionId = resolvedPath;
 			tab.subtitle = resolvedPath;
-			tab.label = getTabLabel(path);
+			tab.label = getTabLabel(decodedPath);
 		}
 	}
 
@@ -520,10 +520,11 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	}
 
 	function addTab(path: string = defaultPath) {
+		const decodedPath = decodeURIComponent(path);
 		const id = `tab-${Date.now()}`;
 		// Resolve logical aliases for sectionId/path where applicable
-		const resolvedPath = path && path.startsWith('@') ? (path === '@drives' ? '/drives' : path) : path;
-		const label = getTabLabel(path);
+		const resolvedPath = decodedPath && decodedPath.startsWith('@') ? (decodedPath === '@drives' ? '/drives' : decodedPath) : decodedPath;
+		const label = getTabLabel(decodedPath);
 		windowTabs.value.push({ id, label, path: resolvedPath, sectionId: resolvedPath, subtitle: resolvedPath });
 		activeTabId.value = id;
 		return id;
@@ -691,6 +692,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		fetchDrives,
 		openSection,
 		selectItem,
+		setSelectedItems,
 		toggleItemSelection,
 		selectAllItems,
 		clearSelection,

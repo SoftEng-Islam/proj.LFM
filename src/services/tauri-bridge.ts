@@ -173,16 +173,16 @@ export function getFileProperties(filePath: string): Promise<FileMetaData> {
 
 /** Get detailed Unix file permissions (mode, owner, group). */
 export function getFilePermissions(filePath: string): Promise<FilePermissions> {
-	return invoke('get_file_permissions', { file_path: filePath });
+	return invoke('get_file_permissions', { filePath });
 }
 
 export function setFilePermissions(filePath: string, mode: number): Promise<boolean> {
-	return invoke('set_file_permissions', { file_path: filePath, mode });
+	return invoke('set_file_permissions', { filePath, mode });
 }
 
 /** Get technical media info (dimensions, duration, codecs). */
 export function getMediaInfo(filePath: string): Promise<MediaInfo> {
-	return invoke('get_media_info', { file_path: filePath });
+	return invoke('get_media_info', { filePath });
 }
 
 /**
@@ -282,12 +282,12 @@ export function compressToZip(files: string[]): Promise<void> {
 }
 
 export function readTextFile(filePath: string): Promise<string> {
-	return invoke('read_text_file', { file_path: filePath });
+	return invoke('read_text_file', { filePath });
 }
 
 /** Write content to a text file. */
 export function writeTextFile(filePath: string, content: string): Promise<boolean> {
-	return invoke('write_text_file', { file_path: filePath, content });
+	return invoke('write_text_file', { filePath, content });
 }
 
 /** Extract a zip archive into a target directory. */

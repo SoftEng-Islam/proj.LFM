@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * GeneralInfoSection — Section 2 of the Preview Pane.
  *
@@ -31,7 +32,7 @@ section.LFM-preview-section
 			span {{ isDirectory ? 'Directory' : item.category || 'File' }}
 		.LFM-info-row
 			label Size
-			span {{ FileInfoService.formatSize(item.size) }}
+			span {{ FileInfoService.formatSize(item.sortSize) }}
 		.LFM-info-row(v-if="mediaInfo?.width && mediaInfo?.height")
 			label Dimensions
 			span {{ mediaInfo.width }} × {{ mediaInfo.height }}

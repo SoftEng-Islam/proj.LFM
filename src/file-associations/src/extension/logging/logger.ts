@@ -1,4 +1,4 @@
-import { EventEmitter } from 'node:events';
+import type { EventEmitter } from 'node:events';
 import { type OutputChannel, window } from 'vscode';
 import {
   createLoggingObserver,

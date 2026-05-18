@@ -38,7 +38,7 @@ export const useSettingsStore = defineStore('settings', {
 				}
 			} catch (e) {
 				// ignore — keep defaults
-				// eslint-disable-next-line no-console
+				 
 				console.warn('Could not load settings, using defaults', e);
 			}
 		},
@@ -55,7 +55,7 @@ export const useSettingsStore = defineStore('settings', {
 					shortcuts: this.shortcuts,
 				});
 			} catch (e) {
-				// eslint-disable-next-line no-console
+				 
 				console.error('Failed to save settings', e);
 			}
 		},

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { on as busOn, off as busOff } from '@/renderer/events/bus';
 import { useRouter } from 'vue-router';
@@ -104,8 +105,7 @@ function handleMouseMove(e: MouseEvent) {
 
 		// Update selection in real-time (only if not holding Ctrl)
 		if (!(e.ctrlKey || e.metaKey)) {
-			store.clearSelection();
-			itemsToSelect.forEach((id) => store.selectedItemIds.add(id));
+			store.setSelectedItems(itemsToSelect);
 		}
 	}
 }
@@ -142,8 +142,7 @@ function handleMouseUp(e: MouseEvent) {
 				itemsToSelect.forEach((id) => store.toggleItemSelection(id));
 			} else {
 				// Replace selection with final selection
-				store.clearSelection();
-				itemsToSelect.forEach((id) => store.selectedItemIds.add(id));
+				store.setSelectedItems(itemsToSelect);
 			}
 		}
 

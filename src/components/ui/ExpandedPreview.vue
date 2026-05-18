@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * ExpandedPreview Component — Floating mini-window for detailed file interaction
  */
@@ -6,7 +7,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useFileManagerStore } from '@/stores/file-manager';
 import { storeToRefs } from 'pinia';
 import { useToast } from 'vue-toastification';
-import { readTextFile } from '@/services/tauri-bridge';
+import { readTextFile, convertFileSrc } from '@/services/tauri-bridge';
 
 // Icons
 import IconClose from '~icons/material-symbols/close';
@@ -39,6 +40,14 @@ const isCode = computed(() => item.value?.category === 'code');
 const isMarkdown = computed(() => item.value?.category === 'markdown');
 const isPDF = computed(() => item.value?.category === 'pdf');
 const isOffice = computed(() => ['document', 'spreadsheet'].includes(item.value?.category || ''));
+
+const resolvedPreviewSrc = computed(() => {
+	if (!item.value) return '';
+	if (isImage.value || isVideo.value || isPDF.value || isOffice.value) {
+		return convertFileSrc(item.value.id);
+	}
+	return item.value.preview;
+});
 
 const isFullscreen = ref(false);
 const isMinimized = ref(false);
@@ -273,7 +282,7 @@ Teleport(to="body")
 									@mouseup="stopCrop"
 									@mouseleave="stopCrop"
 								)
-									img.LFM-expanded-image(:src="item.preview" alt="Full Preview" draggable="false")
+									img.LFM-expanded-image(:src="resolvedPreviewSrc" alt="Full Preview" draggable="false")
 
 									canvas.LFM-drawing-canvas(
 										v-if="isDrawing"
@@ -291,11 +300,11 @@ Teleport(to="body")
 											:style="{ left: cropRect.x + 'px', top: cropRect.y + 'px', width: cropRect.width + 'px', height: cropRect.height + 'px' }"
 										)
 											button.LFM-apply-crop-btn(@click.stop="applyCrop") Apply Crop
-							video.LFM-expanded-video(v-else-if="isVideo" :src="item.preview" controls autoplay)
-							CodePreview(v-else-if="isCode" :src="item.preview" :title="item.name")
-							MarkdownPreview(v-else-if="isMarkdown" :src="item.preview" :title="item.name")
-							PDFPreview(v-else-if="isPDF" :src="item.preview" :filename="item.name")
-							OfficePreview(v-else-if="isOffice" :src="item.preview" :filename="item.name")
+							video.LFM-expanded-video(v-else-if="isVideo" :src="resolvedPreviewSrc" controls autoplay)
+							CodePreview(v-else-if="isCode" :src="resolvedPreviewSrc" :title="item.name")
+							MarkdownPreview(v-else-if="isMarkdown" :src="resolvedPreviewSrc" :title="item.name")
+							PDFPreview(v-else-if="isPDF" :src="resolvedPreviewSrc" :filename="item.name")
+							OfficePreview(v-else-if="isOffice" :src="resolvedPreviewSrc" :filename="item.name")
 							.LFM-expanded-fallback(v-else)
 								span No expanded preview available for this file type.
 
