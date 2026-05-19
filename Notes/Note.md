@@ -50,3 +50,5 @@
 9. When I try to enter a dir with non english name like arabic it doesn't enter, I want the app support any language. fix it in `./src-tauri`.
 
 # Centralized keyboard actions for panels
+
+I have installed the @videojs-player/vue to use it as a video player for our project, I want to add it to the preview pane so we can fun videos in a fast way, use our rules in `./Notes/1.Rules.md` then write the code.

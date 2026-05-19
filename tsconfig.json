@@ -28,6 +28,11 @@
 			"unplugin-icons/types/vue"
 		]
 	},
+	"vueCompilerOptions": {
+		"plugins": [
+			"@vue/language-plugin-pug"
+		]
+	},
 	"include": [
 		"src/**/*.ts",
 		"src/**/*.d.ts",
