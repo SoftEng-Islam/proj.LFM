@@ -1,4 +1,6 @@
-{ pkgs ? import <nixpkgs> { } }:
+{
+  pkgs ? import <nixpkgs> { },
+}:
 
 let
   # Dynamic libraries required by Tauri and its webview at run-time / link-time
@@ -18,10 +20,10 @@ let
     libappindicator-gtk3
     openssl
     dbus
-    
+
     # Networking modules for WebKitGTK (essential for TLS/HTTPS in the webview)
     glib-networking
-    
+
     # GStreamer (needed for video thumbnailing and media playback inside the webview)
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-base
@@ -37,14 +39,14 @@ let
     cargo
     rustc
     rustup
-    
+
     # Frontend build tools
     nodejs_20
     nodePackages.pnpm
 
     # Technical metadata and media utilities (essential for media probing/thumbnailing)
+    # ffmpeg contains ffplay, ffprobe and ffprobe, which is used by the media metadata backend to extract technical metadata from media files
     ffmpeg
-    ffprobe
 
     # Native compiler utilities
     pkg-config

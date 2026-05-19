@@ -48,21 +48,5 @@
    2. Warning: 'ozone-platform-hint' is not in the list of known options, but still passed to Electron/Chromium. Warning: 'enable-features' is not in the list of known options, but still passed to Electron/Chromium. Warning: 'enable-wayland-ime' is not in the list of known options, but still passed to Electron/Chromium. Warning: 'wayland-text-input-version' is not in the list of known options, but still passed to Electron/Chromium.
    3. VM 0x79a236416000 on pid 1306771 received NeedDebuggerBreak trap, VM 0x79a236416000 on pid 1306771 received NeedDebuggerBreak trap, VM 0x79a236416000 on pid 1306771 received NeedDebuggerBreak trap
 9. When I try to enter a dir with non english name like arabic it doesn't enter, I want the app support any language. fix it in `./src-tauri`.
-10. Lets separate the preview pane `./src/features/explorer/components/PreviewPane/PreviewPane.vue` sections into a small components in `src/features/explorer/components/PreviewPane/components`.
-11. Lets change preview ts script codes from local to global scope so if we need any information for a select file,files,folder,folder then we don't write these functions again, and write it In OOP in small files
-12. Remove/hide the boot and store partitions of `src/features/navigation`.
-13. The "Empty/Loading state for metadata" always work because there is no audio/video information, there is something wrong in the ts script code.
 
-I have theses console log messages:
-[Debug] [vite] connecting... (client, line 827)
-[Debug] [vite] connected. (client, line 931)
-[Warning] [Vue Router warn]: Location "//Downloads" resolved to "//Downloads". A resolved location cannot start with multiple slashes. (vue-router.js, line 3776)
-[Warning] [Vue Router warn]: Location "//Documents" resolved to "//Documents". A resolved location cannot start with multiple slashes. (vue-router.js, line 3776)
-[Warning] [Vue Router warn]: Location "//Videos" resolved to "//Videos". A resolved location cannot start with multiple slashes. (vue-router.js, line 3776)
-[Warning] [Vue Router warn]: Location "//Pictures" resolved to "//Pictures". A resolved location cannot start with multiple slashes. (vue-router.js, line 3776)
-[Warning] [Vue Router warn]: Location "//Music" resolved to "//Music". A resolved location cannot start with multiple slashes. (vue-router.js, line 3776)
-[Warning] [Vue Router warn]: Location "//Public" resolved to "//Public". A resolved location cannot start with multiple slashes. (vue-router.js, line 3776)
-[Error] Failed to load resource: the server responded with a status of 403 (Forbidden) (/SSDisk/DIY  Mini Air Conditioner with REFRIGERATION COMPRESSOR  and Fan – Cools Instantly Like a Real AC [WW5OUBM5TB0].mp4, line 0)
-[Error] Playback failed: – NotSupportedError: The operation is not supported. — PreviewPane.vue:78
-NotSupportedError: The operation is not supported. — PreviewPane.vue:78
- (anonymous function) (PreviewPane.vue:79)
+# Centralized keyboard actions for panels

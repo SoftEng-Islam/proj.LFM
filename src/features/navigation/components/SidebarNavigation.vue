@@ -22,7 +22,6 @@ import IconCloud from '~icons/material-symbols/cloud';
 import IconNetwork from '~icons/material-symbols/network-node';
 import IconDns from '~icons/material-symbols/dns';
 import IconLabel from '~icons/material-symbols/label';
-import IconSettings from '~icons/material-symbols/settings';
 import IconLinux from '~icons/material-symbols/terminal';
 
 const store = useFileManagerStore();
@@ -187,12 +186,6 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 			IconChevronRight.LFM-sbar-chevron(:class="{ 'LFM-sbar-chevron--collapsed': collapsed['tags'] }")
 			IconLabel.mr-2.text-xs
 			span Tags
-
-	.LFM-sbar-settings
-		button.LFM-sbar-item.LFM-sbar-item--settings(type="button" @click="store.openSettings" :class="{ 'LFM-sbar-item--active': settingsOpen }")
-			span.LFM-sbar-icon
-				IconSettings
-			span.LFM-sbar-label Settings
 </template>
 
 <style scoped lang="sass">
@@ -354,19 +347,4 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 
 	&--collapsed
 		transform: rotate(0deg)
-
-.LFM-sbar-settings
-	position: sticky
-	bottom: 0
-	margin-top: auto
-	padding-top: 8px
-	padding-bottom: 8px
-	border-top: 1px solid var(--LFM-border)
-	background: var(--LFM-panel)
-	z-index: 10
-
-.LFM-sbar-item--settings
-	background: transparent
-	border: none
-	width: calc(100% - 16px)
 </style>
