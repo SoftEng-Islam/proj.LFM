@@ -126,6 +126,7 @@
 		"pdfjs-dist": "^5.7.284",
 		"pinia": "^3.0.4",
 		"tippy.js": "^6.3.7",
+		"video.js": "^8.23.7",
 		"vue": "^3.5.33",
 		"vue-router": "^5.0.4",
 		"vue-toastification": "2.0.0-rc.5",

@@ -12,12 +12,14 @@ import IconDelete from '~icons/material-symbols/delete';
 import IconChevronRight from '~icons/material-symbols/chevron-right';
 import FolderIcon from '@/components/VueIcons/Folder/FolderIcon.vue';
 import IconPushPin from '~icons/material-symbols/push-pin';
+
 import IconHardDrive from '~icons/material-symbols/hard-drive';
 import IconHardDisk from '~icons/material-symbols/hard-disk';
-import IconHomeStorage from '~icons/material-symbols/home-storage';
 import IconSdCard from '~icons/material-symbols/sd-card';
 import IconStorage from '~icons/material-symbols/storage';
 import IconUsb from '~icons/material-symbols/usb';
+import IconHomeStorage from '~icons/material-symbols/home-storage';
+
 import IconCloud from '~icons/material-symbols/cloud';
 import IconNetwork from '~icons/material-symbols/network-node';
 import IconDns from '~icons/material-symbols/dns';
@@ -194,7 +196,7 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 .LFM-sidebar-nav
 	display: flex
 	flex-direction: column
-	height: 100%
+	height: 90%
 	padding: 8px 0
 	font-size: 13px
 	color: var(--color-base-content)

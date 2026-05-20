@@ -92,18 +92,17 @@ onUnmounted(() => {
 		<AppNavigationBar />
 
 		div(class="LFM-body")
-			aside(class="flex flex-col h-full overflow-hidden" aria-label="Navigation pane")
+			aside(class="flex flex-col h-full py-2 overflow-hidden" aria-label="Navigation pane")
 				<SidebarNavigation />
 				//- Settings button
 				button(
 					type="button"
-					class="LFM-sbar-settings"
+					class="LFM-sbar-settings flex items-center justify-center gap-4 p-3"
 					:class="{ 'LFM-sbar-settings--active': store.settingsOpen }"
 					@click="store.openSettings"
 				)
-					span.LFM-sbar-icon
-						<IconSettings />
-					span.LFM-sbar-label Settings
+					span(class="text-lg") #[IconSettings()]
+					span(class="text-lg text-nowrap overflow-hidden text-ellipsis") Settings
 
 			main(id="main-content" class="LFM-content")
 				<slot />
@@ -258,11 +257,7 @@ onUnmounted(() => {
 }
 
 .LFM-sbar-settings {
-	display: flex;
-	align-items: center;
-	gap: 12px;
 	min-height: 40px;
-	padding: 0 12px;
 	border-radius: 10px;
 	cursor: pointer;
 	text-decoration: none;
@@ -307,28 +302,6 @@ onUnmounted(() => {
 			border-radius: 0 4px 4px 0;
 			box-shadow: 0 0 10px var(--color-primary);
 		}
-	}
-
-	.LFM-sbar-icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 18px;
-		opacity: 0.8;
-		transition: transform 200ms ease, opacity 200ms ease;
-	}
-
-	&:hover .LFM-sbar-icon {
-		opacity: 1;
-		transform: rotate(30deg);
-	}
-
-	.LFM-sbar-label {
-		flex: 1;
-		text-align: left;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 }
 </style>

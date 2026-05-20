@@ -4,85 +4,89 @@ import { getDrives } from '@/services/tauri-bridge';
 import type { DriveInformation } from '@/services/tauri-bridge';
 import { mapDriveInfoToCard } from '@/services/mappers';
 import AppLayout from '@/layouts/AppLayout.vue';
+
+// Icons
 import IconHomeStorage from '~icons/material-symbols/home-storage';
 import IconHardDrive from '~icons/material-symbols/hard-drive';
 import IconHardDisk from '~icons/material-symbols/hard-disk';
+import IconSdCard from '~icons/material-symbols/sd-card';
 import IconStorage from '~icons/material-symbols/storage';
 import IconUsb from '~icons/material-symbols/usb';
-import IconSdCard from '~icons/material-symbols/sd-card';
 import IconDns from '~icons/material-symbols/dns';
 
 const iconComponents: Record<string, any> = {
-	root: IconHardDrive,
-	internal: IconHardDrive,
-	hdd: IconHardDrive,
-	ssd: IconHardDrive,
-	usb: IconUsb,
-	external: IconUsb,
-	sdcard: IconSdCard,
-	network: IconDns,
-	removable: IconUsb,
+  root: IconHardDrive,
+  internal: IconHardDrive,
+  hdd: IconHardDrive,
+  ssd: IconHardDrive,
+  usb: IconUsb,
+  external: IconUsb,
+  sdcard: IconSdCard,
+  network: IconDns,
+  removable: IconUsb,
 };
 
 function getDriveIconComponent(type: string) {
-	return iconComponents[type] || IconHardDrive;
+  return iconComponents[type] || IconHardDrive;
 }
 
 const drives = ref<DriveInformation[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
 const driveCards = computed(() => {
-	return drives.value
-		.map(mapDriveInfoToCard)
-		.filter((card) => {
-			const mountName = card.mountName.toLowerCase();
+  return drives.value
+    .map(mapDriveInfoToCard)
+    .filter((card) => {
+      const mountName = card.mountName.toLowerCase();
 
-			// Filter out system partitions ('Boot', 'store')
-			// Filter bind-mounts/pseudo-fs (like Waydroid) by checking for 'none' fsType
-			return !['boot', 'store'].includes(mountName) && card.filesystem !== 'none';
-		})
-		.map((card) => {
-			// Normalize path: Resolve duplicated /dev/ prefix and remove redundant slashes
-			let path = card.devicePath.replace(/\/+/g, '/');
-			if (path.startsWith('/dev/dev/')) {
-				path = path.replace('/dev/dev/', '/dev/');
-			}
-			card.devicePath = path;
-			return card;
-		});
+      // Filter out system partitions ('Boot', 'store')
+      // Filter bind-mounts/pseudo-fs (like Waydroid) by checking for 'none' fsType
+      return !['boot', 'store'].includes(mountName) && card.filesystem !== 'none';
+    })
+    .map((card) => {
+      // Normalize path: Resolve duplicated /dev/ prefix and remove redundant slashes
+      let path = card.devicePath.replace(/\/+/g, '/');
+      if (path.startsWith('/dev/dev/')) {
+        path = path.replace('/dev/dev/', '/dev/');
+      }
+      card.devicePath = path;
+      return card;
+    });
 });
 
 onMounted(async () => {
-	loading.value = true;
-	error.value = null;
-	try {
-		const result = await getDrives();
-		drives.value = result.array_of_drives;
-	} catch (err) {
-		error.value = String(err ?? 'Failed to load drives');
-	} finally {
-		loading.value = false;
-	}
+  loading.value = true;
+  error.value = null;
+  try {
+    const result = await getDrives();
+    drives.value = result.array_of_drives;
+  } catch (err) {
+    error.value = String(err ?? 'Failed to load drives');
+  } finally {
+    loading.value = false;
+  }
 });
 
 function getDriveColor(percent: number): string {
-	if (percent < 50) return 'bg-emerald-500';
-	if (percent < 80) return 'bg-amber-500';
-	return 'bg-rose-500';
+  if (percent < 50) return 'bg-emerald-500';
+  if (percent < 80) return 'bg-amber-500';
+  return 'bg-rose-500';
 }
 
 function getDriveHealth(percent: number): string {
-	if (percent < 70) return 'Healthy';
-	if (percent < 90) return 'Limited space';
-	return 'Critical space';
+  if (percent < 70) return 'Healthy';
+  if (percent < 90) return 'Limited space';
+  return 'Critical space';
 }
 </script>
 
 <template lang="pug">
 AppLayout
   div.LFM-drives-page
-    .LFM-drives-header
-      h1 Storage Overview
+    div.LFM-drives-header(class="flex flex-col gap-2")
+      div(class="flex gap-2 flex-row items-center justify-start")
+        IconStorage(class="text-4xl")
+        h1(class="m-0 p-0") Storage Overview
       p View available storage on all mounted partitions and drives.
 
     .LFM-drives-loading(v-if="loading")
@@ -139,15 +143,6 @@ AppLayout
   flex-direction: column
   gap: 2rem
   padding: 2rem
-
-.LFM-drives-header
-  display: flex
-  flex-direction: column
-  gap: 0.5rem
-
-.LFM-drives-header h1
-  font-size: 1.875rem
-  font-weight: 700
 
 .LFM-drives-header p
   color: color-mix(in srgb, var(--color-base-content) 60%, transparent)

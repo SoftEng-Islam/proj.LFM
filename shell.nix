@@ -75,7 +75,7 @@ pkgs.mkShell {
     # Fix WebKitGTK video playback and GStreamer critical errors on NixOS
     export WEBKIT_DISABLE_COMPOSITING_MODE=1
     export WEBKIT_DISABLE_DMABUF_RENDERER=1
-    
+
     # Disable WebKit Sandbox which often blocks GStreamer from accessing the GPU or file system
     export WEBKIT_FORCE_SANDBOX=0
 
