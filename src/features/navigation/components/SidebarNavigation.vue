@@ -6,12 +6,15 @@ import { storeToRefs } from 'pinia';
 import { useFileManagerStore } from '@/stores/file-manager';
 import type { DriveCard, NavigationGroup } from '@/types/file-manager';
 
+// Subcomponents
+import SidebarSectionHeader from './SidebarSectionHeader.vue';
+import SidebarNavItem from './SidebarNavItem.vue';
+import SidebarDriveItem from './SidebarDriveItem.vue';
+
 // Icons
 import IconHome from '~icons/material-symbols/home';
 import IconDelete from '~icons/material-symbols/delete';
-import IconChevronRight from '~icons/material-symbols/chevron-right';
 import FolderIcon from '@/components/VueIcons/Folder/FolderIcon.vue';
-import IconPushPin from '~icons/material-symbols/push-pin';
 
 import IconHardDrive from '~icons/material-symbols/hard-drive';
 import IconHardDisk from '~icons/material-symbols/hard-disk';
@@ -27,7 +30,7 @@ import IconLabel from '~icons/material-symbols/label';
 import IconLinux from '~icons/material-symbols/terminal';
 
 const store = useFileManagerStore();
-const { driveCards, navigationGroups, currentPath, homePath, settingsOpen } = storeToRefs(store);
+const { driveCards, navigationGroups, homePath } = storeToRefs(store);
 const route = useRoute();
 
 /**
@@ -108,86 +111,110 @@ const cloudItems = [
 <template lang="pug">
 nav.LFM-sidebar-nav(aria-label="Navigation pane")
 	.LFM-sbar-top
-		RouterLink.LFM-sbar-item.LFM-sbar-item--home(:to="homePath" :class="{ 'LFM-sbar-item--active': isActive(homePath) }")
-			span.LFM-sbar-icon
+		SidebarNavItem(
+			:to="homePath"
+			:active="isActive(homePath)"
+			label="Home"
+			:isHomeOrTrash="true"
+		)
+			template(#icon)
 				IconHome.text-blue-500
-			span.LFM-sbar-label Home
 
-		RouterLink.LFM-sbar-item.LFM-sbar-item--trash(to="/trash" :class="{ 'LFM-sbar-item--active': isActive('/trash') }")
-			span.LFM-sbar-icon
+		SidebarNavItem(
+			to="/trash"
+			:active="isActive('/trash')"
+			label="Trash"
+			:isHomeOrTrash="true"
+		)
+			template(#icon)
 				IconDelete.text-rose-500
-			span.LFM-sbar-label Trash
 
 	.LFM-sbar-section
-		button.LFM-sbar-section-header(:aria-expanded="!collapsed['pinned']" @click="toggleSection('pinned')")
-			IconChevronRight.LFM-sbar-chevron(:class="{ 'LFM-sbar-chevron--collapsed': collapsed['pinned'] }")
-			span Pinned
+		SidebarSectionHeader(
+			title="Pinned"
+			:isCollapsed="!!collapsed['pinned']"
+			@toggle="toggleSection('pinned')"
+		)
 
 		template(v-if="!collapsed['pinned']")
-			RouterLink.LFM-sbar-item(
+			SidebarNavItem(
 				v-for="item in navigationGroups.flatMap((g: NavigationGroup) => g.items).filter(i => i.id !== 'home' && i.id !== 'trash')"
 				:key="item.id"
 				:to="item.path"
-				:class="{ 'LFM-sbar-item--active': isActive(item.path) }"
+				:active="isActive(item.path)"
+				:label="item.label"
+				:showPin="true"
 			)
-				span.LFM-sbar-icon
+				template(#icon)
 					FolderIcon(:color="'orange'")
-				span.LFM-sbar-label {{ item.label }}
-				IconPushPin.LFM-sbar-pin
 
 	.LFM-sbar-section
-		button.LFM-sbar-section-header(:aria-expanded="!collapsed['drives']" @click="toggleSection('drives')")
-			IconChevronRight.LFM-sbar-chevron(:class="{ 'LFM-sbar-chevron--collapsed': collapsed['drives'] }")
-			span Drives
+		SidebarSectionHeader(
+			title="Drives"
+			:isCollapsed="!!collapsed['drives']"
+			@toggle="toggleSection('drives')"
+		)
 
-		RouterLink.LFM-sbar-item.LFM-sbar-item--locations(to="/@locations" :class="{ 'LFM-sbar-item--active': isActive('/@locations') }")
-			span.LFM-sbar-icon
+		SidebarDriveItem(
+			to="/@locations"
+			:active="isActive('/@locations')"
+			label="Locations"
+			meta="View all mounted drives"
+		)
+			template(#icon)
 				IconStorage
-			span.LFM-sbar-drive-copy
-				span.LFM-sbar-label Locations
-				span.LFM-sbar-meta View all mounted drives
 
 		template(v-if="!collapsed['drives']")
-			RouterLink.LFM-sbar-item.LFM-sbar-item--drive(
+			SidebarDriveItem(
 				v-for="drive in visibleDrives"
 				:key="drive.id"
 				:to="drive.id"
-				:class="{ 'LFM-sbar-item--active': isActive(drive.id) }"
+				:active="isActive(drive.id)"
+				:label="drive.label"
+				:meta="`${drive.deviceLabel} - ${drive.capacityLabel}`"
+				:icon="getDriveIcon(drive.driveType)"
+				:iconClass="getDriveIconClass(drive.driveType)"
 			)
-				span.LFM-sbar-icon
-					component.LFM-material-drive-icon(:is="getDriveIcon(drive.driveType)" :class="getDriveIconClass(drive.driveType)" aria-hidden="true")
-				span.LFM-sbar-drive-copy
-					span.LFM-sbar-label {{ drive.label }}
-					span.LFM-sbar-meta {{ drive.deviceLabel }} - {{ drive.capacityLabel }}
 
 	.LFM-sbar-section
-		button.LFM-sbar-section-header(:aria-expanded="!collapsed['cloud']" @click="toggleSection('cloud')")
-			IconChevronRight.LFM-sbar-chevron(:class="{ 'LFM-sbar-chevron--collapsed': collapsed['cloud'] }")
-			span Cloud Storage
+		SidebarSectionHeader(
+			title="Cloud Storage"
+			:isCollapsed="!!collapsed['cloud']"
+			@toggle="toggleSection('cloud')"
+		)
 
 		template(v-if="!collapsed['cloud']")
-			.LFM-sbar-item(v-for="cloud in cloudItems" :key="cloud.id")
-				span.LFM-sbar-icon
+			SidebarNavItem(
+				v-for="cloud in cloudItems"
+				:key="cloud.id"
+				:label="cloud.label"
+			)
+				template(#icon)
 					IconCloud(:style="{ color: cloud.iconColor }")
-				span.LFM-sbar-label {{ cloud.label }}
 
 	.LFM-sbar-section
-		button.LFM-sbar-section-header(:aria-expanded="!collapsed['network']" @click="toggleSection('network')")
-			IconChevronRight.LFM-sbar-chevron(:class="{ 'LFM-sbar-chevron--collapsed': collapsed['network'] }")
-			IconNetwork.mr-2.text-xs
-			span Network
+		SidebarSectionHeader(
+			title="Network"
+			:isCollapsed="!!collapsed['network']"
+			:icon="IconNetwork"
+			@toggle="toggleSection('network')"
+		)
 
 	.LFM-sbar-section
-		button.LFM-sbar-section-header(:aria-expanded="!collapsed['wsl']" @click="toggleSection('wsl')")
-			IconChevronRight.LFM-sbar-chevron(:class="{ 'LFM-sbar-chevron--collapsed': collapsed['wsl'] }")
-			IconLinux.mr-2.text-xs
-			span Linux Containers
+		SidebarSectionHeader(
+			title="Linux Containers"
+			:isCollapsed="!!collapsed['wsl']"
+			:icon="IconLinux"
+			@toggle="toggleSection('wsl')"
+		)
 
 	.LFM-sbar-section
-		button.LFM-sbar-section-header(:aria-expanded="!collapsed['tags']" @click="toggleSection('tags')")
-			IconChevronRight.LFM-sbar-chevron(:class="{ 'LFM-sbar-chevron--collapsed': collapsed['tags'] }")
-			IconLabel.mr-2.text-xs
-			span Tags
+		SidebarSectionHeader(
+			title="Tags"
+			:isCollapsed="!!collapsed['tags']"
+			:icon="IconLabel"
+			@toggle="toggleSection('tags')"
+		)
 </template>
 
 <style scoped lang="sass">
@@ -203,150 +230,11 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 	overflow-y: auto
 	overflow-x: hidden
 
-.LFM-sbar-item
-	display: flex
-	align-items: center
-	gap: 12px
-	min-height: 36px
-	padding: 0 12px
-	border-radius: 8px
-	cursor: pointer
-	text-decoration: none
-	color: var(--color-base-content)
-	transition: all 150ms ease
-	position: relative
-	margin: 1px 8px
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-
-	&--active
-		background: color-mix(in srgb, var(--color-primary) 12%, transparent)
-		color: var(--color-primary)
-		font-weight: 600
-
-		&::before
-			content: ''
-			position: absolute
-			left: -8px
-			top: 6px
-			bottom: 6px
-			width: 4px
-			background: var(--color-primary)
-			border-radius: 0 4px 4px 0
-			box-shadow: 0 0 10px var(--color-primary)
-
-	&--home,
-	&--trash
-		margin-bottom: 2px
-		height: 38px
-
-		.LFM-sbar-icon
-			font-size: 20px
-
-		.LFM-sbar-label
-			font-size: 14px
-			font-weight: 700
-
-.LFM-sbar-item--drive,
-.LFM-sbar-item--locations
-	align-items: flex-start
-	padding-block: 7px
-
-.LFM-sbar-drive-copy
-	display: grid
-	gap: 2px
-	min-width: 0
-	flex: 1
-
-.LFM-sbar-item--locations
-	margin: 0 8px 4px
-	padding-block: 10px
-
-	.LFM-sbar-label
-		font-weight: 600
-
-	.LFM-sbar-meta
-		color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-		font-size: 11px
-		font-weight: 500
-		line-height: 1.2
-		text-overflow: ellipsis
-		white-space: nowrap
-
-.LFM-sbar-meta
-	overflow: hidden
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	font-size: 11px
-	font-weight: 500
-	line-height: 1.2
-	text-overflow: ellipsis
-	white-space: nowrap
-
 .LFM-sbar-top
 	padding-bottom: 8px
 	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	margin-bottom: 8px
 
-.LFM-sbar-icon
-	display: flex
-	align-items: center
-	justify-content: center
-	width: 20px
-	flex-shrink: 0
-	font-size: 18px
-
-.LFM-material-drive-icon
-	width: 20px
-	height: 20px
-
-.LFM-sbar-label
-	flex: 1
-	white-space: nowrap
-	overflow: hidden
-	text-overflow: ellipsis
-
-.LFM-sbar-pin
-	opacity: 0
-	font-size: 14px
-	transition: opacity 150ms
-	color: var(--color-base-content)
-
-.LFM-sbar-item:hover .LFM-sbar-pin
-	opacity: 0.4
-
 .LFM-sbar-section
 	margin-top: 8px
-
-.LFM-sbar-section-header
-	display: flex
-	align-items: center
-	gap: 6px
-	width: calc(100% - 16px)
-	height: 28px
-	padding: 0 8px
-	background: transparent
-	border: none
-	cursor: pointer
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	font-size: 11px
-	font-weight: 700
-	text-transform: uppercase
-	letter-spacing: 0.5px
-	text-align: left
-	transition: all 150ms ease
-	border-radius: 6px
-	margin: 0 8px
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-		color: var(--color-base-content)
-
-.LFM-sbar-chevron
-	font-size: 14px
-	transition: transform 150ms ease
-	transform: rotate(90deg)
-
-	&--collapsed
-		transform: rotate(0deg)
 </style>

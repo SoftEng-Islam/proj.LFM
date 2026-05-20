@@ -34,13 +34,13 @@ const { config } = storeToRefs(configStore);
 	align-items: center
 	justify-content: center
 	width: 46px
-	height: 36px
+	height: 100%
 	background: transparent
 	border: none
 	cursor: pointer
 	color: var(--color-base-content)
 	transition: all 150ms ease
-	font-size: 18px
+	font-size: 16px
 
 	&:hover
 		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)

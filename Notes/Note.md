@@ -1,12 +1,7 @@
 # Just Note
 
 1. Font-End (VueJs) and Style Stuff
-   1. [] Preloader must have animation that related to the files and drives.
-   2. [] Separate `src/features/navigation/components/SidebarNavigation.vue` into a small components.
-   3. [] Separate the `src/layouts/AppLayout.vue` into a small components.
    4. [] Make sure that all vue files uses the tailwindcss.
-   5. [] I want the Icons In "src/features/storage/views/DrivesOverviewView.vue" in the LFM-drive-card to by dynamic like in `src/features/navigation/components/SidebarNavigation.vue` in drives section, so if drive/path is Usb it takes IconUsb, if HardDisk it takes IconHardDisk, etc...
-   6. Replace drive-card SVGs to use the shared `fileIcons.getDriveIconKey` / `LFM-sbar-icon`.
    7. [] The `src/components`, `src/features` and `src/layouts` are very confusing for me
       - [] plan and fix this confusing.
    8. [] AppHeader `src/layouts/components/AppHeader` Improvements:
@@ -36,9 +31,9 @@
 
 ## Technical List
 
-1. Support to Hide/Show MOUNT_POINTS.
-2. The hidden "Folders and Files" in **linux** starts with '.', So we must make sure these hidden items have a different style and effect like opacity or dim, so we can release(see) them fast.
-3. The app must watch the configs in `~/.config/LFM` so when the user change the config, the app reload the new configs. also the settings view and the configs both are the same thing and we must make a schema so both the vue/rust and settings and config file follow it. I mean when we add new option into the schema file its will give us an error in the front-end (vue) if we don't use it, Also the rust side will do the same thing. The settings view must follow the config file, and settings view can update the config file.
+1. The app must watch the configs in `~/.config/LFM` so when the user change the config, the app reload the new configs. also the settings view and the configs both are the same thing and we must make a schema so both the vue/rust and settings and config file follow it. I mean when we add new option into the schema file its will give us an error in the front-end (vue) if we don't use it, Also the rust side will do the same thing. The settings view must follow the config file, and settings view can update the config file.
+2. Support to Hide/Show MOUNT_POINTS.
+3. The hidden "Folders and Files" in **linux** starts with '.', So we must make sure these hidden items have a different style and effect like opacity or dim, so we can release(see) them fast.
 4. The keyboard shortcuts
    1. Create a schema for the keyboard key binding.
    2. Centralized keyboard actions for panels, so the ESC can close any window.

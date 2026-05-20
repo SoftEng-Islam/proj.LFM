@@ -95,9 +95,8 @@ function handleNewTab() {
 .LFM-tab-row
 	display: flex
 	align-items: stretch
-	height: 36px
+	height: 46px
 	background: var(--color-base-300)
-	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	flex-shrink: 0
 	user-select: none
 
@@ -112,34 +111,58 @@ function handleNewTab() {
 	align-items: center
 	min-width: 140px
 	max-width: 220px
-	height: 32px
-	margin-top: 4px
-	padding: 0 8px
+	height: 38px
+	margin-top: 8px
+	padding: 0 12px
 	cursor: pointer
 	color: var(--color-base-content)
 	text-decoration: none
 	border-radius: 8px 8px 0 0
-	transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1)
+	transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1)
 	position: relative
 	font-size: 12px
+	border: 1px solid transparent
+	border-bottom: none
+
+	// Tab separator line
+	&::after
+		content: ''
+		position: absolute
+		right: 0
+		top: 25%
+		bottom: 25%
+		width: 1px
+		background: color-mix(in srgb, var(--color-base-content) 12%, transparent)
+		transition: opacity 150ms ease
 
 	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+		background: color-mix(in srgb, var(--color-base-content) 4%, transparent)
 
 	&--active
 		background: var(--color-base-100)
 		z-index: 2
-		color: hsl(var(--p))
+		color: var(--color-primary)
+		font-weight: 600
+		border-color: color-mix(in srgb, var(--color-base-content) 8%, transparent)
+		box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04)
 
-		&::after
+		// Top Windows-style accent line
+		&::before
 			content: ''
 			position: absolute
-			bottom: -1px
+			top: 0
 			left: 0
 			right: 0
 			height: 3px
-			background: hsl(var(--p))
-			box-shadow: 0 -2px 12px hsl(var(--p) / 0.5)
+			background: var(--color-primary)
+			border-radius: 8px 8px 0 0
+			box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 40%, transparent)
+
+	// Hide separator on hovered or active tabs
+	&--active::after,
+	&:hover::after,
+	&--active + &::after
+		opacity: 0
 
 .LFM-tab-content
 	display: flex
@@ -162,20 +185,20 @@ function handleNewTab() {
 	display: flex
 	align-items: center
 	justify-content: center
-	width: 20px
-	height: 20px
+	width: 18px
+	height: 18px
 	border-radius: 4px
 	background: transparent
 	border: none
 	cursor: pointer
 	color: var(--color-base-content)
-	font-size: 14px
+	font-size: 12px
 	opacity: 0
 	transition: all 150ms ease
 
 	&:hover
-		background: rgba(255, 255, 255, 0.1)
-		color: #f87171
+		background: color-mix(in srgb, var(--color-base-content) 15%, transparent)
+		color: var(--color-error)
 
 .LFM-tab:hover .LFM-tab-close
 	opacity: 0.6
@@ -189,7 +212,9 @@ function handleNewTab() {
 	justify-content: center
 	width: 28px
 	height: 28px
-	margin: 4px 6px 0
+	margin-top: 12px
+	margin-left: 6px
+	margin-right: 6px
 	border-radius: 6px
 	background: transparent
 	border: none
@@ -199,7 +224,7 @@ function handleNewTab() {
 	transition: all 150ms ease
 
 	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+		background: color-mix(in srgb, var(--color-base-content) 8%, transparent)
 
 .LFM-tab-drag
 	flex: 1
@@ -207,9 +232,9 @@ function handleNewTab() {
 
 // Animations
 .tab-list-enter-active, .tab-list-leave-active
-	transition: all 300ms ease
+	transition: all 250ms ease
 
 .tab-list-enter-from, .tab-list-leave-to
 	opacity: 0
-	transform: translateY(-10px) scale(0.9)
+	transform: translateY(-8px) scale(0.95)
 </style>
