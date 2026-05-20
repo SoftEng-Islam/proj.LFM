@@ -266,8 +266,8 @@ async function triggerPaste() {
 @reference "tailwindcss"
 
 .LFM-toolbar
-	border-bottom: 1px solid var(--LFM-border)
-	background: var(--LFM-toolbar)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	background: var(--color-base-300)
 	flex-shrink: 0
 
 .LFM-ribbon
@@ -287,7 +287,7 @@ async function triggerPaste() {
 .LFM-ribbon-sep
 	width: 1px
 	height: 24px
-	background: var(--LFM-border)
+	background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	margin: 0 6px
 	opacity: 0.5
 
@@ -302,30 +302,30 @@ async function triggerPaste() {
 	background: transparent
 	border: none
 	cursor: pointer
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	font-size: 18px
 	transition: all 150ms ease
 	white-space: nowrap
 
 	&:hover
-		background: var(--LFM-hover)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 
 	&:active
-		background: var(--LFM-active)
+		background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
 
 	&--active
-		background: var(--LFM-blue-subtle)
-		color: var(--LFM-blue)
+		background: color-mix(in srgb, var(--color-primary) 12%, transparent)
+		color: var(--color-primary)
 
 	&--new
 		font-weight: 600
-		background: var(--LFM-panel)
-		border: 1px solid var(--LFM-border)
+		background: var(--color-base-100)
+		border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 		padding: 0 12px
 		@apply shadow-sm
 
 	&--dropdown
-		border: 1px solid var(--LFM-border)
+		border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 		font-size: 16px
 
 .LFM-ribbon-btn-icon
@@ -344,8 +344,8 @@ async function triggerPaste() {
 	top: 100%
 	left: 0
 	margin-top: 4px
-	background: var(--LFM-panel)
-	border: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	border-radius: 8px
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15)
 	padding: 4px
@@ -362,21 +362,21 @@ async function triggerPaste() {
 	background: transparent
 	border: none
 	cursor: pointer
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	font-size: 13px
 	text-align: left
 	transition: background 150ms
 
 	&:hover
-		background: var(--LFM-hover)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 
 .LFM-filter-input
 	width: 100%
 	padding: 8px 12px
-	border: 1px solid var(--LFM-border)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	border-radius: 4px
-	background: var(--LFM-bg)
-	color: var(--LFM-text)
+	background: var(--color-base-200)
+	color: var(--color-base-content)
 	font-size: 13px
 	outline: none
 
@@ -384,12 +384,12 @@ async function triggerPaste() {
 		border-color: hsl(var(--p))
 
 .LFM-dropdown-item--active
-	background: var(--LFM-blue-subtle)
+	background: color-mix(in srgb, var(--color-primary) 12%, transparent)
 	color: hsl(var(--p))
 	font-weight: 600
 
 .LFM-dropdown-divider
 	height: 1px
-	background: var(--LFM-border)
+	background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	margin: 4px
 </style>

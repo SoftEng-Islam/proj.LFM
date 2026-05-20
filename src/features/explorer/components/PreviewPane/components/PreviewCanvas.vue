@@ -1,10 +1,11 @@
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * PreviewCanvas — Section 1 of the Preview Pane.
  *
  * Renders an immersive media canvas appropriate for the selected item:
  *  - Image: full-resolution preview
- *  - Video: native video element with poster thumbnail and play overlay
+ *  - Video: Premium Video Player using @videojs-player/vue
  *  - Audio: waveform icon with native audio controls
  *  - Directory / other: icon placeholder
  *
@@ -24,6 +25,7 @@ import IconEdit from '~icons/material-symbols/edit';
 
 import type { FileEntry } from '@/types/file-manager';
 import { convertFileSrc } from '@/services/tauri-bridge';
+import VideoPreview from '@/features/explorer/components/VideoPreview.vue';
 
 // ── Props / emits ───────────────────────────────────────────────────────────
 
@@ -89,23 +91,8 @@ div(class="relative w-full min-h-[240px] rounded-2xl overflow-hidden bg-(--color
 		img(:src="previewSrc" class="max-w-full max-h-[420px] object-contain drop-shadow-2xl")
 
 	//- Video preview
-	div(v-else-if="isVideo && previewSrc" class="group/media relative w-full h-full flex items-center justify-center bg-transparent")
-		img(v-if="thumbnailSrc" :src="thumbnailSrc" class="absolute inset-0 w-full h-full object-cover opacity-20 blur-md pointer-events-none")
-		video(
-			ref="videoRef"
-			:key="previewSrc"
-			:src="previewSrc"
-			:poster="thumbnailSrc"
-			playsinline
-			class="w-full max-h-[420px]"
-			preload="metadata"
-			@play="isPlaying = true"
-			@pause="isPlaying = false"
-			@loadedmetadata="isLoading = false"
-		)
-		button(v-show="!isPlaying" @click="togglePlay" class="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover/media:opacity-100 transition-opacity")
-			div(class="p-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white")
-				IconPlay(class="text-4xl")
+	div(v-else-if="isVideo && previewSrc" class="w-full h-full flex items-center justify-center bg-transparent")
+		VideoPreview(:path="item.id")
 
 	//- Audio preview
 	div(v-else-if="isAudio && previewSrc" class="w-full p-8 flex flex-col items-center gap-4 bg-(--color-base-100)/20")

@@ -190,140 +190,117 @@ const menuItems = computed(() => {
 });
 </script>
 
-<template>
-	<Teleport to="body">
-		<div ref="menuRef" class="LFM-context-menu" :style="{ left: `${x}px`, top: `${y}px` }" role="menu">
-			<div class="LFM-context-toolbar">
-				<button v-for="cmd in commandActions" :key="cmd.title" class="LFM-context-cmd" :class="{ 'LFM-context-cmd--disabled': cmd.disabled }" :title="cmd.title" :disabled="cmd.disabled" @click="cmd.action">
-					<component :is="cmd.icon" class="LFM-context-cmd-icon" />
-				</button>
-			</div>
+<template lang="pug">
+Teleport(to="body")
+	div(ref="menuRef" class="LFM-context-menu" :style="{ left: `${x}px`, top: `${y}px` }" role="menu")
+		div(class="LFM-context-toolbar")
+			button(v-for="cmd in commandActions" :key="cmd.title" class="LFM-context-cmd" :class="{ 'LFM-context-cmd--disabled': cmd.disabled }" :title="cmd.title" :disabled="cmd.disabled" @click="cmd.action")
+				component(:is="cmd.icon" class="LFM-context-cmd-icon")
 
-			<div class="LFM-context-divider" />
+		div(class="LFM-context-divider")
 
-			<template v-for="(item, i) in menuItems" :key="i">
-				<div v-if="'divider' in item && item.divider" class="LFM-context-divider" />
-				<button v-else-if="'label' in item" class="LFM-context-item" :class="{ 'LFM-context-item--disabled': item.disabled }" role="menuitem" :disabled="item.disabled" @click="item.action && item.action()">
-					<component :is="item.icon" class="LFM-context-item-icon" />
-					<span class="LFM-context-item-label">{{ item.label }}</span>
-					<span v-if="'hasArrow' in item && item.hasArrow" class="LFM-context-item-arrow">›</span>
-				</button>
-			</template>
-		</div>
-	</Teleport>
+		template(v-for="(item, i) in menuItems" :key="i")
+			div(v-if="'divider' in item && item.divider" class="LFM-context-divider")
+			button(v-else-if="'label' in item" class="LFM-context-item" :class="{ 'LFM-context-item--disabled': item.disabled }" role="menuitem" :disabled="item.disabled" @click="item.action && item.action()")
+				component(:is="item.icon" class="LFM-context-item-icon")
+				span(class="LFM-context-item-label") {{ item.label }}
+				span(v-if="'hasArrow' in item && item.hasArrow" class="LFM-context-item-arrow") ›
 </template>
 
-<style scoped lang="scss">
-@reference "tailwindcss";
+<style lang="sass" scoped>
+@reference "tailwindcss"
 
-.LFM-context-menu {
-	position: fixed;
-	z-index: 9999;
-	min-width: 260px;
-	background: var(--LFM-context-bg);
-	backdrop-filter: blur(12px);
-	border: 1px solid var(--LFM-context-border);
-	border-radius: 12px;
-	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-	padding: 6px;
-	color: var(--LFM-context-text);
-	font-size: 13px;
-	user-select: none;
-	animation: menu-pop 150ms ease-out;
-}
+.LFM-context-menu
+  position: fixed
+  z-index: 9999
+  min-width: 260px
+  background: var(--color-base-100)
+  backdrop-filter: blur(12px)
+  border: 1px solid color-mix(in srgb, var(--color-base-content) 12%, transparent)
+  border-radius: 12px
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4)
+  padding: 6px
+  color: var(--color-base-content)
+  font-size: 13px
+  user-select: none
+  animation: menu-pop 150ms ease-out
 
-@keyframes menu-pop {
-	from {
-		opacity: 0;
-		transform: scale(0.95) translateY(-10px);
-	}
+@keyframes menu-pop
+  from
+    opacity: 0
+    transform: scale(0.95) translateY(-10px)
+  to
+    opacity: 1
+    transform: scale(1) translateY(0)
 
-	to {
-		opacity: 1;
-		transform: scale(1) translateY(0);
-	}
-}
+.LFM-context-toolbar
+  display: flex
+  align-items: center
+  justify-content: space-around
+  padding: 4px
 
-.LFM-context-toolbar {
-	display: flex;
-	align-items: center;
-	justify-content: space-around;
-	padding: 4px;
-}
+.LFM-context-cmd
+  display: flex
+  align-items: center
+  justify-content: center
+  width: 36px
+  height: 36px
+  border-radius: 8px
+  background: transparent
+  border: none
+  cursor: pointer
+  color: var(--color-base-content)
+  transition: all 150ms ease
 
-.LFM-context-cmd {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 36px;
-	height: 36px;
-	border-radius: 8px;
-	background: transparent;
-	border: none;
-	cursor: pointer;
-	color: var(--LFM-context-text);
-	transition: all 150ms ease;
+  &:hover:not(:disabled)
+    background: color-mix(in srgb, var(--color-base-content) 8%, transparent)
+    color: var(--color-primary)
 
-	&:hover:not(:disabled) {
-		background: var(--LFM-context-hover);
-		color: var(--LFM-blue);
-	}
+  &--disabled
+    opacity: 0.3
+    cursor: default
 
-	&--disabled {
-		opacity: 0.3;
-		cursor: default;
-	}
-}
+.LFM-context-cmd-icon
+  font-size: 18px
 
-.LFM-context-cmd-icon {
-	font-size: 18px;
-}
+.LFM-context-divider
+  height: 1px
+  background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
+  margin: 6px 4px
+  opacity: 0.6
 
-.LFM-context-divider {
-	height: 1px;
-	background: var(--LFM-context-divider);
-	margin: 6px 4px;
-	opacity: 0.6;
-}
+.LFM-context-item
+  display: flex
+  align-items: center
+  gap: 12px
+  width: 100%
+  padding: 8px 12px
+  border-radius: 6px
+  background: transparent
+  border: none
+  cursor: pointer
+  color: var(--color-base-content)
+  text-align: left
+  transition: all 150ms ease
 
-.LFM-context-item {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	width: 100%;
-	padding: 8px 12px;
-	border-radius: 6px;
-	background: transparent;
-	border: none;
-	cursor: pointer;
-	color: var(--LFM-context-text);
-	text-align: left;
-	transition: all 150ms ease;
+  &:hover:not(:disabled)
+    background: color-mix(in srgb, var(--color-base-content) 8%, transparent)
 
-	&:hover:not(:disabled) {
-		background: var(--LFM-context-hover);
-	}
+  &--disabled
+    opacity: 0.4
+    cursor: default
 
-	&--disabled {
-		opacity: 0.4;
-		cursor: default;
-	}
-}
+.LFM-context-item-icon
+  font-size: 18px
+  width: 20px
+  text-align: center
+  flex-shrink: 0
+  opacity: 0.8
 
-.LFM-context-item-icon {
-	font-size: 18px;
-	width: 20px;
-	text-align: center;
-	flex-shrink: 0;
-	opacity: 0.8;
-}
+.LFM-context-item-label
+  flex: 1
 
-.LFM-context-item-label {
-	flex: 1;
-}
-
-.LFM-context-item-arrow {
-	opacity: 0.4;
-	font-size: 16px;
-}
+.LFM-context-item-arrow
+  opacity: 0.4
+  font-size: 16px
 </style>

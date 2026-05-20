@@ -191,9 +191,9 @@ onMounted(() => {
 	display: flex
 	flex-direction: column
 	height: 100%
-	background: var(--LFM-panel)
+	background: var(--color-base-100)
 	border-radius: 12px
-	border: 1px solid var(--LFM-border)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	overflow: hidden
 
 .LFM-code-header
@@ -201,14 +201,14 @@ onMounted(() => {
 	align-items: center
 	justify-content: space-between
 	padding: 12px 16px
-	background: var(--LFM-panel)
-	border-bottom: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	gap: 12px
 
 .LFM-code-title
 	font-size: 12px
 	font-weight: 600
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	text-overflow: ellipsis
 	overflow: hidden
 	white-space: nowrap
@@ -219,8 +219,8 @@ onMounted(() => {
 	height: 28px
 	border-radius: 6px
 	background: transparent
-	border: 1px solid var(--LFM-border)
-	color: var(--LFM-text-muted)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	cursor: pointer
 	display: flex
 	align-items: center
@@ -229,8 +229,8 @@ onMounted(() => {
 	flex-shrink: 0
 
 	&:hover
-		background: var(--LFM-hover)
-		color: var(--LFM-text)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+		color: var(--color-base-content)
 
 	&:active
 		transform: scale(0.95)
@@ -250,15 +250,15 @@ onMounted(() => {
 	align-items: center
 	justify-content: center
 	height: 100%
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	font-size: 12px
 	gap: 8px
 
 .LFM-code-spinner
 	width: 20px
 	height: 20px
-	border: 2px solid var(--LFM-border)
-	border-top: 2px solid var(--LFM-blue)
+	border: 2px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	border-top: 2px solid var(--color-primary)
 	border-radius: 50%
 	animation: spin 1s linear infinite
 
@@ -291,7 +291,7 @@ onMounted(() => {
 		display: inline-block
 		width: 32px
 		margin-right: 12px
-		color: var(--LFM-text-muted)
+		color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 		text-align: right
 		user-select: none
 		opacity: 0.6
@@ -302,7 +302,7 @@ onMounted(() => {
 	// Highlight.js overrides
 	:deep(.hljs)
 		background: transparent
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(.hljs-keyword)
 		color: #d73a49
@@ -327,10 +327,10 @@ onMounted(() => {
 
 .LFM-code-truncated
 	padding: 8px 16px
-	background: var(--LFM-panel)
-	border-top: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	font-size: 11px
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	text-align: center
 	font-style: italic
 </style>

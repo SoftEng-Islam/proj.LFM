@@ -80,7 +80,7 @@ onMounted(() => {
 	background: white
 	color: #333
 	border-radius: 12px
-	border: 1px solid var(--LFM-border)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	overflow: hidden
 
 .LFM-office-header

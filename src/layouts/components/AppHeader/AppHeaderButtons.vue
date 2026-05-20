@@ -38,12 +38,12 @@ const { config } = storeToRefs(configStore);
 	background: transparent
 	border: none
 	cursor: pointer
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	transition: all 150ms ease
 	font-size: 18px
 
 	&:hover
-		background: var(--LFM-hover)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 
 	&--close:hover
 		background: #e81123

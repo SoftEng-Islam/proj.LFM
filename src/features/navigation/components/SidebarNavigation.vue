@@ -197,7 +197,7 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 	height: 100%
 	padding: 8px 0
 	font-size: 13px
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	overflow-y: auto
 	overflow-x: hidden
 
@@ -210,17 +210,17 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 	border-radius: 8px
 	cursor: pointer
 	text-decoration: none
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	transition: all 150ms ease
 	position: relative
 	margin: 1px 8px
 
 	&:hover
-		background: var(--LFM-hover)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 
 	&--active
-		background: var(--LFM-blue-subtle)
-		color: var(--LFM-blue)
+		background: color-mix(in srgb, var(--color-primary) 12%, transparent)
+		color: var(--color-primary)
 		font-weight: 600
 
 		&::before
@@ -230,9 +230,9 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 			top: 6px
 			bottom: 6px
 			width: 4px
-			background: var(--LFM-blue)
+			background: var(--color-primary)
 			border-radius: 0 4px 4px 0
-			box-shadow: 0 0 10px var(--LFM-blue)
+			box-shadow: 0 0 10px var(--color-primary)
 
 	&--home,
 	&--trash
@@ -265,7 +265,7 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 		font-weight: 600
 
 	.LFM-sbar-meta
-		color: var(--LFM-text-muted)
+		color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 		font-size: 11px
 		font-weight: 500
 		line-height: 1.2
@@ -274,7 +274,7 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 
 .LFM-sbar-meta
 	overflow: hidden
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	font-size: 11px
 	font-weight: 500
 	line-height: 1.2
@@ -283,7 +283,7 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 
 .LFM-sbar-top
 	padding-bottom: 8px
-	border-bottom: 1px solid var(--LFM-border)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	margin-bottom: 8px
 
 .LFM-sbar-icon
@@ -308,7 +308,7 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 	opacity: 0
 	font-size: 14px
 	transition: opacity 150ms
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 
 .LFM-sbar-item:hover .LFM-sbar-pin
 	opacity: 0.4
@@ -326,7 +326,7 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 	background: transparent
 	border: none
 	cursor: pointer
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	font-size: 11px
 	font-weight: 700
 	text-transform: uppercase
@@ -337,8 +337,8 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 	margin: 0 8px
 
 	&:hover
-		background: var(--LFM-hover)
-		color: var(--LFM-text)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+		color: var(--color-base-content)
 
 .LFM-sbar-chevron
 	font-size: 14px

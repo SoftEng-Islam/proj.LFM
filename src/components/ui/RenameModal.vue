@@ -223,8 +223,8 @@ div.LFM-modal-overlay(v-if="state.visible" @click.self="emit('close')")
 }
 
 .LFM-modal {
-	background: var(--LFM-panel);
-	border: 1px solid var(--LFM-border);
+	background: var(--color-base-100);
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
 	border-radius: 12px;
 	width: 400px;
 	padding: 20px;
@@ -242,7 +242,7 @@ div.LFM-modal-overlay(v-if="state.visible" @click.self="emit('close')")
 	font-size: 16px;
 	font-weight: 600;
 	margin-bottom: 16px;
-	color: var(--LFM-text);
+	color: var(--color-base-content);
 }
 
 .LFM-modal-body {
@@ -251,32 +251,32 @@ div.LFM-modal-overlay(v-if="state.visible" @click.self="emit('close')")
 
 .LFM-modal-input {
 	width: 100%;
-	background: var(--LFM-input-bg, rgba(255, 255, 255, 0.05));
-	border: 1px solid var(--LFM-border);
+	background: color-mix(in srgb, var(--color-base-content) 5%, transparent);
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
 	border-radius: 6px;
 	padding: 8px 12px;
-	color: var(--LFM-text);
+	color: var(--color-base-content);
 	font-size: 14px;
 	outline: none;
 
 	&:focus {
-		border-color: var(--LFM-blue);
+		border-color: var(--color-primary);
 		box-shadow: 0 0 0 2px rgba(43, 124, 211, 0.2);
 	}
 }
 
 .LFM-modal-select {
 	width: 100%;
-	background: var(--LFM-input-bg, rgba(255, 255, 255, 0.05));
-	border: 1px solid var(--LFM-border);
+	background: color-mix(in srgb, var(--color-base-content) 5%, transparent);
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
 	border-radius: 6px;
 	padding: 8px 12px;
-	color: var(--LFM-text);
+	color: var(--color-base-content);
 	font-size: 14px;
 	outline: none;
 
 	&:focus {
-		border-color: var(--LFM-blue);
+		border-color: var(--color-primary);
 		box-shadow: 0 0 0 2px rgba(43, 124, 211, 0.2);
 	}
 }
@@ -292,21 +292,21 @@ div.LFM-modal-overlay(v-if="state.visible" @click.self="emit('close')")
 	padding: 8px 16px;
 	border-radius: 6px;
 	background: transparent;
-	border: 1px solid var(--LFM-border);
-	color: var(--LFM-text);
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+	color: var(--color-base-content);
 	font-size: 13px;
 	font-weight: 500;
 	cursor: pointer;
 	transition: all 150ms ease;
 
 	&--active {
-		background: var(--LFM-blue);
-		border-color: var(--LFM-blue);
+		background: var(--color-primary);
+		border-color: var(--color-primary);
 		color: white;
 	}
 
 	&:hover:not(.LFM-rename-tab--active) {
-		background: var(--LFM-hover);
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
 	}
 }
 
@@ -334,13 +334,13 @@ div.LFM-modal-overlay(v-if="state.visible" @click.self="emit('close')")
 .LFM-form-label {
 	font-size: 12px;
 	font-weight: 500;
-	color: var(--LFM-text);
+	color: var(--color-base-content);
 	opacity: 0.8;
 }
 
 .LFM-form-hint {
 	font-size: 11px;
-	color: var(--LFM-text);
+	color: var(--color-base-content);
 	opacity: 0.5;
 	margin-top: 2px;
 }
@@ -348,14 +348,14 @@ div.LFM-modal-overlay(v-if="state.visible" @click.self="emit('close')")
 .LFM-preview-section {
 	margin-top: 20px;
 	padding-top: 20px;
-	border-top: 1px solid var(--LFM-border);
+	border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
 }
 
 .LFM-preview-title {
 	font-size: 13px;
 	font-weight: 600;
 	margin-bottom: 12px;
-	color: var(--LFM-text);
+	color: var(--color-base-content);
 }
 
 .LFM-preview-list {
@@ -372,13 +372,13 @@ div.LFM-modal-overlay(v-if="state.visible" @click.self="emit('close')")
 	gap: 12px;
 	padding: 8px;
 	border-radius: 6px;
-	background: var(--LFM-hover);
+	background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
 }
 
 .LFM-preview-name {
 	flex: 1;
 	font-size: 12px;
-	color: var(--LFM-text);
+	color: var(--color-base-content);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -397,7 +397,7 @@ div.LFM-modal-overlay(v-if="state.visible" @click.self="emit('close')")
 }
 
 .LFM-preview-arrow {
-	color: var(--LFM-text);
+	color: var(--color-base-content);
 	opacity: 0.4;
 	font-size: 14px;
 }
@@ -420,15 +420,15 @@ div.LFM-modal-overlay(v-if="state.visible" @click.self="emit('close')")
 
 	&--secondary {
 		background: transparent;
-		color: var(--LFM-text);
+		color: var(--color-base-content);
 
 		&:hover {
-			background: var(--LFM-hover);
+			background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
 		}
 	}
 
 	&--primary {
-		background: var(--LFM-blue);
+		background: var(--color-primary);
 		color: white;
 
 		&:hover {

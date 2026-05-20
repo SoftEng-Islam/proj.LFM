@@ -359,9 +359,9 @@ Teleport(to="body")
 	max-width: 1000px
 	height: 100%
 	max-height: 800px
-	background: var(--LFM-panel)
+	background: var(--color-base-100)
 	border-radius: 16px
-	border: 1px solid var(--LFM-border)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	display: flex
 	flex-direction: column
 	box-shadow: 0 30px 60px -12px rgba(0,0,0,0.5), 0 18px 36px -18px rgba(0,0,0,0.5)
@@ -379,8 +379,8 @@ Teleport(to="body")
 	align-items: center
 	justify-content: space-between
 	padding: 12px 16px
-	background: var(--LFM-panel)
-	border-bottom: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	flex-shrink: 0
 
 .LFM-expanded-title-group
@@ -394,7 +394,7 @@ Teleport(to="body")
 .LFM-expanded-title
 	font-size: 14px
 	font-weight: 700
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 
 .LFM-expanded-actions
 	display: flex
@@ -408,19 +408,19 @@ Teleport(to="body")
 	display: flex
 	align-items: center
 	justify-content: center
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	transition: all 200ms ease
 	cursor: pointer
 	background: transparent
 	border: none
 
 	&:hover
-		background: var(--LFM-hover)
-		color: var(--LFM-text)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+		color: var(--color-base-content)
 
 	&.is-active
-		background: var(--LFM-blue-subtle)
-		color: var(--LFM-blue)
+		background: color-mix(in srgb, var(--color-primary) 12%, transparent)
+		color: var(--color-primary)
 
 	&--close:hover
 		background: #ef4444
@@ -429,7 +429,7 @@ Teleport(to="body")
 .LFM-divider-v
 	width: 1px
 	height: 20px
-	background: var(--LFM-border)
+	background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	margin: 0 4px
 
 .LFM-expanded-body
@@ -474,7 +474,7 @@ Teleport(to="body")
 
 .LFM-crop-box
 	position: absolute
-	border: 2px dashed var(--LFM-blue)
+	border: 2px dashed var(--color-primary)
 	background: transparent
 	box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5)
 	pointer-events: auto
@@ -483,7 +483,7 @@ Teleport(to="body")
 	position: absolute
 	bottom: -32px
 	right: -2px
-	background: var(--LFM-blue)
+	background: var(--color-primary)
 	color: white
 	border: none
 	border-radius: 4px
@@ -512,7 +512,7 @@ Teleport(to="body")
 	outline: none
 
 .LFM-expanded-fallback
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	font-size: 14px
 
 .LFM-editor-container
@@ -520,12 +520,12 @@ Teleport(to="body")
 	height: 100%
 	display: flex
 	flex-direction: column
-	background: var(--LFM-bg)
+	background: var(--color-base-200)
 
 .LFM-editor-header
 	padding: 8px 16px
-	background: var(--LFM-panel)
-	border-bottom: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	display: flex
 	justify-content: space-between
 	align-items: center
@@ -537,13 +537,13 @@ Teleport(to="body")
 
 	&.is-split
 		.LFM-editor-textarea
-			border-right: 1px solid var(--LFM-border)
+			border-right: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 			width: 50%
 
 .LFM-editor-textarea
 	flex: 1
 	background: transparent
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	padding: 20px
 	font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace
 	font-size: 13px
@@ -554,18 +554,18 @@ Teleport(to="body")
 
 .LFM-editor-preview
 	flex: 1
-	background: var(--LFM-panel)
+	background: var(--color-base-100)
 	overflow: auto
 
 .LFM-expanded-footer
 	padding: 8px 16px
-	background: var(--LFM-panel)
-	border-top: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	display: flex
 	justify-content: space-between
 	align-items: center
 	font-size: 11px
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 
 .modal-fade-enter-active, .modal-fade-leave-active
 	transition: opacity 300ms ease
@@ -578,8 +578,8 @@ Teleport(to="body")
 	bottom: 24px
 	right: 24px
 	z-index: 9999
-	background: var(--LFM-panel)
-	border: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	border-radius: 24px
 	padding: 8px 12px 8px 16px
 	display: flex
@@ -592,7 +592,7 @@ Teleport(to="body")
 	&:hover
 		transform: translateY(-2px)
 		box-shadow: 0 14px 30px -5px rgba(0,0,0,0.5), 0 6px 14px -2px rgba(0,0,0,0.4)
-		border-color: var(--LFM-blue)
+		border-color: var(--color-primary)
 
 .LFM-pill-content
 	display: flex
@@ -602,7 +602,7 @@ Teleport(to="body")
 .LFM-pill-title
 	font-size: 13px
 	font-weight: 600
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	max-width: 200px
 	white-space: nowrap
 	overflow: hidden

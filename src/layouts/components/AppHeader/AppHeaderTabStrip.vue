@@ -96,8 +96,8 @@ function handleNewTab() {
 	display: flex
 	align-items: stretch
 	height: 36px
-	background: var(--LFM-title-bar)
-	border-bottom: 1px solid var(--LFM-border)
+	background: var(--color-base-300)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	flex-shrink: 0
 	user-select: none
 
@@ -116,7 +116,7 @@ function handleNewTab() {
 	margin-top: 4px
 	padding: 0 8px
 	cursor: pointer
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	text-decoration: none
 	border-radius: 8px 8px 0 0
 	transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1)
@@ -124,10 +124,10 @@ function handleNewTab() {
 	font-size: 12px
 
 	&:hover
-		background: var(--LFM-hover)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 
 	&--active
-		background: var(--LFM-panel)
+		background: var(--color-base-100)
 		z-index: 2
 		color: hsl(var(--p))
 
@@ -168,7 +168,7 @@ function handleNewTab() {
 	background: transparent
 	border: none
 	cursor: pointer
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	font-size: 14px
 	opacity: 0
 	transition: all 150ms ease
@@ -194,12 +194,12 @@ function handleNewTab() {
 	background: transparent
 	border: none
 	cursor: pointer
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	font-size: 18px
 	transition: all 150ms ease
 
 	&:hover
-		background: var(--LFM-hover)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 
 .LFM-tab-drag
 	flex: 1

@@ -25,6 +25,7 @@ use tauri::Listener;
 use tauri::Manager;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use zip::write::FileOptions;
+use crate::utils::decode_path;
 
 #[derive(serde::Serialize, Clone, Debug)]
 pub struct LnkData {
@@ -197,6 +198,8 @@ impl FileSystemUtils {
 /// Get properties of a file
 #[tauri::command]
 pub async fn get_file_properties(file_path: &str) -> Result<FileMetaData, String> {
+    let decoded = decode_path(file_path);
+    let file_path = decoded.as_str();
     let metadata = match fs::metadata(file_path) {
         Ok(result) => result,
         Err(e) => return Err(e.to_string()),
@@ -501,7 +504,10 @@ pub async fn remove_file(path: String) -> bool {
 #[tauri::command]
 #[inline]
 pub fn is_dir(path: &Path) -> Result<bool, String> {
-    if Path::new(path).exists() {
+    let path_str = path.to_string_lossy();
+    let decoded = decode_path(&path_str);
+    let path = Path::new(&decoded);
+    if path.exists() {
         Ok(fs::metadata(path).unwrap().is_dir())
     } else {
         Ok(false)
@@ -511,7 +517,8 @@ pub fn is_dir(path: &Path) -> Result<bool, String> {
 /// Read files and its information of a directory
 #[tauri::command]
 pub async fn read_directory(dir: String) -> Result<FolderInformation, String> {
-    let dir = std::path::Path::new(&dir);
+    let decoded_dir = decode_path(&dir);
+    let dir = std::path::Path::new(&decoded_dir);
     let preference = match storage::read_data("preference") {
         Ok(result) => result,
         Err(_) => return Err("Error reading preference".into()),
@@ -637,6 +644,8 @@ pub fn open_file(file_path: String, window: tauri::Window) -> bool {
 #[tauri::command]
 #[inline]
 pub fn file_exist(file_path: &str) -> bool {
+    let decoded = decode_path(file_path);
+    let file_path = decoded.as_str();
     fs::metadata(file_path).is_ok()
 }
 

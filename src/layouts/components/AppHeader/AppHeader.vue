@@ -24,8 +24,8 @@ header.LFM-app-header(data-tauri-drag-region)
 	display: flex
 	align-items: center
 	justify-content: space-between
-	background: var(--LFM-title-bar)
-	border-bottom: 1px solid var(--LFM-border)
+	background: var(--color-base-300)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	height: 40px
 	flex-shrink: 0
 	-webkit-app-region: drag

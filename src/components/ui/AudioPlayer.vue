@@ -170,9 +170,9 @@ watch(() => props.src, () => {
 	flex-direction: column
 	gap: 8px
 	padding: 12px
-	background: var(--LFM-panel)
+	background: var(--color-base-100)
 	border-radius: 12px
-	border: 1px solid var(--LFM-border)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	width: 100%
 
 .LFM-audio-controls
@@ -185,7 +185,7 @@ watch(() => props.src, () => {
 	width: 32px
 	height: 32px
 	border-radius: 8px
-	background: var(--LFM-blue)
+	background: var(--color-primary)
 	color: white
 	border: none
 	cursor: pointer
@@ -216,7 +216,7 @@ watch(() => props.src, () => {
 .LFM-audio-time
 	font-size: 11px
 	font-weight: 600
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	white-space: nowrap
 	width: 28px
 	text-align: center
@@ -226,7 +226,7 @@ watch(() => props.src, () => {
 	height: 4px
 	-webkit-appearance: none
 	appearance: none
-	background: linear-gradient(to right, var(--LFM-blue) 0%, var(--LFM-blue) calc(var(--value, 0) * 100%), var(--LFM-border) calc(var(--value, 0) * 100%), var(--LFM-border) 100%)
+	background: linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) calc(var(--value, 0) * 100%), color-mix(in srgb, var(--color-base-content) 10%, transparent) calc(var(--value, 0) * 100%), color-mix(in srgb, var(--color-base-content) 10%, transparent) 100%)
 	border-radius: 2px
 	cursor: pointer
 	border: none
@@ -238,7 +238,7 @@ watch(() => props.src, () => {
 		width: 12px
 		height: 12px
 		border-radius: 50%
-		background: var(--LFM-blue)
+		background: var(--color-primary)
 		cursor: pointer
 		transition: all 200ms ease
 
@@ -251,7 +251,7 @@ watch(() => props.src, () => {
 		width: 12px
 		height: 12px
 		border-radius: 50%
-		background: var(--LFM-blue)
+		background: var(--color-primary)
 		cursor: pointer
 		border: none
 		transition: all 200ms ease
@@ -264,7 +264,7 @@ watch(() => props.src, () => {
 .LFM-audio-bar
 	flex: 1
 	height: 4px
-	background: var(--LFM-border)
+	background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	border-radius: 2px
 
 .LFM-audio-volume
@@ -278,8 +278,8 @@ watch(() => props.src, () => {
 	height: 24px
 	border-radius: 6px
 	background: transparent
-	border: 1px solid var(--LFM-border)
-	color: var(--LFM-text-muted)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	cursor: pointer
 	display: flex
 	align-items: center
@@ -287,15 +287,15 @@ watch(() => props.src, () => {
 	transition: all 200ms ease
 
 	&:hover
-		background: var(--LFM-hover)
-		color: var(--LFM-text)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+		color: var(--color-base-content)
 
 .LFM-audio-volume-slider
 	width: 40px
 	height: 3px
 	-webkit-appearance: none
 	appearance: none
-	background: var(--LFM-border)
+	background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	border-radius: 2px
 	cursor: pointer
 	border: none
@@ -307,14 +307,14 @@ watch(() => props.src, () => {
 		width: 10px
 		height: 10px
 		border-radius: 50%
-		background: var(--LFM-text-muted)
+		background: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 		cursor: pointer
 
 	&::-moz-range-thumb
 		width: 10px
 		height: 10px
 		border-radius: 50%
-		background: var(--LFM-text-muted)
+		background: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 		cursor: pointer
 		border: none
 
@@ -323,15 +323,15 @@ watch(() => props.src, () => {
 		cursor: not-allowed
 
 	&:not(:disabled):hover::-webkit-slider-thumb
-		background: var(--LFM-text)
+		background: var(--color-base-content)
 
 	&:not(:disabled):hover::-moz-range-thumb
-		background: var(--LFM-text)
+		background: var(--color-base-content)
 
 .LFM-audio-title
 	font-size: 11px
 	font-weight: 600
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	text-align: center
 	text-overflow: ellipsis
 	overflow: hidden

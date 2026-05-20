@@ -2,6 +2,14 @@ use std::path::PathBuf;
 #[cfg(target_os = "windows")]
 use sysinfo::{System, SystemExt};
 
+/// Decodes a percent-encoded path string safely into a UTF-8 String.
+/// Leaves unencoded paths completely unchanged.
+pub fn decode_path(path: &str) -> String {
+    percent_encoding::percent_decode_str(path)
+        .decode_utf8_lossy()
+        .into_owned()
+}
+
 pub fn read_to_serde_json(path: PathBuf) -> serde_json::Value {
     let file: Result<serde_json::Value, serde_json::Error> =
         serde_json::from_str(std::fs::read_to_string(path).unwrap().as_str());

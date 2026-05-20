@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * FileIcon Component
+ * Dynamically resolves and renders file icons.
+ * If the file type is unknown (resolves to 'default'), it renders the inline vector SVG.
+ */
 import { computed, ref, watchEffect } from 'vue';
 import { resolveFileIconName, resolveFileIconUrl } from '@/utils/file-icon-associations';
 
@@ -21,13 +26,18 @@ watchEffect(async (onCleanup) => {
 		isCurrent = false;
 	});
 
+	if (iconName.value === 'default') {
+		if (isCurrent) iconUrl.value = '';
+		return;
+	}
+
 	const resolvedUrl = await resolveFileIconUrl({ fileName: props.name, filePath: props.path });
 	if (isCurrent) iconUrl.value = resolvedUrl;
 });
 </script>
 
 <template lang="pug">
-img.LFM-file-type-icon(
+img.LFM-file-icon(
 	v-if="iconUrl"
 	:src="iconUrl"
 	:width="size"
@@ -36,7 +46,7 @@ img.LFM-file-type-icon(
 	loading="lazy"
 	decoding="async"
 )
-svg.LFM-file-type-icon.LFM-file-type-icon--fallback(
+svg.LFM-file-icon.LFM-file-icon--fallback(
 	v-else
 	:width="size"
 	:height="size"
@@ -51,18 +61,16 @@ svg.LFM-file-type-icon.LFM-file-type-icon--fallback(
 </template>
 
 <style lang="sass" scoped>
-.LFM-file-type-icon
+.LFM-file-icon
 	display: inline-block
-	flex-shrink: 0
-	object-fit: contain
 	vertical-align: middle
-	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12))
 	transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))
 
 	&:hover
-		transform: scale(1.04)
-		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18))
+		transform: scale(1.05)
+		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))
 
-.LFM-file-type-icon--fallback
+.LFM-file-icon--fallback
 	color: #c8bdb8
 </style>

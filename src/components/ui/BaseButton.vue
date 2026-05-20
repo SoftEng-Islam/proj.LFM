@@ -43,8 +43,7 @@ const classes = computed(() => [
 ]);
 </script>
 
-<template>
-	<button :type="type" :class="classes">
-		<slot />
-	</button>
+<template lang="pug">
+button(:type="type" :class="classes")
+	slot
 </template>

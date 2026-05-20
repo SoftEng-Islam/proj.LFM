@@ -113,7 +113,7 @@ onMounted(() => {
 	margin: 0
 	font-size: 18px
 	font-weight: 600
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 
 .LFM-font-info
 	display: flex
@@ -123,28 +123,28 @@ onMounted(() => {
 
 .LFM-font-size, .LFM-font-type
 	font-size: 12px
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 
 .LFM-font-display
 	margin-bottom: 20px
 
 .LFM-font-sample
 	padding: 20px
-	border: 1px solid var(--LFM-border)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	border-radius: 8px
-	background: var(--LFM-bg-secondary)
+	background: var(--color-base-300)
 
 .LFM-sample-text
 	margin: 8px 0
 	font-size: 24px
 	line-height: 1.4
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 
 .LFM-font-metrics
 	padding: 16px
-	border: 1px solid var(--LFM-border)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	border-radius: 8px
-	background: var(--LFM-bg-secondary)
+	background: var(--color-base-300)
 
 .LFM-metrics-grid
 	display: grid
@@ -159,13 +159,13 @@ onMounted(() => {
 .LFM-metric-label
 	font-size: 11px
 	font-weight: 600
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	text-transform: uppercase
 	letter-spacing: 0.5px
 
 .LFM-metric-value
 	font-size: 14px
 	font-weight: 500
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	font-family: monospace
 </style>

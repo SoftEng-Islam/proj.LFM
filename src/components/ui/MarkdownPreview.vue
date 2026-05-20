@@ -121,20 +121,20 @@ onMounted(() => {
 	display: flex
 	flex-direction: column
 	height: 100%
-	background: var(--LFM-panel)
+	background: var(--color-base-100)
 	border-radius: 12px
-	border: 1px solid var(--LFM-border)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	overflow: hidden
 
 .LFM-markdown-header
 	padding: 12px 16px
-	background: var(--LFM-panel)
-	border-bottom: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 
 .LFM-markdown-title
 	font-size: 12px
 	font-weight: 600
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 
 .LFM-markdown-content
 	flex: 1
@@ -147,15 +147,15 @@ onMounted(() => {
 	align-items: center
 	justify-content: center
 	height: 100%
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	font-size: 12px
 	gap: 8px
 
 .LFM-markdown-spinner
 	width: 20px
 	height: 20px
-	border: 2px solid var(--LFM-border)
-	border-top: 2px solid var(--LFM-blue)
+	border: 2px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	border-top: 2px solid var(--color-primary)
 	border-radius: 50%
 	animation: spin 1s linear infinite
 
@@ -168,38 +168,38 @@ onMounted(() => {
 .LFM-markdown-rendered
 	font-size: 13px
 	line-height: 1.6
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 
 	// Typography
 	:deep(h1)
 		font-size: 24px
 		font-weight: 700
 		margin: 24px 0 16px 0
-		color: var(--LFM-text)
-		border-bottom: 1px solid var(--LFM-border)
+		color: var(--color-base-content)
+		border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 		padding-bottom: 8px
 
 	:deep(h2)
 		font-size: 20px
 		font-weight: 600
 		margin: 20px 0 12px 0
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(h3)
 		font-size: 18px
 		font-weight: 600
 		margin: 16px 0 8px 0
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(h4)
 		font-size: 16px
 		font-weight: 600
 		margin: 14px 0 6px 0
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(p)
 		margin: 12px 0
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(ul), :deep(ol)
 		margin: 12px 0
@@ -207,26 +207,26 @@ onMounted(() => {
 
 	:deep(li)
 		margin: 4px 0
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(blockquote)
-		border-left: 4px solid var(--LFM-blue)
+		border-left: 4px solid var(--color-primary)
 		padding-left: 16px
 		margin: 16px 0
-		color: var(--LFM-text-muted)
+		color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 		font-style: italic
 
 	:deep(code)
-		background: var(--LFM-hover)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 		padding: 2px 4px
 		border-radius: 4px
 		font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace
 		font-size: 12px
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(pre)
-		background: var(--LFM-panel)
-		border: 1px solid var(--LFM-border)
+		background: var(--color-base-100)
+		border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 		border-radius: 8px
 		padding: 12px
 		margin: 12px 0
@@ -240,14 +240,14 @@ onMounted(() => {
 
 	:deep(strong)
 		font-weight: 600
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(em)
 		font-style: italic
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(a)
-		color: var(--LFM-blue)
+		color: var(--color-primary)
 		text-decoration: none
 
 		&:hover
@@ -255,29 +255,29 @@ onMounted(() => {
 
 	:deep(hr)
 		border: none
-		border-top: 1px solid var(--LFM-border)
+		border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 		margin: 20px 0
 
 	:deep(table)
 		width: 100%
 		border-collapse: collapse
 		margin: 16px 0
-		border: 1px solid var(--LFM-border)
+		border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 		border-radius: 8px
 		overflow: hidden
 
 	:deep(th), :deep(td)
 		padding: 8px 12px
 		text-align: left
-		border-bottom: 1px solid var(--LFM-border)
+		border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 
 	:deep(th)
-		background: var(--LFM-hover)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 		font-weight: 600
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(td)
-		color: var(--LFM-text)
+		color: var(--color-base-content)
 
 	:deep(img)
 		max-width: 100%

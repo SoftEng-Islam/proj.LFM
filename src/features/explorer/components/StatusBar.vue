@@ -9,36 +9,33 @@ const selectedCount = computed(() => (store.selectedItem ? 1 : 0));
 const selectedLabel = computed(() => (selectedCount.value > 0 ? `${selectedCount.value} item selected` : ''));
 </script>
 
-<template>
-    <footer class="LFM-status-bar" role="status" aria-label="Status bar">
-        <span class="LFM-status-count">{{ itemCount }} items</span>
-        <template v-if="selectedLabel">
-            <span class="LFM-status-sep">|</span>
-            <span class="LFM-status-selected">{{ selectedLabel }}</span>
-        </template>
-    </footer>
+<template lang="pug">
+footer(class="LFM-status-bar" role="status" aria-label="Status bar")
+	span(class="LFM-status-count") {{ itemCount }} items
+	template(v-if="selectedLabel")
+		span(class="LFM-status-sep") |
+		span(class="LFM-status-selected") {{ selectedLabel }}
 </template>
 
-<style scoped>
-.LFM-status-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    height: 24px;
-    padding: 0 12px;
-    background: var(--LFM-status-bg);
-    border-top: 1px solid var(--LFM-border);
-    font-size: 11px;
-    color: var(--LFM-text);
-    flex-shrink: 0;
-    user-select: none;
-}
+<style lang="sass" scoped>
+@reference "tailwindcss"
 
-.LFM-status-sep {
-    opacity: 0.35;
-}
+.LFM-status-bar
+  display: flex
+  align-items: center
+  gap: 8px
+  height: 24px
+  padding: 0 12px
+  background: var(--color-base-200)
+  border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+  font-size: 11px
+  color: var(--color-base-content)
+  flex-shrink: 0
+  user-select: none
 
-.LFM-status-selected {
-    color: var(--LFM-text);
-}
+.LFM-status-sep
+  opacity: 0.35
+
+.LFM-status-selected
+  color: var(--color-base-content)
 </style>

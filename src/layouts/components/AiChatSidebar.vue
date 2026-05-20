@@ -98,9 +98,9 @@ div.LFM-ai-sidebar
 	flex-direction: column
 	height: 100%
 	min-height: 0
-	background: var(--LFM-ai-pane-bg)
+	background: var(--color-base-300)
 	font-size: 12px
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 
 .LFM-ai-toolbar-icon
 	font-size: 20px
@@ -113,8 +113,8 @@ div.LFM-ai-sidebar
 	gap: 8px
 	min-height: 44px
 	padding: 0 12px
-	border-bottom: 1px solid var(--LFM-border)
-	background: var(--LFM-ai-pane-bg)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	background: var(--color-base-300)
 
 .LFM-ai-header-brand
 	display: flex
@@ -130,9 +130,9 @@ div.LFM-ai-sidebar
 	display: flex
 	align-items: center
 	justify-content: center
-	color: var(--LFM-blue)
-	background: var(--LFM-panel)
-	border: 1px solid var(--LFM-border)
+	color: var(--color-primary)
+	background: var(--color-base-100)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 
 .LFM-ai-header-text
 	min-width: 0
@@ -141,14 +141,14 @@ div.LFM-ai-sidebar
 	margin: 0
 	font-size: 13px
 	font-weight: 600
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	line-height: 1.2
 
 .LFM-ai-subtitle
 	margin: 2px 0 0
 	font-size: 11px
 	font-weight: 500
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 
 .LFM-ai-close
 	display: flex
@@ -159,16 +159,16 @@ div.LFM-ai-sidebar
 	border: none
 	border-radius: 10px
 	background: transparent
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	cursor: pointer
 	transition: background 150ms ease, color 150ms ease
 
 	&:hover
-		background: var(--LFM-active)
-		color: var(--LFM-text)
+		background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
+		color: var(--color-base-content)
 
 	&:focus-visible
-		outline: 2px solid var(--LFM-blue)
+		outline: 2px solid var(--color-primary)
 		outline-offset: 2px
 
 	&:active
@@ -220,16 +220,16 @@ div.LFM-ai-sidebar
 	display: flex
 	align-items: center
 	justify-content: center
-	border: 1px solid var(--LFM-border)
-	background: var(--LFM-panel)
-	color: var(--LFM-text-muted)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	background: var(--color-base-100)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 
 	&--bot
-		color: var(--LFM-blue)
+		color: var(--color-primary)
 
 	&--user
-		color: var(--LFM-text)
-		background: var(--LFM-item-bg)
+		color: var(--color-base-content)
+		background: var(--color-base-100)
 
 .LFM-chat-bubble
 	max-width: min(100%, min(28rem, calc(100% - 2.75rem)))
@@ -237,13 +237,13 @@ div.LFM-ai-sidebar
 	position: relative
 
 	&--assistant
-		background: var(--LFM-panel)
-		border: 1px solid var(--LFM-border)
+		background: var(--color-base-100)
+		border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 
 	&--user
-		background: var(--LFM-blue)
+		background: var(--color-primary)
 		color: #fff
-		border: 1px solid var(--LFM-blue)
+		border: 1px solid var(--color-primary)
 
 .LFM-chat-text
 	margin: 0
@@ -254,8 +254,8 @@ div.LFM-ai-sidebar
 
 .LFM-ai-footer
 	padding: 8px 8px 10px
-	border-top: 1px solid var(--LFM-border)
-	background: var(--LFM-ai-pane-bg)
+	border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	background: var(--color-base-300)
 
 .LFM-ai-composer
 	position: relative
@@ -263,14 +263,14 @@ div.LFM-ai-sidebar
 	align-items: flex-end
 	gap: 6px
 	padding: 4px 4px 4px 10px
-	background: var(--LFM-panel)
-	border: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	border-radius: 8px
 	transition: border-color 150ms ease, box-shadow 150ms ease
 
 	&:focus-within
-		border-color: var(--LFM-blue)
-		box-shadow: 0 0 0 2px var(--LFM-blue-subtle)
+		border-color: var(--color-primary)
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 12%, transparent)
 
 .LFM-ai-textarea
 	flex: 1
@@ -284,11 +284,11 @@ div.LFM-ai-sidebar
 	resize: none
 	font-size: 12px
 	line-height: 1.45
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	font-family: inherit
 
 	&::placeholder
-		color: var(--LFM-text-muted)
+		color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 		opacity: 0.75
 
 .LFM-ai-send
@@ -298,7 +298,7 @@ div.LFM-ai-sidebar
 	height: 34px
 	margin: 2px 2px 2px 0
 	border-radius: 6px
-	background: var(--LFM-blue)
+	background: var(--color-primary)
 	color: #fff
 	border: none
 	cursor: pointer
@@ -308,13 +308,13 @@ div.LFM-ai-sidebar
 	transition: background 150ms ease, opacity 150ms ease
 
 	&:hover:not(:disabled)
-		background: color-mix(in srgb, var(--LFM-blue) 88%, #000)
+		background: color-mix(in srgb, var(--color-primary) 88%, #000)
 
 	&:active:not(:disabled)
-		background: color-mix(in srgb, var(--LFM-blue) 78%, #000)
+		background: color-mix(in srgb, var(--color-primary) 78%, #000)
 
 	&:focus-visible
-		outline: 2px solid var(--LFM-blue)
+		outline: 2px solid var(--color-primary)
 		outline-offset: 2px
 
 	&:disabled
@@ -325,7 +325,7 @@ div.LFM-ai-sidebar
 	margin: 6px 2px 0
 	font-size: 11px
 	font-weight: 500
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	line-height: 1.4
 
 	kbd
@@ -334,7 +334,7 @@ div.LFM-ai-sidebar
 		border-radius: 4px
 		font-size: 9px
 		font-family: ui-monospace, monospace
-		background: var(--LFM-active)
-		border: 1px solid var(--LFM-border)
-		color: var(--LFM-text-muted)
+		background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
+		border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+		color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 </style>

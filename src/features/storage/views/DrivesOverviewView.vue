@@ -150,7 +150,7 @@ AppLayout
   font-weight: 700
 
 .LFM-drives-header p
-  color: var(--LFM-text-secondary, #888)
+  color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 
 .LFM-drives-loading,
 .LFM-drives-error,
@@ -159,12 +159,12 @@ AppLayout
   align-items: center
   justify-content: center
   min-height: 200px
-  color: var(--LFM-text-secondary, #888)
+  color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 
 .LFM-drives-error
-  background: var(--LFM-bg)
+  background: var(--color-base-200)
   border-radius: 1rem
-  color: var(--LFM-error, #d97706)
+  color: var(--color-error)
 
 .LFM-drives-grid
   display: grid
@@ -172,15 +172,15 @@ AppLayout
   gap: 1.5rem
 
 .LFM-drive-card
-  border: 1px solid var(--LFM-border)
+  border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
   border-radius: 1rem
   padding: 1.5rem
-  background: var(--LFM-panel)
+  background: var(--color-base-100)
   transition: all 150ms ease
   cursor: pointer
 
   &:hover
-    border-color: var(--LFM-blue)
+    border-color: var(--color-primary)
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)
 
 .LFM-drive-header
@@ -190,7 +190,7 @@ AppLayout
   gap: 0.875rem
   margin-bottom: 1rem
   padding-bottom: 1rem
-  border-bottom: 1px solid var(--LFM-border)
+  border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 
 .LFM-drive-icon
   display: flex
@@ -199,7 +199,7 @@ AppLayout
   width: 40px
   height: 40px
   font-size: 28px
-  color: var(--LFM-accent)
+  color: var(--color-primary)
 
 .LFM-drive-title
   min-width: 0
@@ -214,7 +214,7 @@ AppLayout
 
 .LFM-drive-path
   font-size: 0.875rem
-  color: var(--LFM-text-secondary, #888)
+  color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
   margin: 0
   overflow: hidden
   text-overflow: ellipsis
@@ -244,11 +244,11 @@ AppLayout
   padding: 0.25rem 0
 
   span
-    color: var(--LFM-text-secondary, #888)
+    color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 
   strong
     font-weight: 600
-    color: var(--LFM-text)
+    color: var(--color-base-content)
     overflow: hidden
     text-align: right
     text-overflow: ellipsis
@@ -264,15 +264,15 @@ AppLayout
   justify-content: space-between
   align-items: center
   font-size: 0.75rem
-  color: var(--LFM-text-secondary, #888)
+  color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 
 .LFM-usage-used
   font-weight: 600
-  color: var(--LFM-text)
+  color: var(--color-base-content)
 
 .LFM-usage-available
   font-weight: 600
-  color: var(--LFM-text)
+  color: var(--color-base-content)
 
 .LFM-usage-percent
   font-weight: 700
@@ -281,7 +281,7 @@ AppLayout
 .LFM-usage-bar
   width: 100%
   height: 8px
-  background: var(--LFM-bg)
+  background: var(--color-base-200)
   border-radius: 4px
   overflow: hidden
 
@@ -295,5 +295,5 @@ AppLayout
   justify-content: center
   font-size: 0.875rem
   font-weight: 600
-  color: var(--LFM-text)
+  color: var(--color-base-content)
 </style>

@@ -13,6 +13,7 @@ mod files_api;
 mod services;
 mod storage;
 mod utils;
+mod media_server;
 
 use clap::{Arg, ArgMatches, Command as ClapCommand};
 
@@ -171,6 +172,7 @@ fn enable_shadow_effect(_effect: bool, _window: tauri::WebviewWindow) {
 #[tokio::main]
 async fn main() {
     extensions::init_extension().await;
+    media_server::start_media_server().await;
     tauri::async_runtime::set(tokio::runtime::Handle::current());
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -223,7 +225,8 @@ async fn main() {
             config::get_config,
             config::save_config,
             enable_shadow_effect,
-            change_transparent_effect
+            change_transparent_effect,
+            media_server::get_media_server_port
         ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())

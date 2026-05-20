@@ -24,6 +24,53 @@ const router = useRouter();
 const toast = useToast();
 const selectedId = computed(() => store.selectedItem?.id ?? '');
 
+const iconSize = computed(() => configStore.config.appearance.icon_size || 'medium');
+
+const gridFolderSize = computed(() => {
+	switch (iconSize.value) {
+		case 'small': return 70;
+		case 'large': return 130;
+		case 'extra-large': return 160;
+		default: return 100;
+	}
+});
+
+const gridFileSize = computed(() => {
+	switch (iconSize.value) {
+		case 'small': return 40;
+		case 'large': return 72;
+		case 'extra-large': return 96;
+		default: return 56;
+	}
+});
+
+const listFolderSize = computed(() => {
+	switch (iconSize.value) {
+		case 'small': return 16;
+		case 'large': return 24;
+		case 'extra-large': return 28;
+		default: return 20;
+	}
+});
+
+const listFileSize = computed(() => {
+	switch (iconSize.value) {
+		case 'small': return 14;
+		case 'large': return 22;
+		case 'extra-large': return 26;
+		default: return 18;
+	}
+});
+
+const workspaceStyle = computed(() => {
+	const size = iconSize.value;
+	return {
+		'--lfm-grid-item-width': size === 'small' ? '80px' : size === 'large' ? '120px' : size === 'extra-large' ? '150px' : '100px',
+		'--lfm-grid-icon-container-size': size === 'small' ? '48px' : size === 'large' ? '80px' : size === 'extra-large' ? '110px' : '64px',
+		'--lfm-list-folder-size': size === 'small' ? '16px' : size === 'large' ? '24px' : size === 'extra-large' ? '28px' : '20px',
+	};
+});
+
 // ── Dialog / overlay state ──────────────────────────────────────────────────
 
 const contextMenu = ref<{ visible: boolean; x: number; y: number; itemId: string }>({
@@ -380,7 +427,7 @@ onUnmounted(() => {
 </script>
 
 <template lang="pug">
-.LFM-workspace(ref="workspaceRef")
+.LFM-workspace(ref="workspaceRef" :style="workspaceStyle")
 	ActionToolbar(@rename="openRenameDialog" @properties="openPropertiesDialog")
 
 	.LFM-workspace-content(@contextmenu.self="openEmptyContextMenu" @click.self="handleWorkspaceClick")
@@ -428,9 +475,9 @@ onUnmounted(() => {
 					@contextmenu="(e) => openContextMenu(e, entry.id)"
 				)
 					.LFM-grid-item-icon
-						FolderIcon(v-if="isFolder(entry)" :size="100" :color="'orange'")
+						FolderIcon(v-if="isFolder(entry)" :size="gridFolderSize" :color="'orange'")
 						img.LFM-media-thumbnail(v-else-if="entry.preview" :src="entry.preview" loading="lazy" decoding="async")
-						FileIcon(v-else :name="entry.name" :path="entry.id" :size="56")
+						FileIcon(v-else :name="entry.name" :path="entry.id" :size="gridFileSize")
 					span.LFM-grid-item-name {{ entry.name }}
 
 			//- List view
@@ -453,9 +500,9 @@ onUnmounted(() => {
 				)
 					.LFM-list-col.LFM-list-col--name
 						.LFM-list-file-icon
-							FolderIcon(v-if="isFolder(row)" :size="20" :color="'orange'")
+							FolderIcon(v-if="isFolder(row)" :size="listFolderSize" :color="'orange'")
 							img.LFM-list-media-thumbnail(v-else-if="row.preview" :src="row.preview" loading="lazy" decoding="async")
-							FileIcon(v-else :name="row.name" :path="row.id" :size="18")
+							FileIcon(v-else :name="row.name" :path="row.id" :size="listFileSize")
 						span.LFM-list-item-name {{ row.name }}
 					span.LFM-list-col {{ formatDate(row.modifiedAt) }}
 					span.LFM-list-col {{ row.typeLabel }}
@@ -491,7 +538,7 @@ onUnmounted(() => {
 	display: flex
 	flex-direction: column
 	height: 100%
-	background: var(--LFM-panel)
+	background: var(--color-base-100)
 
 .LFM-workspace-content
 	flex: 1
@@ -503,7 +550,7 @@ onUnmounted(() => {
 
 .LFM-selection-box
 	position: fixed
-	border: 1px solid var(--LFM-blue)
+	border: 1px solid var(--color-primary)
 	background: rgba(43, 124, 211, 0.1)
 	pointer-events: none
 	z-index: 1000
@@ -518,36 +565,36 @@ onUnmounted(() => {
 	display: flex
 	flex-direction: column
 	align-items: center
-	width: 100px
+	width: var(--lfm-grid-item-width, 100px)
 	padding: 8px 4px 6px
 	border-radius: 4px
 	border: 2px solid transparent
 	background: transparent
 	cursor: pointer
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	transition: background 100ms, border-color 100ms
 	text-align: center
 	outline: none
 
 	&:hover
-		background: var(--LFM-item-hover)
+		background: color-mix(in srgb, var(--color-primary) 8%, transparent)
 
 	&--selected
-		background: var(--LFM-selected)
-		border-color: var(--LFM-item-selected-border)
+		background: color-mix(in srgb, var(--color-primary) 14%, transparent)
+		border-color: var(--color-primary)
 
 .LFM-grid-item-icon
 	display: flex
 	align-items: center
 	justify-content: center
-	height: 64px
-	width: 64px
+	height: var(--lfm-grid-icon-container-size, 64px)
+	width: var(--lfm-grid-icon-container-size, 64px)
 
 .LFM-grid-item-name
 	margin-top: 6px
 	font-size: 11px
 	line-height: 1.3
-	max-width: 92px
+	max-width: calc(var(--lfm-grid-item-width, 100px) - 8px)
 	overflow: hidden
 	text-overflow: ellipsis
 	display: -webkit-box
@@ -556,15 +603,15 @@ onUnmounted(() => {
 	word-break: break-word
 
 .LFM-media-thumbnail
-	max-width: 64px
-	max-height: 64px
+	max-width: var(--lfm-grid-icon-container-size, 64px)
+	max-height: var(--lfm-grid-icon-container-size, 64px)
 	object-fit: cover
 	border-radius: 4px
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2)
 
 .LFM-list-media-thumbnail
-	width: 20px
-	height: 20px
+	width: var(--lfm-list-folder-size, 20px)
+	height: var(--lfm-list-folder-size, 20px)
 	object-fit: cover
 	border-radius: 3px
 
@@ -576,10 +623,10 @@ onUnmounted(() => {
 	grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr
 	gap: 4px
 	padding: 4px 8px
-	border-bottom: 1px solid var(--LFM-border)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	font-size: 11px
 	font-weight: 600
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	cursor: pointer
 	user-select: none
 
@@ -588,23 +635,23 @@ onUnmounted(() => {
 	grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr
 	gap: 4px
 	padding: 3px 8px
-	border-bottom: 1px solid var(--LFM-border)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	background: transparent
 	border-left: none
 	border-right: none
 	border-top: none
 	cursor: pointer
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	font-size: 12px
 	text-align: left
 	width: 100%
 	transition: background 80ms
 
 	&:hover
-		background: var(--LFM-hover)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 
 	&--selected
-		background: var(--LFM-selected)
+		background: color-mix(in srgb, var(--color-primary) 14%, transparent)
 
 .LFM-list-col
 	display: flex
@@ -659,11 +706,11 @@ onUnmounted(() => {
 .LFM-nav-error-title
 	font-size: 18px
 	font-weight: 600
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 
 .LFM-nav-error-desc
 	font-size: 13px
-	color: var(--LFM-text)
+	color: var(--color-base-content)
 	opacity: 0.6
 	max-width: 360px
 	line-height: 1.5
@@ -671,8 +718,8 @@ onUnmounted(() => {
 .LFM-nav-error-path
 	font-size: 11px
 	font-family: monospace
-	background: var(--LFM-hover)
-	color: var(--LFM-text)
+	background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+	color: var(--color-base-content)
 	opacity: 0.7
 	padding: 4px 12px
 	border-radius: 4px
@@ -685,14 +732,14 @@ onUnmounted(() => {
 	margin-top: 4px
 	padding: 8px 20px
 	border-radius: 6px
-	background: var(--LFM-panel)
-	border: 1px solid var(--LFM-border)
-	color: var(--LFM-text)
+	background: var(--color-base-100)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	color: var(--color-base-content)
 	font-size: 13px
 	cursor: pointer
 	transition: background 150ms, border-color 150ms
 
 	&:hover
-		background: var(--LFM-hover)
-		border-color: var(--LFM-blue)
+		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+		border-color: var(--color-primary)
 </style>

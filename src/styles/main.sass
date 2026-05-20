@@ -1,34 +1,8 @@
 :root
 	--lfm-icon-size: 24px
 	--lfm-font-size: 14px
-	--LFM-bg: var(--color-base-200)
-	--LFM-panel: var(--color-base-100)
-	--LFM-sidebar: var(--color-base-200)
-	--LFM-toolbar: var(--color-base-300)
-	// Right panes reuse navigation / command chrome so they read as part of the same shell
-	--LFM-preview-pane-bg: var(--color-base-200)
-	--LFM-ai-pane-bg: var(--color-base-300)
-	--LFM-title-bar: var(--color-base-300)
-	--LFM-border: color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	--LFM-blue: var(--color-primary)
-	--LFM-blue-subtle: color-mix(in srgb, var(--color-primary) 12%, transparent)
-	--LFM-hover: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-	--LFM-active: color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	--LFM-selected: color-mix(in srgb, var(--color-primary) 14%, transparent)
-	--LFM-text: var(--color-base-content)
-	--LFM-text-muted: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	--LFM-accent-bar: var(--color-primary)
-	--LFM-folder: #ffc83d
-	--LFM-item-bg: var(--color-base-100)
-	--LFM-item-hover: color-mix(in srgb, var(--color-primary) 8%, transparent)
-	--LFM-item-selected-border: var(--color-primary)
-	--LFM-status-bg: var(--color-base-200)
-	--LFM-context-bg: #2c2c2c
-	--LFM-context-border: rgba(255,255,255,0.12)
-	--LFM-context-hover: rgba(255,255,255,0.08)
-	--LFM-context-text: #f0f0f0
-	--LFM-context-divider: rgba(255,255,255,0.1)
-	// Default accent color palette - only active for default theme.
+
+	/* [Don't remove] Default accent color palette - only active for default theme. */
 	--LFM-accent-orange: #d96b26
 	--LFM-accent-yellow: #d9a026
 	--LFM-accent-green: #26d947
@@ -41,57 +15,29 @@
 	--LFM-default-accent: var(--LFM-accent-orange)
 	--LFM-default-accent-subtle: color-mix(in srgb, var(--LFM-default-accent) 12%, transparent)
 
-	html[data-theme="light"],
-	html[data-theme="dark"]
-		--LFM-accent: var(--LFM-default-accent)
-		--LFM-accent-subtle: var(--LFM-default-accent-subtle)
+html[data-accent="orange"]
+	--LFM-default-accent: var(--LFM-accent-orange)
+html[data-accent="yellow"]
+	--LFM-default-accent: var(--LFM-accent-yellow)
+html[data-accent="green"]
+	--LFM-default-accent: var(--LFM-accent-green)
+html[data-accent="teal"]
+	--LFM-default-accent: var(--LFM-accent-teal)
+html[data-accent="slate"]
+	--LFM-default-accent: var(--LFM-accent-slate)
+html[data-accent="blue"]
+	--LFM-default-accent: var(--LFM-accent-blue)
+html[data-accent="purple"]
+	--LFM-default-accent: var(--LFM-accent-purple)
+html[data-accent="pink"]
+	--LFM-default-accent: var(--LFM-accent-pink)
+html[data-accent="red"]
+	--LFM-default-accent: var(--LFM-accent-red)
 
-	html[data-accent="orange"]
-		--LFM-default-accent: var(--LFM-accent-orange)
-
-	html[data-accent="yellow"]
-		--LFM-default-accent: var(--LFM-accent-yellow)
-
-	html[data-accent="green"]
-		--LFM-default-accent: var(--LFM-accent-green)
-
-	html[data-accent="teal"]
-		--LFM-default-accent: var(--LFM-accent-teal)
-
-	html[data-accent="slate"]
-		--LFM-default-accent: var(--LFM-accent-slate)
-
-	html[data-accent="blue"]
-		--LFM-default-accent: var(--LFM-accent-blue)
-
-	html[data-accent="purple"]
-		--LFM-default-accent: var(--LFM-accent-purple)
-
-	html[data-accent="pink"]
-		--LFM-default-accent: var(--LFM-accent-pink)
-
-	html[data-accent="red"]
-		--LFM-default-accent: var(--LFM-accent-red)
-
-	// Disable the default accent palette for named non-default themes.
-	html[data-theme="lsrosepine"],
-	html[data-theme="lsrosepine-dark"],
-	html[data-theme="lsgrouvbox"],
-	html[data-theme="lsgrouvbox-dark"],
-	html[data-theme="lsnord"],
-	html[data-theme="lsnord-dark"],
-	html[data-theme="lsatom"],
-	html[data-theme="lsatom-dark"],
-	html[data-theme="lsvscode"],
-	html[data-theme="lsvscode-dark"],
-	html[data-theme="cupcake"],
-	html[data-theme="cupcake-dark"],
-	html[data-theme="valentine"],
-	html[data-theme="valentine-dark"],
-	html[data-theme="coffee-light"],
-	html[data-theme="coffee"]
-		--LFM-accent: var(--color-primary, inherit)
-		--LFM-accent-subtle: color-mix(in srgb, var(--color-primary, inherit) 12%, transparent)
+html[data-theme="light"],
+html[data-theme="dark"]
+	--color-primary: var(--LFM-default-accent)
+	--color-primary-subtle: var(--LFM-default-accent-subtle)
 
 html,
 body,
@@ -103,8 +49,8 @@ body
 	margin: 0
 	font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif
 	font-size: var(--lfm-font-size, 14px)
-	color: var(--LFM-text)
-	background: var(--LFM-bg)
+	color: var(--color-base-content)
+	background: var(--color-base-200)
 	transition: background-color 150ms ease, color 150ms ease
 	-webkit-font-smoothing: antialiased
 
@@ -123,8 +69,8 @@ a
 
 /* Selection */
 ::selection
-	background: var(--LFM-blue-subtle)
-	color: var(--LFM-text)
+	background: color-mix(in srgb, var(--color-primary) 12%, transparent)
+	color: var(--color-base-content)
 
 /* Win11 thin scrollbar */
 ::-webkit-scrollbar

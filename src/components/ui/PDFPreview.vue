@@ -108,9 +108,9 @@ onMounted(() => {
 	display: flex
 	flex-direction: column
 	height: 100%
-	background: var(--LFM-panel)
+	background: var(--color-base-100)
 	border-radius: 12px
-	border: 1px solid var(--LFM-border)
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	overflow: hidden
 
 .LFM-pdf-header
@@ -118,14 +118,14 @@ onMounted(() => {
 	align-items: center
 	justify-content: space-between
 	padding: 12px 16px
-	background: var(--LFM-panel)
-	border-bottom: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	gap: 12px
 
 .LFM-pdf-title
 	font-size: 12px
 	font-weight: 600
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	text-overflow: ellipsis
 	overflow: hidden
 	white-space: nowrap
@@ -133,8 +133,8 @@ onMounted(() => {
 
 .LFM-pdf-info
 	font-size: 11px
-	color: var(--LFM-text-muted)
-	background: var(--LFM-hover)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
+	background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 	padding: 2px 6px
 	border-radius: 4px
 	font-weight: 500
@@ -152,15 +152,15 @@ onMounted(() => {
 	flex-direction: column
 	align-items: center
 	justify-content: center
-	color: var(--LFM-text-muted)
+	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 	font-size: 12px
 	gap: 8px
 
 .LFM-pdf-spinner
 	width: 24px
 	height: 24px
-	border: 2px solid var(--LFM-border)
-	border-top: 2px solid var(--LFM-blue)
+	border: 2px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+	border-top: 2px solid var(--color-primary)
 	border-radius: 50%
 	animation: spin 1s linear infinite
 
@@ -189,12 +189,12 @@ onMounted(() => {
 
 .LFM-pdf-footer
 	padding: 8px 16px
-	background: var(--LFM-panel)
-	border-top: 1px solid var(--LFM-border)
+	background: var(--color-base-100)
+	border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
 	text-align: center
 
 	span
 		font-size: 11px
-		color: var(--LFM-text-muted)
+		color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
 		font-style: italic
 </style>

@@ -130,6 +130,7 @@ export interface LfmConfigAppearance {
 	font_size: number;
 	show_hidden_files: boolean;
 	window_controls: boolean;
+	accent?: string;
 }
 
 export interface LfmConfigBehavior {

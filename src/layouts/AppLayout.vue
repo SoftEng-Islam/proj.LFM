@@ -95,15 +95,15 @@ onUnmounted(() => {
 			aside(class="flex flex-col h-full overflow-hidden" aria-label="Navigation pane")
 				<SidebarNavigation />
 				//- Settings button
-				div(class="LFM-sbar-settings")
-					button(
-						type="button"
-						@click="store.openSettings"
-						:class="{ 'LFM-sbar-item--active': settingsOpen }"
-					)
-						span
-							<IconSettings />
-						span Settings
+				button(
+					type="button"
+					class="LFM-sbar-settings"
+					:class="{ 'LFM-sbar-settings--active': store.settingsOpen }"
+					@click="store.openSettings"
+				)
+					span.LFM-sbar-icon
+						<IconSettings />
+					span.LFM-sbar-label Settings
 
 			main(id="main-content" class="LFM-content")
 				<slot />
@@ -158,8 +158,8 @@ onUnmounted(() => {
 	flex-direction: column;
 	height: 100vh;
 	overflow: hidden;
-	background: var(--LFM-bg);
-	color: var(--LFM-text);
+	background: var(--color-base-200);
+	color: var(--color-base-content);
 	font-size: 12px;
 }
 
@@ -174,8 +174,8 @@ onUnmounted(() => {
 	width: 240px;
 	flex-shrink: 0;
 	overflow-y: auto;
-	border-right: 1px solid var(--LFM-border);
-	background: var(--LFM-sidebar);
+	border-right: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+	background: var(--color-base-200);
 }
 
 .LFM-content {
@@ -184,7 +184,7 @@ onUnmounted(() => {
 	overflow-x: hidden;
 	display: flex;
 	flex-direction: column;
-	background: var(--LFM-panel);
+	background: var(--color-base-100);
 	min-width: 0;
 }
 
@@ -226,15 +226,15 @@ onUnmounted(() => {
 		bottom: 0;
 		width: 1px;
 		transform: translateX(-50%);
-		background: var(--LFM-border);
+		background: color-mix(in srgb, var(--color-base-content) 10%, transparent);
 		opacity: 0.85;
 		pointer-events: none;
 	}
 
 	&:hover,
 	&:focus-visible {
-		background: var(--LFM-blue-subtle);
-		border-left-color: color-mix(in srgb, var(--LFM-blue) 35%, transparent);
+		background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+		border-left-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
 	}
 
 	&:focus-visible {
@@ -242,7 +242,7 @@ onUnmounted(() => {
 	}
 
 	&:active {
-		background: color-mix(in srgb, var(--LFM-blue) 22%, var(--LFM-active));
+		background: color-mix(in srgb, var(--color-primary) 22%, color-mix(in srgb, var(--color-base-content) 10%, transparent));
 	}
 }
 
@@ -254,27 +254,47 @@ onUnmounted(() => {
 	display: flex;
 	flex-direction: column;
 	background: transparent;
-	border-left: 1px solid var(--LFM-border);
+	border-left: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
 }
 
 .LFM-sbar-settings {
-	@apply bg-(--LFM-panel) border border-(--LFM-border) border-solid bottom-0 cursor-pointer flex gap-3 items-center min-h-9 mt-auto mx-2 my-1 p-2 relative rounded-lg text-(--LFM-text) z-10;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 40px;
+	padding: 0 12px;
+	border-radius: 10px;
+	cursor: pointer;
 	text-decoration: none;
-	transition: all 150ms ease;
+	color: var(--color-base-content);
+	background: color-mix(in srgb, var(--color-base-content) 4%, transparent);
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 8%, transparent);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+	transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+	position: relative;
+	margin: auto 8px 8px 8px;
+	font-size: 13px;
+	font-weight: 500;
+	width: calc(100% - 16px);
 
+	&:hover {
+		background: color-mix(in srgb, var(--color-base-content) 8%, transparent);
+		border-color: color-mix(in srgb, var(--color-base-content) 15%, transparent);
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	}
 
-	button {
-		@apply w-full flex items-center justify-around bg-transparent border-none cursor-pointer;
-
-		&:hover {
-			background: var(--LFM-hover);
-		}
+	&:active {
+		transform: translateY(0);
+		background: color-mix(in srgb, var(--color-base-content) 12%, transparent);
 	}
 
 	&--active {
-		background: var(--LFM-blue-subtle);
-		color: var(--LFM-blue);
+		background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+		border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+		color: var(--color-primary);
 		font-weight: 600;
+		box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 15%, transparent);
 
 		&::before {
 			content: '';
@@ -283,10 +303,32 @@ onUnmounted(() => {
 			top: 6px;
 			bottom: 6px;
 			width: 4px;
-			background: var(--LFM-blue);
+			background: var(--color-primary);
 			border-radius: 0 4px 4px 0;
-			box-shadow: 0 0 10px var(--LFM-blue);
+			box-shadow: 0 0 10px var(--color-primary);
 		}
+	}
+
+	.LFM-sbar-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 18px;
+		opacity: 0.8;
+		transition: transform 200ms ease, opacity 200ms ease;
+	}
+
+	&:hover .LFM-sbar-icon {
+		opacity: 1;
+		transform: rotate(30deg);
+	}
+
+	.LFM-sbar-label {
+		flex: 1;
+		text-align: left;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 }
 </style>

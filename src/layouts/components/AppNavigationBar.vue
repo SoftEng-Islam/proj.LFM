@@ -57,101 +57,83 @@ onMounted(() => window.addEventListener('keydown', handleGlobalKeydown));
 onUnmounted(() => window.removeEventListener('keydown', handleGlobalKeydown));
 </script>
 
-<template>
-    <div class="LFM-nav-bar" aria-label="Navigation">
-        <div class="flex items-center gap-1">
-            <button class="LFM-nav-btn" :disabled="!canGoBack" title="Back" @click="goBack">
-                <IconBack />
-            </button>
-            <button class="LFM-nav-btn" :disabled="!canGoForward" title="Forward" @click="goForward">
-                <IconForward />
-            </button>
-            <button class="LFM-nav-btn" title="Up one level" @click="goUp">
-                <IconUp />
-            </button>
-            <button class="LFM-nav-btn" title="Refresh" @click="refresh">
-                <IconRefresh />
-            </button>
-        </div>
+<template lang="pug">
+div(class="LFM-nav-bar" aria-label="Navigation")
+	div(class="flex items-center gap-1")
+		button(class="LFM-nav-btn" :disabled="!canGoBack" title="Back" @click="goBack")
+			IconBack
+		button(class="LFM-nav-btn" :disabled="!canGoForward" title="Forward" @click="goForward")
+			IconForward
+		button(class="LFM-nav-btn" title="Up one level" @click="goUp")
+			IconUp
+		button(class="LFM-nav-btn" title="Refresh" @click="refresh")
+			IconRefresh
 
-        <AppBreadcrumb />
+	AppBreadcrumb
 
-        <div class="LFM-nav-right">
-            <button class="LFM-nav-btn" title="Expand address bar">
-                <IconMoreVert />
-            </button>
-            <div class="LFM-search-box hidden md:flex items-center relative">
-                <IconSearch class="ml-2 opacity-50" />
-                <input ref="searchRef" v-model="store.searchQuery" type="text" placeholder="Search files..." class="bg-transparent border-none outline-none px-2 py-1 w-32 focus:w-64 transition-all duration-300" @keydown.enter="searchRef?.blur()" />
-                <span class="text-xs text-muted mr-2 hidden lg:inline">Ctrl+F</span>
-            </div>
-            <button class="LFM-nav-btn" :class="{ 'LFM-nav-btn--active': store.aiChatOpen }" title="AI Chat" @click="store.toggleAiChat">
-                <IconChat />
-            </button>
-        </div>
-    </div>
+	div(class="LFM-nav-right")
+		button(class="LFM-nav-btn" title="Expand address bar")
+			IconMoreVert
+		div(class="LFM-search-box hidden md:flex items-center relative")
+			IconSearch(class="ml-2 opacity-50")
+			input(ref="searchRef" v-model="store.searchQuery" type="text" placeholder="Search files..." class="bg-transparent border-none outline-none px-2 py-1 w-32 focus:w-64 transition-all duration-300" @keydown.enter="searchRef?.blur()")
+			span(class="text-xs text-muted mr-2 hidden lg:inline") Ctrl+F
+		button(class="LFM-nav-btn" :class="{ 'LFM-nav-btn--active': store.aiChatOpen }" title="AI Chat" @click="store.toggleAiChat")
+			IconChat
 </template>
 
-<style scoped lang="scss">
-@reference "tailwindcss";
+<style lang="sass" scoped>
+@reference "tailwindcss"
 
-.LFM-nav-bar {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    height: 48px;
-    padding: 0 8px;
-    background: var(--LFM-toolbar);
-    border-bottom: 1px solid var(--LFM-border);
-    flex-shrink: 0;
-}
+.LFM-nav-bar
+  display: flex
+  align-items: center
+  gap: 4px
+  height: 48px
+  padding: 0 8px
+  background: var(--color-base-300)
+  border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+  flex-shrink: 0
 
-.LFM-nav-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--LFM-text);
-    transition: all 150ms ease;
-    flex-shrink: 0;
-    font-size: 20px;
+.LFM-nav-btn
+  display: flex
+  align-items: center
+  justify-content: center
+  width: 32px
+  height: 32px
+  border-radius: 6px
+  background: transparent
+  border: none
+  cursor: pointer
+  color: var(--color-base-content)
+  transition: all 150ms ease
+  flex-shrink: 0
+  font-size: 20px
 
-    &:hover:not(:disabled) {
-        background: var(--LFM-hover);
-    }
+  &:hover:not(:disabled)
+    background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 
-    &:active:not(:disabled) {
-        background: var(--LFM-active);
-    }
+  &:active:not(:disabled)
+    background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
 
-    &:disabled {
-        opacity: 0.3;
-        cursor: default;
-    }
+  &:disabled
+    opacity: 0.3
+    cursor: default
 
-    &--active {
-        color: var(--LFM-blue);
-        background: var(--LFM-blue-subtle);
-    }
-}
+  &--active
+    color: var(--color-primary)
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent)
 
-.LFM-search-box {
-    background: var(--LFM-panel);
-    border: 1px solid var(--LFM-border);
-    border-radius: 6px;
-    height: 32px;
-    margin: 0 4px;
-}
+.LFM-search-box
+  background: var(--color-base-100)
+  border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+  border-radius: 6px
+  height: 32px
+  margin: 0 4px
 
-.LFM-nav-right {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
-}
+.LFM-nav-right
+  display: flex
+  align-items: center
+  gap: 4px
+  flex-shrink: 0
 </style>

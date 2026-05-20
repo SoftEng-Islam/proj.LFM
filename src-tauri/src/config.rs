@@ -11,12 +11,30 @@ pub struct Config {
     pub terminal: Terminal,
 }
 
+fn default_accent() -> String {
+    "orange".to_string()
+}
+
+fn default_window_controls() -> bool {
+    true
+}
+
+fn default_icon_size() -> String {
+    "medium".to_string()
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Appearance {
     pub theme: String,
     pub icon_set: String,
     pub font_size: u8,
     pub show_hidden_files: bool,
+    #[serde(default = "default_accent")]
+    pub accent: String,
+    #[serde(default = "default_window_controls")]
+    pub window_controls: bool,
+    #[serde(default = "default_icon_size")]
+    pub icon_size: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -39,6 +57,9 @@ impl Default for Config {
                 icon_set: "Papirus".to_string(),
                 font_size: 14,
                 show_hidden_files: false,
+                accent: "orange".to_string(),
+                window_controls: true,
+                icon_size: "medium".to_string(),
             },
             behavior: Behavior {
                 default_path: "/drives".to_string(),

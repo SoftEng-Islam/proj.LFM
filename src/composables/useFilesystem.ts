@@ -60,22 +60,23 @@ export function getHomeDir(): string {
  */
 export function getSectionPath(sectionId: SectionId): string {
 	const home = getHomeDir();
+	const normalizedHome = home.endsWith('/') ? home.slice(0, -1) : home;
 
 	switch (sectionId) {
 		case 'home':
 			return home;
 		case 'documents':
-			return `${home}/Documents`;
+			return `${normalizedHome}/Documents`;
 		case 'downloads':
-			return `${home}/Downloads`;
+			return `${normalizedHome}/Downloads`;
 		case 'Videos':
-			return `${home}/Videos`;
+			return `${normalizedHome}/Videos`;
 		case 'Pictures':
-			return `${home}/Pictures`;
+			return `${normalizedHome}/Pictures`;
 		case 'Public':
-			return `${home}/Public`;
+			return `${normalizedHome}/Public`;
 		case 'Music':
-			return `${home}/Music`;
+			return `${normalizedHome}/Music`;
 		case 'trash':
 			return 'trash'; // handled specially via getTrashedItems()
 		default:

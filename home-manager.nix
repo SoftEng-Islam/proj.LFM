@@ -60,8 +60,13 @@ in
         (pkgs.writeShellScriptBin "lfm" ''
           export GIO_EXTRA_MODULES="${pkgs.glib-networking}/lib/gio/modules"
           export GST_PLUGIN_SYSTEM_PATH_1_0="${pkgs.gst_all_1.gstreamer}/lib/gstreamer-1.0:${pkgs.gst_all_1.gst-plugins-base}/lib/gstreamer-1.0:${pkgs.gst_all_1.gst-plugins-good}/lib/gstreamer-1.0:${pkgs.gst_all_1.gst-plugins-bad}/lib/gstreamer-1.0:${pkgs.gst_all_1.gst-plugins-ugly}/lib/gstreamer-1.0:${pkgs.gst_all_1.gst-libav}/lib/gstreamer-1.0"
+          export GST_PLUGIN_PATH_1_0="$GST_PLUGIN_SYSTEM_PATH_1_0"
           export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath libraries}:$LD_LIBRARY_PATH"
           export PATH="${pkgs.lib.makeBinPath runtimePaths}:$PATH"
+          
+          # Fix WebKitGTK video playback and GStreamer critical errors on NixOS
+          export WEBKIT_DISABLE_COMPOSITING_MODE=1
+          export WEBKIT_DISABLE_DMABUF_RENDERER=1
           
           # Locates and executes the compiled native binary from your workspace
           if [ -f "${toString ./.}/src-tauri/target/release/lfm" ]; then

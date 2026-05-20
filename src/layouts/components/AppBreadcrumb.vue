@@ -30,90 +30,74 @@ const appRouteAliasBreadcrumbs = computed(() => {
 const breadcrumbSegments = computed(() => appRouteAliasBreadcrumbs.value ?? store.breadcrumbs);
 </script>
 
-<template>
-	<div class="LFM-breadcrumb-bar rounded-full" role="navigation" aria-label="Breadcrumb">
-		<RouterLink to="/" class="LFM-breadcrumb-home" title="Home">
-			<IconHome />
-		</RouterLink>
+<template lang="pug">
+div(class="LFM-breadcrumb-bar rounded-full" role="navigation" aria-label="Breadcrumb")
+	RouterLink(to="/" class="LFM-breadcrumb-home" title="Home")
+		IconHome
 
-		<IconChevronRight class="LFM-breadcrumb-sep" />
+	IconChevronRight(class="LFM-breadcrumb-sep")
 
-		<div class="flex items-center overflow-x-auto no-scrollbar">
-			<template v-for="(crumb, i) in breadcrumbSegments" :key="crumb.label">
-				<RouterLink v-if="i < breadcrumbSegments.length - 1 && crumb.path" :to="crumb.path" class="LFM-breadcrumb-crumb LFM-breadcrumb-crumb--link">
-					{{ crumb.label }}
-				</RouterLink>
-				<span v-else class="LFM-breadcrumb-crumb LFM-breadcrumb-crumb--current">
-					{{ crumb.label }}
-				</span>
+	div(class="flex items-center overflow-x-auto no-scrollbar")
+		template(v-for="(crumb, i) in breadcrumbSegments" :key="crumb.label")
+			RouterLink(v-if="i < breadcrumbSegments.length - 1 && crumb.path" :to="crumb.path" class="LFM-breadcrumb-crumb LFM-breadcrumb-crumb--link")
+				| {{ crumb.label }}
+			span(v-else class="LFM-breadcrumb-crumb LFM-breadcrumb-crumb--current")
+				| {{ crumb.label }}
 
-				<IconChevronRight v-if="i < breadcrumbSegments.length - 1" class="LFM-breadcrumb-sep" />
-			</template>
-		</div>
-	</div>
+			IconChevronRight(v-if="i < breadcrumbSegments.length - 1" class="LFM-breadcrumb-sep")
 </template>
 
-<style scoped lang="scss">
-@reference "tailwindcss";
+<style lang="sass" scoped>
+@reference "tailwindcss"
 
-.LFM-breadcrumb-bar {
-	background: var(--LFM-panel);
-	border: 1px solid var(--LFM-border);
-	@apply flex items-center flex-1 h-8 px-2.5 overflow-hidden mx-2 my-0 shadow-inner;
-}
+.LFM-breadcrumb-bar
+  background: var(--color-base-100)
+  border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
+  @apply flex items-center flex-1 h-8 px-2.5 overflow-hidden mx-2 my-0 shadow-inner
 
-.LFM-breadcrumb-home {
-	display: flex;
-	align-items: center;
-	color: var(--LFM-blue);
-	flex-shrink: 0;
-	padding: 4px;
-	border-radius: 4px;
-	transition: background 150ms;
-	font-size: 18px;
+.LFM-breadcrumb-home
+  display: flex
+  align-items: center
+  color: var(--color-primary)
+  flex-shrink: 0
+  padding: 4px
+  border-radius: 4px
+  transition: background 150ms
+  font-size: 18px
 
-	&:hover {
-		background: var(--LFM-hover);
-	}
-}
+  &:hover
+    background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
 
-.LFM-breadcrumb-sep {
-	color: var(--LFM-text);
-	opacity: 0.3;
-	margin: 0 2px;
-	font-size: 16px;
-	flex-shrink: 0;
-}
+.LFM-breadcrumb-sep
+  color: var(--color-base-content)
+  opacity: 0.3
+  margin: 0 2px
+  font-size: 16px
+  flex-shrink: 0
 
-.LFM-breadcrumb-crumb {
-	font-size: 12px;
-	white-space: nowrap;
-	padding: 2px 6px;
-	border-radius: 4px;
-	transition: background 150ms;
-}
+.LFM-breadcrumb-crumb
+  font-size: 12px
+  white-space: nowrap
+  padding: 2px 6px
+  border-radius: 4px
+  transition: background 150ms
 
-.LFM-breadcrumb-crumb--link {
-	color: var(--LFM-text);
-	text-decoration: none;
+.LFM-breadcrumb-crumb--link
+  color: var(--color-base-content)
+  text-decoration: none
 
-	&:hover {
-		background: var(--LFM-hover);
-		color: var(--LFM-blue);
-	}
-}
+  &:hover
+    background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+    color: var(--color-primary)
 
-.LFM-breadcrumb-crumb--current {
-	color: var(--LFM-text);
-	font-weight: 600;
-}
+.LFM-breadcrumb-crumb--current
+  color: var(--color-base-content)
+  font-weight: 600
 
-.no-scrollbar {
-	-ms-overflow-style: none;
-	scrollbar-width: none;
+.no-scrollbar
+  -ms-overflow-style: none
+  scrollbar-width: none
 
-	&::-webkit-scrollbar {
-		display: none;
-	}
-}
+  &::-webkit-scrollbar
+    display: none
 </style>

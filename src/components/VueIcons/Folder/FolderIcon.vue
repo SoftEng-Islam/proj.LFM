@@ -24,7 +24,10 @@ const props = withDefaults(defineProps<Props>(), {
 /** Resolves the folder color to a hex value */
 const hexColor = computed(() => {
 	if (props.color?.startsWith('#')) return props.color;
-	return FOLDER_COLORS[props.color as keyof typeof FOLDER_COLORS] || FOLDER_COLORS.sky;
+	if (props.color === 'orange' || !props.color) {
+		return 'var(--color-primary)';
+	}
+	return FOLDER_COLORS[props.color as keyof typeof FOLDER_COLORS] || 'var(--color-primary)';
 });
 
 /** Retrieves the SVG markup for the tag */
