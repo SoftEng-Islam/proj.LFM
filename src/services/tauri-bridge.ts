@@ -124,30 +124,14 @@ export interface StorageData {
 	status: boolean;
 }
 
-export interface LfmConfigAppearance {
-	theme: 'light' | 'dark';
-	icon_size: string;
-	font_size: number;
-	show_hidden_files: boolean;
-	window_controls: boolean;
-	accent?: string;
-}
-
-export interface LfmConfigBehavior {
-	default_path: string;
-	confirm_delete: boolean;
-	single_click_open: boolean;
-}
-
-export interface LfmConfigTerminal {
-	emulator: string;
-}
-
-export interface LfmConfig {
-	appearance: LfmConfigAppearance;
-	behavior: LfmConfigBehavior;
-	terminal: LfmConfigTerminal;
-}
+// Config types — re-exported from the canonical schema file
+export type {
+	LfmConfigAppearance,
+	LfmConfigBehavior,
+	LfmConfigTerminal,
+	LfmConfig,
+} from '@/schemas/config.schema';
+import type { LfmConfig } from '@/schemas/config.schema';
 
 export interface CliArgs {
 	dirs: string[];
@@ -378,6 +362,15 @@ export function getConfig(): Promise<LfmConfig> {
 
 export function saveConfig(config: LfmConfig): Promise<boolean> {
 	return invoke('save_config', { config });
+}
+
+/**
+ * Start watching `~/.config/LFM/config.toml` for external changes.
+ * When the file changes, the backend emits a `config_file_changed` event
+ * with the freshly-parsed config as payload.
+ */
+export function watchConfigFile(): Promise<void> {
+	return invoke('watch_config_file');
 }
 // ─── System / Shell ──────────────────────────────────────────────────────────
 

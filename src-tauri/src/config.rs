@@ -1,8 +1,11 @@
 use dirs::config_dir;
+use notify::{raw_watcher, RawEvent, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::ErrorKind;
 use std::path::PathBuf;
+use std::sync::mpsc::channel;
+use tauri::Emitter;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Config {
@@ -149,4 +152,70 @@ pub fn save_config(config: Config) -> Result<bool, String> {
             }
         }
     }
+}
+
+/// Watch `~/.config/LFM/config.toml` for external changes.
+/// When the file is modified, the new config is parsed and emitted
+/// to the frontend via a `config_file_changed` event.
+#[tauri::command]
+pub async fn watch_config_file(window: tauri::Window) {
+    let path = config_file_path();
+
+    // Ensure the config file exists before watching
+    if !path.exists() {
+        let default = Config::default();
+        write_default_config(&path, &default);
+    }
+
+    // Watch the parent directory (so we catch file renames/recreations too)
+    let watch_path = path.parent().unwrap_or(path.as_path()).to_path_buf();
+
+    std::thread::spawn(move || {
+        let (tx, rx) = channel();
+        let mut watcher = match raw_watcher(tx) {
+            Ok(w) => w,
+            Err(err) => {
+                eprintln!("[LFM] Failed to create config watcher: {err}");
+                return;
+            }
+        };
+
+        if let Err(err) = watcher.watch(&watch_path, RecursiveMode::NonRecursive) {
+            eprintln!("[LFM] Failed to watch config directory: {err}");
+            return;
+        }
+
+        loop {
+            match rx.recv() {
+                Ok(RawEvent { path: event_path, .. }) => {
+                    // Only react to changes on the actual config.toml file
+                    let config_path = config_file_path();
+                    let is_our_file = event_path
+                        .as_ref()
+                        .map(|p| p == &config_path)
+                        .unwrap_or(false);
+
+                    if !is_our_file {
+                        continue;
+                    }
+
+                    // Small delay for editors that write atomically (rename temp → target)
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+
+                    // Try to read and parse the updated config
+                    if let Ok(content) = fs::read_to_string(&config_path) {
+                        if let Ok(config) = toml::from_str::<Config>(&content) {
+                            if let Err(err) = window.emit("config_file_changed", &config) {
+                                eprintln!("[LFM] Failed to emit config change event: {err}");
+                            }
+                        }
+                    }
+                }
+                Err(err) => {
+                    eprintln!("[LFM] Config watcher channel error: {err}");
+                    break;
+                }
+            }
+        }
+    });
 }

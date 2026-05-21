@@ -1,0 +1,356 @@
+# Linux File Manager — Sorted Task Roadmap
+
+## 1. Core Architecture & Configuration System (Highest Priority)
+
+### 1.1 Unified Config Schema System
+
+- Create a single shared schema for:
+  - Rust backend
+  - Vue frontend
+  - Settings UI
+  - Config file validation
+- Ensure:
+  - Adding a new config field forces updates in both Rust and Vue through type errors.
+  - Settings UI is auto-generated or schema-driven when possible.
+  - Config file and settings window always stay synchronized.
+
+### 1.2 Config File Watching
+
+- Watch `~/.config/LFM`
+- Reload app configuration automatically when configs change.
+- Sync live updates into:
+  - UI
+  - Themes
+  - Keybindings
+  - Explorer behavior
+
+### 1.3 Mount Points Visibility
+
+- Add support to:
+  - Hide mount points
+  - Show mount points
+- Add this into config schema/settings.
+
+### 1.4 Hidden Files Visual Style
+
+- Detect Linux hidden files/folders (`.` prefix).
+- Add distinct visual styling:
+  - Lower opacity
+  - Dimmed appearance
+  - Optional blur/tint effect
+
+---
+
+# 2. Keyboard Shortcuts System
+
+## 2.1 Keybinding Architecture
+
+- Create centralized keyboard shortcut schema.
+- Make shortcuts configurable through settings/config file.
+- Ensure frontend/backend both follow the schema.
+
+## 2.2 Global Keyboard Action Manager
+
+- Centralize keyboard actions.
+- ESC should close:
+  - Dialogs
+  - Modals
+  - Sidebars
+  - Settings window
+  - Any active overlay
+
+## 2.3 Navigation Shortcuts
+
+- `Alt + Left` → Back
+- `Alt + Right` → Forward
+
+## 2.4 File Selection Shortcuts
+
+- `Shift + Arrows` → Multi-select range
+- `Ctrl + Space` → Toggle specific item selection
+- `Space` → Toggle selection
+
+## 2.5 View/Icon Size Shortcuts
+
+- `Ctrl + Scroll` → Change icon size
+- `Ctrl + Plus/Minus` → Change icon size
+- Support four levels:
+  - Small
+  - Medium
+  - Large
+  - Extra Large
+
+## 2.6 Tabs Navigation
+
+- `Ctrl + PageUp/PageDown`
+- `Ctrl + Shift + Left/Right`
+
+## 2.7 File Operations
+
+- Fix:
+  - Copy
+  - Cut
+  - Paste
+- Currently non-functional.
+
+## 2.8 Function Keys
+
+- `F1` → Help window
+- `F2` → Rename
+- `F3` → Toggle preview pane
+- `F4` → Toggle AI sidebar
+- `F6` → Open default path
+- `F7` → Open settings
+
+## 2.9 Selection Canceling
+
+- `ESC` clears:
+  - Selected files
+  - Open windows/panels
+
+---
+
+# 3. Backend / IPC / File Operations
+
+## 3.1 ActionToolbar IPC Integration
+
+- Implement ActionToolbar IPC calls using:
+  - `src/services/tauri-bridge`
+
+## 3.2 New Item Creation Fix
+
+- Fix NewDropdown actions.
+- Ensure creation happens on:
+  - Real filesystem
+  - Not only frontend UI state
+
+---
+
+# 4. UI/UX Refactor & Frontend Structure
+
+## 4.1 TailwindCSS Standardization
+
+- Ensure all Vue files use TailwindCSS consistently.
+
+## 4.2 Frontend Architecture Cleanup
+
+### Review and refactor
+
+- `src/components`
+- `src/features`
+- `src/layouts`
+
+### Goals
+
+- Reduce confusion
+- Improve scalability
+- Define clear responsibility boundaries
+
+---
+
+# 5. Explorer Toolbar & Controls
+
+## 5.1 ActionToolbar Improvements
+
+File:
+
+- `src/features/explorer/components/ActionToolbar.vue`
+
+### Improve
+
+- Layout
+- Responsiveness
+- Accessibility
+- Visual consistency
+- Animation quality
+
+## 5.2 View Mode Switcher
+
+- Replace separate list/grid buttons with:
+  - Single animated toggle button
+
+## 5.3 Icon Size Dropdown
+
+- Create dropdown for:
+  - Small
+  - Medium
+  - Large
+  - Extra Large
+
+## 5.4 Sort System
+
+- Convert sort button into dropdown menu.
+- Add advanced sort options:
+  - Name
+  - Size
+  - Type
+  - Date modified
+  - Ascending/Descending
+  - Folder-first
+  - Natural sorting
+
+## 5.5 Filter System
+
+- Complete filter functionality.
+- Make filtering smarter:
+  - File type filtering
+  - Extension filtering
+  - Hidden files
+  - Date ranges
+  - Size ranges
+
+---
+
+# 6. Layout Components
+
+## 6.1 AppHeader Improvements
+
+File:
+
+- `src/layouts/components/AppHeader`
+
+### Tasks
+
+- Match Windows File Explorer style.
+- Make window controls optional:
+  - Close
+  - Minimize
+  - Maximize
+- Add schema options to show/hide controls.
+- Ensure AppHeader follows:
+  - Themes
+  - Accent colors
+  - Project styling system
+- Improve active tab visual effects.
+
+## 6.2 AppNavigationBar Improvements
+
+File:
+
+- `src/layouts/components/AppNavigationBar.vue`
+
+### Tasks
+
+- Improve usability
+- Improve responsiveness
+- Improve navigation clarity
+
+---
+
+# 7. Breadcrumb & Path Navigation
+
+## 7.1 Editable Breadcrumb
+
+- Allow:
+  - Copy path
+  - Paste path
+  - Edit path manually
+
+## 7.2 Path Suggestions
+
+- Add autocomplete suggestions while typing.
+
+## 7.3 Path Validation UX
+
+- Visual validation states:
+  - Red border for invalid paths
+  - Success state for valid paths
+
+---
+
+# 8. Search System
+
+## 8.1 Advanced Search Features
+
+Add support for:
+
+- File type filtering
+- Folder-only search
+- Extension filtering
+- Date filtering
+- Size filtering
+- Recursive search
+- Search scopes
+
+---
+
+# 9. File Icons System
+
+## 9.1 Missing File Type Icons
+
+Add icons for:
+
+- `.html`
+- `.mhtml`
+- `.ts`
+- `.yaml`
+- `.envrc`
+
+## 9.2 General File Icon Improvements
+
+- Improve consistency
+- Improve MIME detection
+- Add fallback icons
+- Add theme-aware icons
+
+---
+
+# 10. Preview & Multimedia System (Research/Experimental)
+
+## 10.1 MPV Video Player Research
+
+Investigate using:
+
+- `https://docs.rs/mpv/latest/mpv/`
+
+Instead of:
+
+- `@videojs-player/vue`
+
+### Goals
+
+- Better native integration
+- Lower resource usage
+- Better codec support
+
+## 10.2 VideoJS Research
+
+Read:
+
+- `https://github.com/surmon-china/videojs-player`
+
+Evaluate:
+
+- Stability
+- Tauri compatibility
+- Performance
+
+## 10.3 Audio Visualization
+
+Read:
+
+- `https://github.com/staskobzar/vue-audio-visual`
+
+Use:
+
+- `AvCircle`
+- `<av-circle>`
+
+For:
+
+- Audio preview pane visualizations
+
+---
+
+# Suggested Development Order
+
+1. Unified Config Schema
+2. Keyboard Shortcut System
+3. Backend IPC + Real File Operations
+4. Frontend Structure Cleanup
+5. Explorer Toolbar Improvements
+6. AppHeader + Navigation Components
+7. Breadcrumb/Path Editing
+8. Search System
+9. File Icons
+10. Multimedia/Preview Research

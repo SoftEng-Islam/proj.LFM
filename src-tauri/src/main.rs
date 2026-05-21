@@ -224,6 +224,7 @@ async fn main() {
             commands::thumbnails::get_image_thumbnail,
             config::get_config,
             config::save_config,
+            config::watch_config_file,
             enable_shadow_effect,
             change_transparent_effect,
             media_server::get_media_server_port
