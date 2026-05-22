@@ -31,6 +31,7 @@ let
     gst_all_1.gst-plugins-bad
     gst_all_1.gst-plugins-ugly
     gst_all_1.gst-libav
+
   ];
 
   # Build tools and utilities needed inside the shell
@@ -73,11 +74,11 @@ pkgs.mkShell {
     export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath libraries}:$LD_LIBRARY_PATH"
 
     # Fix WebKitGTK video playback and GStreamer critical errors on NixOS
-    export WEBKIT_DISABLE_COMPOSITING_MODE=1
-    export WEBKIT_DISABLE_DMABUF_RENDERER=1
+    # export WEBKIT_DISABLE_COMPOSITING_MODE=1
+    # export WEBKIT_DISABLE_DMABUF_RENDERER=1
 
     # Disable WebKit Sandbox which often blocks GStreamer from accessing the GPU or file system
-    export WEBKIT_FORCE_SANDBOX=0
+    # export WEBKIT_FORCE_SANDBOX=0
 
     # Force GStreamer to use software rendering or basic sinks if the GL sink crashes WebKit
     export GST_PLUGIN_FEATURE_RANK=glimagesink:NONE
