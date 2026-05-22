@@ -289,6 +289,24 @@ function isFolder(entry: { kind: string }) {
 	return entry.kind === 'folder';
 }
 
+function fileEntryClass(id: string, isHidden?: boolean) {
+	return {
+		'LFM-grid-item--selected': store.selectedItemIds.has(id),
+		'LFM-file-entry--hidden': !!isHidden,
+		'LFM-file-entry--hidden-blurred': !!isHidden && store.hiddenFilesVisualStyle === 'blurred',
+		'LFM-file-entry--hidden-normal': !!isHidden && store.hiddenFilesVisualStyle === 'normal',
+	};
+}
+
+function listEntryClass(id: string, isHidden?: boolean) {
+	return {
+		'LFM-list-row--selected': store.selectedItemIds.has(id),
+		'LFM-file-entry--hidden': !!isHidden,
+		'LFM-file-entry--hidden-blurred': !!isHidden && store.hiddenFilesVisualStyle === 'blurred',
+		'LFM-file-entry--hidden-normal': !!isHidden && store.hiddenFilesVisualStyle === 'normal',
+	};
+}
+
 function handleItemClick(entry: FileEntry, e: MouseEvent) {
 	if (e.ctrlKey || e.metaKey) {
 		store.toggleItemSelection(entry.id);
@@ -466,12 +484,7 @@ onUnmounted(() => {
 					:key="entry.id"
 					type="button"
 					class="LFM-grid-item"
-					:class="{
-						'LFM-grid-item--selected': store.selectedItemIds.has(entry.id),
-						'LFM-file-entry--hidden': entry.isHidden,
-						'LFM-file-entry--hidden-blurred': entry.isHidden && store.hiddenFilesVisualStyle === 'blurred',
-						'LFM-file-entry--hidden-normal': entry.isHidden && store.hiddenFilesVisualStyle === 'normal',
-					}"
+					:class="fileEntryClass(entry.id, entry.isHidden)"
 					:aria-selected="store.selectedItemIds.has(entry.id)"
 					:title="entry.name"
 					:data-item-id="entry.id"
@@ -497,12 +510,7 @@ onUnmounted(() => {
 					:key="row.id"
 					type="button"
 					class="LFM-list-row"
-					:class="{
-						'LFM-list-row--selected': store.selectedItemIds.has(row.id),
-						'LFM-file-entry--hidden': row.isHidden,
-						'LFM-file-entry--hidden-blurred': row.isHidden && store.hiddenFilesVisualStyle === 'blurred',
-						'LFM-file-entry--hidden-normal': row.isHidden && store.hiddenFilesVisualStyle === 'normal',
-					}"
+					:class="listEntryClass(row.id, row.isHidden)"
 					:data-item-id="row.id"
 					@click="handleItemClick(row, $event)"
 					@dblclick="openItem(row)"
