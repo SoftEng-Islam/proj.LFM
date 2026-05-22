@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
 import { useFileManagerStore } from '@/stores/file-manager';
+import { shouldShowDriveCard } from '@/utils/mount-points';
 import type { DriveCard, NavigationGroup } from '@/types/file-manager';
 
 // Subcomponents
@@ -33,18 +34,8 @@ const store = useFileManagerStore();
 const { driveCards, navigationGroups, homePath } = storeToRefs(store);
 const route = useRoute();
 
-/**
- * System partitions that should be hidden from the sidebar drive list.
- * These are internal Linux mount points that users typically should not browse.
- */
-const HIDDEN_MOUNT_POINTS = new Set(['/boot', '/boot/efi', '/store', '/nix/store', '/run', '/sys', '/proc', '/dev', '/snap']);
-
 const visibleDrives = computed(() =>
-	driveCards.value.filter((drive) => {
-		const mount = drive.mountPoint?.toLowerCase() ?? '';
-		// Hide exact matches and any sub-paths of hidden mount points
-		return !Array.from(HIDDEN_MOUNT_POINTS).some((hidden) => mount === hidden || mount.startsWith(hidden + '/'));
-	})
+	driveCards.value.filter((drive) => shouldShowDriveCard(drive, store.showMountPoints))
 );
 
 // Collapsible section state

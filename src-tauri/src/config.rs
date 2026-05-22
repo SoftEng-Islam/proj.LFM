@@ -9,9 +9,14 @@ use tauri::Emitter;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Config {
+    #[serde(default)]
     pub appearance: Appearance,
+    #[serde(default)]
     pub behavior: Behavior,
+    #[serde(default)]
     pub terminal: Terminal,
+    #[serde(default)]
+    pub explorer: Explorer,
 }
 
 fn default_accent() -> String {
@@ -26,11 +31,23 @@ fn default_icon_size() -> String {
     "medium".to_string()
 }
 
+fn default_icon_set() -> String {
+    "Papirus".to_string()
+}
+
+fn default_hidden_files_visual_style() -> String {
+    "dimmed".to_string()
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Appearance {
+    #[serde(default = "default_theme")]
     pub theme: String,
+    #[serde(default = "default_icon_set")]
     pub icon_set: String,
+    #[serde(default = "default_font_size")]
     pub font_size: u8,
+    #[serde(default)]
     pub show_hidden_files: bool,
     #[serde(default = "default_accent")]
     pub accent: String,
@@ -38,47 +55,109 @@ pub struct Appearance {
     pub window_controls: bool,
     #[serde(default = "default_icon_size")]
     pub icon_size: String,
+    #[serde(default = "default_hidden_files_visual_style")]
+    pub hidden_files_visual_style: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Behavior {
+    #[serde(default = "default_path")]
     pub default_path: String,
+    #[serde(default = "default_confirm_delete")]
     pub confirm_delete: bool,
+    #[serde(default)]
     pub single_click_open: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Terminal {
+    #[serde(default = "default_terminal_emulator")]
     pub emulator: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Explorer {
+    #[serde(default)]
+    pub show_mount_points: bool,
+}
+
+fn default_theme() -> String {
+    "dark".to_string()
+}
+
+fn default_font_size() -> u8 {
+    14
+}
+
+fn default_path() -> String {
+    "/drives".to_string()
+}
+
+fn default_confirm_delete() -> bool {
+    true
+}
+
+fn default_terminal_emulator() -> String {
+    "kitty".to_string()
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
-            appearance: Appearance {
-                theme: "dark".to_string(),
-                icon_set: "Papirus".to_string(),
-                font_size: 14,
-                show_hidden_files: false,
-                accent: "orange".to_string(),
-                window_controls: true,
-                icon_size: "medium".to_string(),
-            },
-            behavior: Behavior {
-                default_path: "/drives".to_string(),
-                confirm_delete: true,
-                single_click_open: false,
-            },
-            terminal: Terminal {
-                emulator: "kitty".to_string(),
-            },
+            appearance: Appearance::default(),
+            behavior: Behavior::default(),
+            terminal: Terminal::default(),
+            explorer: Explorer::default(),
+        }
+    }
+}
+
+impl Default for Appearance {
+    fn default() -> Self {
+        Appearance {
+            theme: default_theme(),
+            icon_set: default_icon_set(),
+            font_size: default_font_size(),
+            show_hidden_files: false,
+            accent: default_accent(),
+            window_controls: default_window_controls(),
+            icon_size: default_icon_size(),
+            hidden_files_visual_style: default_hidden_files_visual_style(),
+        }
+    }
+}
+
+impl Default for Behavior {
+    fn default() -> Self {
+        Behavior {
+            default_path: default_path(),
+            confirm_delete: default_confirm_delete(),
+            single_click_open: false,
+        }
+    }
+}
+
+impl Default for Terminal {
+    fn default() -> Self {
+        Terminal {
+            emulator: default_terminal_emulator(),
+        }
+    }
+}
+
+impl Default for Explorer {
+    fn default() -> Self {
+        Explorer {
+            show_mount_points: false,
         }
     }
 }
 
 fn config_file_path() -> PathBuf {
     let mut path = config_dir().unwrap_or_else(|| {
-        let fallback = std::env::var("HOME").map(PathBuf::from).unwrap_or_else(|_| PathBuf::from("."));
+        let fallback = std::env::var("HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| PathBuf::from("."));
         fallback.join(".config")
     });
     path.push("LFM");
@@ -137,7 +216,8 @@ pub fn get_config() -> Result<Config, String> {
 pub fn save_config(config: Config) -> Result<bool, String> {
     let path = config_file_path();
     if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).map_err(|err| format!("Failed to create config directory: {err}"))?;
+        fs::create_dir_all(parent)
+            .map_err(|err| format!("Failed to create config directory: {err}"))?;
     }
 
     let serialized = toml::to_string_pretty(&config).map_err(|err| err.to_string())?;
@@ -187,7 +267,9 @@ pub async fn watch_config_file(window: tauri::Window) {
 
         loop {
             match rx.recv() {
-                Ok(RawEvent { path: event_path, .. }) => {
+                Ok(RawEvent {
+                    path: event_path, ..
+                }) => {
                     // Only react to changes on the actual config.toml file
                     let config_path = config_file_path();
                     let is_our_file = event_path

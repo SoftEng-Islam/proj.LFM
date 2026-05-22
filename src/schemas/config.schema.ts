@@ -19,12 +19,16 @@
 export interface LfmConfigAppearance {
 	/** Active theme name (e.g. 'dark', 'light', 'lsnord', 'lsrosepine') */
 	theme: string;
+	/** Folder/icon theme set used by the backend and icon layer */
+	icon_set: string;
 	/** Icon size category */
 	icon_size: 'small' | 'medium' | 'large' | 'extra-large';
 	/** Base font size in pixels */
 	font_size: number;
 	/** Whether to display hidden (dot-prefixed) files */
 	show_hidden_files: boolean;
+	/** Visual treatment for hidden files when they are visible */
+	hidden_files_visual_style: 'dimmed' | 'normal' | 'blurred';
 	/** Show native window control buttons (close/minimize/maximize) */
 	window_controls: boolean;
 	/** Accent color palette key (e.g. 'orange', 'blue', 'teal') */
@@ -49,12 +53,20 @@ export interface LfmConfigTerminal {
 	emulator: string;
 }
 
+// ─── Explorer ───────────────────────────────────────────────────────────────
+
+export interface LfmConfigExplorer {
+	/** Whether system/internal mount points should be shown in drive lists */
+	show_mount_points: boolean;
+}
+
 // ─── Root Config ────────────────────────────────────────────────────────────
 
 export interface LfmConfig {
 	appearance: LfmConfigAppearance;
 	behavior: LfmConfigBehavior;
 	terminal: LfmConfigTerminal;
+	explorer: LfmConfigExplorer;
 }
 
 // ─── Default Configuration ──────────────────────────────────────────────────
@@ -66,23 +78,39 @@ export interface LfmConfig {
 export const DEFAULT_CONFIG: LfmConfig = {
 	appearance: {
 		theme: 'dark',
+		icon_set: 'Papirus',
 		icon_size: 'medium',
 		font_size: 14,
 		show_hidden_files: false,
+		hidden_files_visual_style: 'dimmed',
 		window_controls: true,
 		accent: 'orange',
 	},
 	behavior: {
-		default_path: '',
+		default_path: '/drives',
 		confirm_delete: true,
 		single_click_open: false,
 	},
 	terminal: {
 		emulator: 'kitty',
 	},
+	explorer: {
+		show_mount_points: false,
+	},
 };
 
 // ─── Validation ─────────────────────────────────────────────────────────────
+
+type PartialConfigSection<T> = {
+	[K in keyof T]?: T[K];
+};
+
+type PartialLfmConfig = {
+	appearance?: PartialConfigSection<LfmConfigAppearance>;
+	behavior?: PartialConfigSection<LfmConfigBehavior>;
+	terminal?: PartialConfigSection<LfmConfigTerminal>;
+	explorer?: PartialConfigSection<LfmConfigExplorer>;
+};
 
 const VALID_ICON_SIZES: LfmConfigAppearance['icon_size'][] = [
 	'small',
@@ -91,20 +119,28 @@ const VALID_ICON_SIZES: LfmConfigAppearance['icon_size'][] = [
 	'extra-large',
 ];
 
+const VALID_HIDDEN_FILE_STYLES: LfmConfigAppearance['hidden_files_visual_style'][] = [
+	'dimmed',
+	'normal',
+	'blurred',
+];
+
 /**
  * Validates a raw config object, filling in missing fields with defaults.
  * Returns a fully-typed, safe `LfmConfig`.
  */
-export function validateConfig(raw: Partial<LfmConfig>): LfmConfig {
+export function validateConfig(raw: PartialLfmConfig): LfmConfig {
 	const d = DEFAULT_CONFIG;
 	const appearance = raw.appearance ?? {};
 	const behavior = raw.behavior ?? {};
 	const terminal = raw.terminal ?? {};
+	const explorer = raw.explorer ?? {};
 
 	return {
 		appearance: {
 			theme: typeof appearance.theme === 'string' ? appearance.theme : d.appearance.theme,
-			icon_size: VALID_ICON_SIZES.includes(appearance.icon_size as any)
+			icon_set: typeof appearance.icon_set === 'string' ? appearance.icon_set : d.appearance.icon_set,
+			icon_size: VALID_ICON_SIZES.includes(appearance.icon_size as LfmConfigAppearance['icon_size'])
 				? (appearance.icon_size as LfmConfigAppearance['icon_size'])
 				: d.appearance.icon_size,
 			font_size:
@@ -115,6 +151,11 @@ export function validateConfig(raw: Partial<LfmConfig>): LfmConfig {
 				typeof appearance.show_hidden_files === 'boolean'
 					? appearance.show_hidden_files
 					: d.appearance.show_hidden_files,
+			hidden_files_visual_style: VALID_HIDDEN_FILE_STYLES.includes(
+				appearance.hidden_files_visual_style as LfmConfigAppearance['hidden_files_visual_style']
+			)
+				? (appearance.hidden_files_visual_style as LfmConfigAppearance['hidden_files_visual_style'])
+				: d.appearance.hidden_files_visual_style,
 			window_controls:
 				typeof appearance.window_controls === 'boolean'
 					? appearance.window_controls
@@ -133,6 +174,12 @@ export function validateConfig(raw: Partial<LfmConfig>): LfmConfig {
 		},
 		terminal: {
 			emulator: typeof terminal.emulator === 'string' ? terminal.emulator : d.terminal.emulator,
+		},
+		explorer: {
+			show_mount_points:
+				typeof explorer.show_mount_points === 'boolean'
+					? explorer.show_mount_points
+					: d.explorer.show_mount_points,
 		},
 	};
 }

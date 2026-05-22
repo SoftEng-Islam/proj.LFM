@@ -150,6 +150,13 @@ div.LFM-settings-shell
 										input(type="checkbox" v-model="store.config.appearance.show_hidden_files" @change="store.applyLiveConfig()")
 										span Show hidden files
 
+								.LFM-control
+									label(for="hiddenFilesVisualStyle") Hidden files style
+									select#hiddenFilesVisualStyle(v-model="store.config.appearance.hidden_files_visual_style" @change="store.applyLiveConfig()")
+										option(value="dimmed") Dimmed
+										option(value="normal") Normal
+										option(value="blurred") Blurred
+
 						//- Tab 2: Behavior
 						div.LFM-tab-pane(v-show="activeTab === 'behavior'")
 							fieldset.LFM-settings-group
@@ -168,6 +175,11 @@ div.LFM-settings-shell
 									label
 										input(type="checkbox" v-model="store.config.behavior.single_click_open")
 										span Single click to open files
+
+								.LFM-control.LFM-checkbox-control
+									label
+										input(type="checkbox" v-model="store.config.explorer.show_mount_points" @change="store.applyLiveConfig()")
+										span Show system mount points
 
 						//- Tab 3: System & Advanced
 						div.LFM-tab-pane(v-show="activeTab === 'system'")

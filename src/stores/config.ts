@@ -1,6 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia';
 import { useUiStore } from '@/stores/ui';
 import { useExplorerStore } from '@/stores/explorer.store';
+import { useFileManagerStore } from '@/stores/file-manager';
 import { getConfig as getConfigCommand, saveConfig as saveConfigCommand, getHomeDir, watchConfigFile } from '@/services/tauri-bridge';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type { LfmConfig } from '@/schemas/config.schema';
@@ -68,8 +69,13 @@ export const useConfigStore = defineStore('config', {
 		},
 		applyLiveConfig() {
 			const a = this.config.appearance;
+			const explorer = this.config.explorer;
+			const fileManagerStore = useFileManagerStore();
 			useUiStore().setTheme(a.theme);
 			useExplorerStore().showHiddenFiles = a.show_hidden_files;
+			fileManagerStore.setShowHiddenFiles(a.show_hidden_files);
+			fileManagerStore.setHiddenFilesVisualStyle(a.hidden_files_visual_style);
+			fileManagerStore.setShowMountPoints(explorer.show_mount_points);
 			document.documentElement.dataset.accent = a.accent || 'orange';
 			document.documentElement.style.setProperty('--lfm-font-size', String(a.font_size) + 'px');
 			const sizes: Record<string, number> = { small: 16, medium: 24, large: 32, 'extra-large': 48 };

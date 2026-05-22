@@ -67,6 +67,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 	const viewMode = useStorage<ViewMode>('lfm-view-mode', 'grid');
 	const sortMode = useStorage<SortMode>('lfm-sort-mode', 'modified');
 	const settingsOpen = ref(false);
+	const showHiddenFiles = ref(false);
+	const showMountPoints = ref(false);
+	const hiddenFilesVisualStyle = ref<'dimmed' | 'normal' | 'blurred'>('dimmed');
 
 	// ── Clipboard ─────────────────────────────────────────────────────────────
 	const clipboard = ref<{ paths: string[]; mode: 'copy' | 'cut' | null }>({
@@ -130,7 +133,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	// ── Computed: sorted + filtered entries ───────────────────────────────────
 	const sortedAndFilteredEntries = computed(() => {
-		const source = [...currentEntries.value];
+		const source = showHiddenFiles.value
+			? [...currentEntries.value]
+			: currentEntries.value.filter((entry) => !entry.isHidden);
 		const query = searchQuery.value.trim().toLowerCase();
 
 		const filtered = query
@@ -324,6 +329,7 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 					createdAt,
 					accessedAt,
 					readonly: file.readonly,
+					isHidden: file.is_hidden || (file.basename || '').startsWith('.'),
 					preview: category === 'image' ? convertFileSrc(id) : '',
 					status: 'local',
 					accent: file.is_dir ? 'sky' : 'slate',
@@ -422,6 +428,23 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 
 	function setViewMode(nextMode: ViewMode) {
 		viewMode.value = nextMode;
+	}
+
+	function setSortMode(nextMode: SortMode) {
+		sortMode.value = nextMode;
+	}
+
+	function setShowHiddenFiles(nextValue: boolean) {
+		showHiddenFiles.value = nextValue;
+		clearSelection();
+	}
+
+	function setShowMountPoints(nextValue: boolean) {
+		showMountPoints.value = nextValue;
+	}
+
+	function setHiddenFilesVisualStyle(nextValue: typeof hiddenFilesVisualStyle.value) {
+		hiddenFilesVisualStyle.value = nextValue;
 	}
 
 	function cycleSortMode() {
@@ -646,6 +669,9 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		searchQuery,
 		viewMode,
 		sortMode,
+		showHiddenFiles,
+		showMountPoints,
+		hiddenFilesVisualStyle,
 		isLoading,
 		isInitialized,
 
@@ -698,6 +724,10 @@ export const useFileManagerStore = defineStore('file-manager', () => {
 		clearSelection,
 		setSearchQuery,
 		setViewMode,
+		setSortMode,
+		setShowHiddenFiles,
+		setShowMountPoints,
+		setHiddenFilesVisualStyle,
 		cycleSortMode,
 		createDirectory,
 		isPinned,

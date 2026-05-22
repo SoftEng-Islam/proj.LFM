@@ -71,6 +71,8 @@ export const driveCards: DriveCard[] = [
 		accent: 'sky',
 		deviceLabel: 'System',
 		mountPoint: '/',
+		mountName: 'Root',
+		devicePath: '/',
 		filesystem: 'detecting',
 		driveType: 'root',
 		capacityLabel: 'Detecting capacity',

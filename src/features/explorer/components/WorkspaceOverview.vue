@@ -466,7 +466,12 @@ onUnmounted(() => {
 					:key="entry.id"
 					type="button"
 					class="LFM-grid-item"
-					:class="{ 'LFM-grid-item--selected': store.selectedItemIds.has(entry.id) }"
+					:class="{
+						'LFM-grid-item--selected': store.selectedItemIds.has(entry.id),
+						'LFM-file-entry--hidden': entry.isHidden,
+						'LFM-file-entry--hidden-blurred': entry.isHidden && store.hiddenFilesVisualStyle === 'blurred',
+						'LFM-file-entry--hidden-normal': entry.isHidden && store.hiddenFilesVisualStyle === 'normal',
+					}"
 					:aria-selected="store.selectedItemIds.has(entry.id)"
 					:title="entry.name"
 					:data-item-id="entry.id"
@@ -492,7 +497,12 @@ onUnmounted(() => {
 					:key="row.id"
 					type="button"
 					class="LFM-list-row"
-					:class="{ 'LFM-list-row--selected': store.selectedItemIds.has(row.id) }"
+					:class="{
+						'LFM-list-row--selected': store.selectedItemIds.has(row.id),
+						'LFM-file-entry--hidden': row.isHidden,
+						'LFM-file-entry--hidden-blurred': row.isHidden && store.hiddenFilesVisualStyle === 'blurred',
+						'LFM-file-entry--hidden-normal': row.isHidden && store.hiddenFilesVisualStyle === 'normal',
+					}"
 					:data-item-id="row.id"
 					@click="handleItemClick(row, $event)"
 					@dblclick="openItem(row)"
@@ -679,6 +689,25 @@ onUnmounted(() => {
 	overflow: hidden
 	text-overflow: ellipsis
 	white-space: nowrap
+
+.LFM-file-entry--hidden
+	opacity: 0.58
+
+	.LFM-grid-item-icon,
+	.LFM-list-file-icon
+		filter: grayscale(0.4) saturate(0.75)
+
+.LFM-file-entry--hidden-blurred
+	.LFM-grid-item-icon,
+	.LFM-list-file-icon
+		filter: grayscale(0.4) saturate(0.75) blur(0.7px)
+
+.LFM-file-entry--hidden-normal
+	opacity: 1
+
+	.LFM-grid-item-icon,
+	.LFM-list-file-icon
+		filter: none
 
 // ── Navigation error empty state ──────────────────────────────────────────────
 .LFM-nav-error

@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from 'vue';
 import { getDrives } from '@/services/tauri-bridge';
 import type { DriveInformation } from '@/services/tauri-bridge';
 import { mapDriveInfoToCard } from '@/services/mappers';
+import { useFileManagerStore } from '@/stores/file-manager';
+import { shouldShowDriveCard } from '@/utils/mount-points';
 import AppLayout from '@/layouts/AppLayout.vue';
 import fileIcons from '@/features/icons/fileIcons';
 
@@ -50,18 +52,13 @@ function getDriveIconClass(type: string): string {
 }
 
 const drives = ref<DriveInformation[]>([]);
+const store = useFileManagerStore();
 const loading = ref(false);
 const error = ref<string | null>(null);
 const driveCards = computed(() => {
 	return drives.value
 		.map(mapDriveInfoToCard)
-		.filter((card) => {
-			const mountName = card.mountName.toLowerCase();
-
-			// Filter out system partitions ('Boot', 'store')
-			// Filter bind-mounts/pseudo-fs (like Waydroid) by checking for 'none' fsType
-			return !['boot', 'store'].includes(mountName) && card.filesystem !== 'none';
-		})
+		.filter((card) => shouldShowDriveCard(card, store.showMountPoints))
 		.map((card) => {
 			// Normalize path: Resolve duplicated /dev/ prefix and remove redundant slashes
 			let path = card.devicePath.replace(/\/+/g, '/');

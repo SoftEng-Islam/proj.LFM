@@ -1,4 +1,4 @@
-export type UiTheme = 'light' | 'dark';
+export type UiTheme = string;
 export type SectionId = string;
 export type ViewMode = 'grid' | 'list';
 export type SortMode = 'name' | 'modified' | 'size' | 'kind';
@@ -101,6 +101,7 @@ export interface FileEntry {
 	createdAt?: string;
 	accessedAt?: string;
 	readonly?: boolean;
+	isHidden?: boolean;
 	thumbnail?: string;
 	preview: string;
 	status: FileStatus;

@@ -3,6 +3,8 @@ import { computed, ref } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useFileManagerStore } from '@/stores/file-manager';
 import { useConfigStore } from '@/stores/config';
+import type { LfmConfigAppearance } from '@/schemas/config.schema';
+import type { SortMode } from '@/types/file-manager';
 import { createFile as createFileCmd, createDirRecursive as createDirCmd } from '@/services/tauri-bridge';
 
 // Icons
@@ -36,7 +38,7 @@ const showIconSizeDropdown = ref(false);
 const showFilterDropdown = ref(false);
 
 // Icon sizes
-const iconSizes = ['small', 'medium', 'large', 'extra-large'];
+const iconSizes: LfmConfigAppearance['icon_size'][] = ['small', 'medium', 'large', 'extra-large'];
 const iconSizeLabels: Record<string, string> = {
   small: 'Small',
   medium: 'Medium',
@@ -45,12 +47,11 @@ const iconSizeLabels: Record<string, string> = {
 };
 
 // Sort options
-const sortOptions: Record<string, string> = {
+const sortOptions: Record<SortMode, string> = {
   name: 'Name',
   size: 'Size',
   kind: 'Type',
   modified: 'Date modified',
-  created: 'Date created',
 };
 
 const currentIconSize = computed(() => configStore.config.appearance.icon_size);
@@ -77,7 +78,7 @@ async function createNewFile(type: string) {
 	const fullPath = `${store.currentPath}/${baseName}`;
 	try {
 		await createFileCmd(fullPath);
-		await store.refreshCurrentDirectory();
+		await store.refresh();
 		toast.success(`File "${baseName}" created.`);
 	} catch (error) {
 		toast.error(`Failed to create file: ${error}`);
@@ -88,12 +89,12 @@ async function createNewFile(type: string) {
 function cycleSort() { store.cycleSortMode(); }
 function setView(mode: 'grid' | 'list') { store.setViewMode(mode); }
 
-function setSortMode(mode: string) {
-	store.cycleSortMode(); // For now cycle through - can be expanded to set specific mode
+function setSortMode(mode: SortMode) {
+	store.setSortMode(mode);
 	showSortDropdown.value = false;
 }
 
-function setIconSize(size: string) {
+function setIconSize(size: LfmConfigAppearance['icon_size']) {
 	configStore.config.appearance.icon_size = size;
 	configStore.applyLiveConfig();
 	showIconSizeDropdown.value = false;
