@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useFileManagerStore } from '@/stores/file-manager';
+import { on as busOn } from '@/renderer/events/bus';
 import IconBack from '~icons/material-symbols/arrow-back';
 import IconForward from '~icons/material-symbols/arrow-forward';
 import IconUp from '~icons/material-symbols/arrow-upward';
@@ -38,23 +39,19 @@ function goUp() {
     }
 }
 function refresh() { store.refresh(); }
+let disposeFocusShortcut: (() => void) | null = null;
 
-function handleGlobalKeydown(e: KeyboardEvent) {
-    // Ctrl+F focus search
-    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-        e.preventDefault();
-        searchRef.value?.focus();
-    }
-    // F5 refresh content
-    if (e.key === 'F5') {
-        e.preventDefault();
-        refresh();
-    }
-}
+onMounted(() => {
+	disposeFocusShortcut = busOn('shortcut:focus-search', () => {
+		searchRef.value?.focus();
+		searchRef.value?.select();
+	});
+});
 
-import { onMounted, onUnmounted, ref } from 'vue';
-onMounted(() => window.addEventListener('keydown', handleGlobalKeydown));
-onUnmounted(() => window.removeEventListener('keydown', handleGlobalKeydown));
+onUnmounted(() => {
+	disposeFocusShortcut?.();
+	disposeFocusShortcut = null;
+});
 </script>
 
 <template lang="pug">

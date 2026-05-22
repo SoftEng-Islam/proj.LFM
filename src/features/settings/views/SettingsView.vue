@@ -2,9 +2,11 @@
 import { onMounted, computed, ref } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useConfigStore } from '@/stores/config';
+import { SHORTCUT_FIELD_ORDER, type ShortcutConfigKey } from '@/schemas/config.schema';
 import IconClose from '~icons/material-symbols/close';
 import IconPalette from '~icons/material-symbols/palette';
 import IconTune from '~icons/material-symbols/tune';
+import IconKeyboard from '~icons/material-symbols/keyboard';
 import IconTerminal from '~icons/material-symbols/terminal';
 
 const emit = defineEmits<{
@@ -17,6 +19,7 @@ const activeTab = ref('appearance');
 const tabs = [
 	{ id: 'appearance', label: 'Appearance', icon: IconPalette },
 	{ id: 'behavior', label: 'Behavior', icon: IconTune },
+	{ id: 'shortcuts', label: 'Shortcuts', icon: IconKeyboard },
 	{ id: 'system', label: 'System', icon: IconTerminal },
 ];
 
@@ -65,6 +68,22 @@ function setAccent(id: string) {
 
 function closeSettings() {
 	emit('close');
+}
+
+function shortcutValue(key: ShortcutConfigKey): string {
+	return store.config.shortcuts[key].join(', ');
+}
+
+function updateShortcut(key: ShortcutConfigKey, value: string) {
+	store.config.shortcuts[key] = value
+		.split(',')
+		.map((entry) => entry.trim())
+		.filter(Boolean);
+}
+
+function onShortcutInput(key: ShortcutConfigKey, event: Event) {
+	const target = event.target as HTMLInputElement | null;
+	updateShortcut(key, target?.value ?? '');
 }
 
 onMounted(async () => {
@@ -181,7 +200,25 @@ div.LFM-settings-shell
 										input(type="checkbox" v-model="store.config.explorer.show_mount_points" @change="store.applyLiveConfig()")
 										span Show system mount points
 
-						//- Tab 3: System & Advanced
+						//- Tab 3: Keyboard Shortcuts
+						div.LFM-tab-pane(v-show="activeTab === 'shortcuts'")
+							fieldset.LFM-settings-group
+								legend Keyboard Shortcuts
+								p.LFM-settings-hint Use comma-separated bindings like `Ctrl+PageDown, Ctrl+Shift+ArrowRight`.
+
+								.LFM-control(
+									v-for="field in SHORTCUT_FIELD_ORDER"
+									:key="field.key"
+								)
+									label(:for="`shortcut-${field.key}`") {{ field.label }}
+									input(
+										:id="`shortcut-${field.key}`"
+										type="text"
+										:value="shortcutValue(field.key)"
+										@input="onShortcutInput(field.key, $event)"
+									)
+
+						//- Tab 4: System & Advanced
 						div.LFM-tab-pane(v-show="activeTab === 'system'")
 							fieldset.LFM-settings-group
 								legend System Settings

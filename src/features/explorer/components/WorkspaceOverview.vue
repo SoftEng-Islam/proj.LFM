@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { computed, ref, onMounted, onUnmounted } from 'vue';
-import { on as busOn, off as busOff } from '@/renderer/events/bus';
+import { on as busOn } from '@/renderer/events/bus';
 import { useRouter } from 'vue-router';
 
 import { openFile } from '@/services/tauri-bridge';
@@ -98,6 +98,8 @@ const isDragging = ref(false);
 const dragStart = ref<{ x: number; y: number } | null>(null);
 const dragEnd = ref<{ x: number; y: number } | null>(null);
 const workspaceRef = ref<HTMLElement>();
+const selectionAnchorId = ref<string | null>(null);
+const busCleanup: Array<() => void> = [];
 
 // Computed style for the selection box
 const selectionBoxStyle = computed(() => {
@@ -209,6 +211,7 @@ function handleWorkspaceClick() {
 	// Only clear selection if we weren't just dragging
 	if (!wasDragging.value) {
 		store.clearSelection();
+		selectionAnchorId.value = null;
 	}
 	wasDragging.value = false;
 }
@@ -219,7 +222,7 @@ function openContextMenu(e: MouseEvent, itemId: string) {
 	e.preventDefault();
 	// Only select the item if it's not already selected
 	if (!store.selectedItemIds.has(itemId)) {
-		store.selectItem(itemId);
+		setPrimarySelection(itemId);
 	}
 	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId };
 }
@@ -231,6 +234,7 @@ function closeContextMenu() {
 function openEmptyContextMenu(e: MouseEvent) {
 	e.preventDefault();
 	store.clearSelection();
+	selectionAnchorId.value = null;
 	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId: '' };
 }
 
@@ -289,6 +293,103 @@ function isFolder(entry: { kind: string }) {
 	return entry.kind === 'folder';
 }
 
+function currentGridStride(): number {
+	switch (iconSize.value) {
+		case 'small':
+			return 84;
+		case 'large':
+			return 124;
+		case 'extra-large':
+			return 154;
+		default:
+			return 104;
+	}
+}
+
+function currentItemsPerRow(): number {
+	if (store.viewMode !== 'grid') return 1;
+	const containerWidth = workspaceRef.value?.offsetWidth || window.innerWidth;
+	return Math.max(1, Math.floor(containerWidth / currentGridStride()));
+}
+
+function activeSelectedId(): string | null {
+	return store.selectedItemIds.size > 0 ? selectedId.value : null;
+}
+
+function setPrimarySelection(itemId: string) {
+	store.selectItem(itemId);
+	selectionAnchorId.value = itemId;
+}
+
+function setRangeSelection(targetId: string) {
+	const items = store.currentEntries;
+	if (items.length === 0) return;
+
+	const anchorId = selectionAnchorId.value || activeSelectedId() || targetId;
+	const anchorIndex = items.findIndex((item) => item.id === anchorId);
+	const targetIndex = items.findIndex((item) => item.id === targetId);
+	if (anchorIndex === -1 || targetIndex === -1) {
+		setPrimarySelection(targetId);
+		return;
+	}
+
+	const [start, end] = anchorIndex < targetIndex ? [anchorIndex, targetIndex] : [targetIndex, anchorIndex];
+	store.setSelectedItems(items.slice(start, end + 1).map((item) => item.id));
+}
+
+function toggleFocusedSelection() {
+	const focusedId = activeSelectedId() || selectionAnchorId.value || store.currentEntries[0]?.id;
+	if (!focusedId) return;
+	store.toggleItemSelection(focusedId);
+	selectionAnchorId.value = focusedId;
+}
+
+function moveSelection(direction: 'up' | 'down' | 'left' | 'right', extend: boolean) {
+	const items = store.currentEntries;
+	if (items.length === 0) return;
+
+	if (!activeSelectedId() && !selectionAnchorId.value) {
+		const firstItem = items[0];
+		if (firstItem) setPrimarySelection(firstItem.id);
+		return;
+	}
+
+	const currentId = activeSelectedId() || selectionAnchorId.value || items[0]?.id;
+	if (!currentId) return;
+
+	const currentIndex = items.findIndex((item) => item.id === currentId);
+	const safeIndex = currentIndex === -1 ? 0 : currentIndex;
+	let nextIndex = safeIndex;
+
+	switch (direction) {
+		case 'left':
+			nextIndex = Math.max(0, safeIndex - 1);
+			break;
+		case 'right':
+			nextIndex = Math.min(items.length - 1, safeIndex + 1);
+			break;
+		case 'up':
+			nextIndex = Math.max(0, safeIndex - currentItemsPerRow());
+			break;
+		case 'down':
+			nextIndex = Math.min(items.length - 1, safeIndex + currentItemsPerRow());
+			break;
+	}
+
+	const target = items[nextIndex];
+	if (!target) return;
+
+	if (extend) {
+		if (!selectionAnchorId.value) {
+			selectionAnchorId.value = currentId;
+		}
+		setRangeSelection(target.id);
+		return;
+	}
+
+	setPrimarySelection(target.id);
+}
+
 function fileEntryClass(id: string, isHidden?: boolean) {
 	return {
 		'LFM-grid-item--selected': store.selectedItemIds.has(id),
@@ -308,10 +409,17 @@ function listEntryClass(id: string, isHidden?: boolean) {
 }
 
 function handleItemClick(entry: FileEntry, e: MouseEvent) {
+	if (e.shiftKey) {
+		if (!selectionAnchorId.value) selectionAnchorId.value = activeSelectedId() || entry.id;
+		setRangeSelection(entry.id);
+		return;
+	}
+
 	if (e.ctrlKey || e.metaKey) {
 		store.toggleItemSelection(entry.id);
+		selectionAnchorId.value = entry.id;
 	} else {
-		store.selectItem(entry.id);
+		setPrimarySelection(entry.id);
 	}
 }
 
@@ -337,110 +445,58 @@ const formatDate = (dateStr: string) =>
 		new Date(dateStr)
 	);
 
-// ── Keyboard shortcuts ──────────────────────────────────────────────────────
-
-function handleKeydown(e: KeyboardEvent) {
-	// Skip if typing in an input
-	if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-
-	const selected = store.selectedItem;
-
-	// Arrow key navigation
-	if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-		e.preventDefault();
-		const items = store.currentEntries;
-		const idx = items.findIndex((it: FileEntry) => it.id === selectedId.value);
-		let nextIdx = idx;
-
-		if (e.key === 'ArrowRight') nextIdx = Math.min(idx + 1, items.length - 1);
-		if (e.key === 'ArrowLeft') nextIdx = Math.max(idx - 1, 0);
-
-		if (store.viewMode === 'grid') {
-			const containerWidth = workspaceRef.value?.offsetWidth || window.innerWidth;
-			const itemsPerRow = Math.floor(containerWidth / 104) || 1;
-			if (e.key === 'ArrowDown') nextIdx = Math.min(idx + itemsPerRow, items.length - 1);
-			if (e.key === 'ArrowUp') nextIdx = Math.max(idx - itemsPerRow, 0);
-		} else {
-			if (e.key === 'ArrowDown') nextIdx = Math.min(idx + 1, items.length - 1);
-			if (e.key === 'ArrowUp') nextIdx = Math.max(idx - 1, 0);
-		}
-
-		const nextItem = items[nextIdx];
-		if (nextItem) store.selectItem(nextItem.id);
-		return;
-	}
-
-	// Enter — open selected item
-	if (e.key === 'Enter') {
-		e.preventDefault();
-		if (selected) openItem(selected);
-	}
-
-	// F2 — rename
-	if (e.key === 'F2') {
-		e.preventDefault();
-		if (selected) openRenameDialog(selected.id);
-	}
-
-	// Delete — trash selected
-	if (e.key === 'Delete') {
-		e.preventDefault();
-		store.deleteSelection();
-	}
-
-	// Backspace — navigate to parent directory
-	if (e.key === 'Backspace') {
-		const parts = store.currentPath.split('/').filter(Boolean);
-		if (parts.length > 0) {
-			parts.pop();
-			store.openSection('/' + parts.join('/') || '/');
-		}
-	}
-
-	// Ctrl / Meta shortcuts
-	if (e.ctrlKey || e.metaKey) {
-		if (e.key === 'c') {
-			e.preventDefault();
-			if (selected) { store.setClipboard([selected.id], 'copy'); toast.info('Copied to clipboard'); }
-		}
-		if (e.key === 'x') {
-			e.preventDefault();
-			if (selected) { store.setClipboard([selected.id], 'cut'); toast.info('Cut to clipboard'); }
-		}
-		if (e.key === 'v') {
-			e.preventDefault();
-			store.paste().then(() => toast.success('Pasted'));
-		}
-		if (e.key === 'a') {
-			e.preventDefault();
-			// TODO: select all entries
-		}
-	}
-}
-
-onMounted(() => window.addEventListener('keydown', handleKeydown));
 onMounted(() => {
-	window.addEventListener('keydown', handleKeydown);
 	window.addEventListener('mousedown', handleMouseDown);
 	window.addEventListener('mousemove', handleMouseMove);
 	window.addEventListener('mouseup', handleMouseUp);
 
-	// Listen for global rename shortcut (F2) and open rename dialog
-	busOn('shortcut:rename', () => {
-		// Ignore if typing in input or textarea
-		const active = document.activeElement;
-		if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) return;
-		const selected = store.selectedItem;
-		if (selected) openRenameDialog(selected.id);
-	});
+	busCleanup.push(
+		busOn('shortcut:rename', () => {
+			if (store.selectedItem) openRenameDialog(store.selectedItem.id);
+		})
+	);
+	busCleanup.push(
+		busOn('shortcut:navigate', (payload: { direction: 'up' | 'down' | 'left' | 'right'; extend: boolean }) => {
+			moveSelection(payload.direction, payload.extend);
+		})
+	);
+	busCleanup.push(
+		busOn('shortcut:toggle-selection', () => {
+			toggleFocusedSelection();
+		})
+	);
+	busCleanup.push(
+		busOn('shortcut:toggle-selection-focused', () => {
+			toggleFocusedSelection();
+		})
+	);
+	busCleanup.push(
+		busOn('shortcut:escape', () => {
+			if (contextMenu.value.visible) {
+				closeContextMenu();
+				return;
+			}
+			if (renameDialog.value.visible) {
+				renameDialog.value.visible = false;
+				return;
+			}
+			if (propertiesDialog.value.visible) {
+				propertiesDialog.value.visible = false;
+				return;
+			}
+			store.clearSelection();
+			selectionAnchorId.value = null;
+		})
+	);
 });
 
 onUnmounted(() => {
-	window.removeEventListener('keydown', handleKeydown);
 	window.removeEventListener('mousedown', handleMouseDown);
 	window.removeEventListener('mousemove', handleMouseMove);
 	window.removeEventListener('mouseup', handleMouseUp);
-	busOff('shortcut:rename');
+	while (busCleanup.length > 0) {
+		busCleanup.pop()?.();
+	}
 });
 </script>
 

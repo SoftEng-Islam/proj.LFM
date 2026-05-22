@@ -128,6 +128,8 @@ export interface StorageData {
 export type {
 	LfmConfigAppearance,
 	LfmConfigBehavior,
+	LfmConfigExplorer,
+	LfmConfigShortcuts,
 	LfmConfigTerminal,
 	LfmConfig,
 } from '@/schemas/config.schema';

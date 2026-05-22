@@ -60,6 +60,42 @@ export interface LfmConfigExplorer {
 	show_mount_points: boolean;
 }
 
+// ─── Shortcuts ──────────────────────────────────────────────────────────────
+
+export interface LfmConfigShortcuts {
+	back: string[];
+	forward: string[];
+	refresh: string[];
+	focus_search: string[];
+	help: string[];
+	rename: string[];
+	toggle_preview: string[];
+	toggle_ai: string[];
+	goto_default_path: string[];
+	open_settings: string[];
+	next_tab: string[];
+	previous_tab: string[];
+	increase_icon_size: string[];
+	decrease_icon_size: string[];
+	select_all: string[];
+	copy: string[];
+	cut: string[];
+	paste: string[];
+	open_selected: string[];
+	delete_selected: string[];
+	clear_or_close: string[];
+	toggle_selection: string[];
+	toggle_selection_focused: string[];
+	move_up: string[];
+	move_down: string[];
+	move_left: string[];
+	move_right: string[];
+	extend_up: string[];
+	extend_down: string[];
+	extend_left: string[];
+	extend_right: string[];
+}
+
 // ─── Root Config ────────────────────────────────────────────────────────────
 
 export interface LfmConfig {
@@ -67,6 +103,7 @@ export interface LfmConfig {
 	behavior: LfmConfigBehavior;
 	terminal: LfmConfigTerminal;
 	explorer: LfmConfigExplorer;
+	shortcuts: LfmConfigShortcuts;
 }
 
 // ─── Default Configuration ──────────────────────────────────────────────────
@@ -97,6 +134,39 @@ export const DEFAULT_CONFIG: LfmConfig = {
 	explorer: {
 		show_mount_points: false,
 	},
+	shortcuts: {
+		back: ['Alt+ArrowLeft'],
+		forward: ['Alt+ArrowRight'],
+		refresh: ['F5'],
+		focus_search: ['Ctrl+f', 'Meta+f'],
+		help: ['F1'],
+		rename: ['F2'],
+		toggle_preview: ['F3'],
+		toggle_ai: ['F4'],
+		goto_default_path: ['F6'],
+		open_settings: ['F7'],
+		next_tab: ['Ctrl+PageDown', 'Ctrl+Shift+ArrowRight'],
+		previous_tab: ['Ctrl+PageUp', 'Ctrl+Shift+ArrowLeft'],
+		increase_icon_size: ['Ctrl+='],
+		decrease_icon_size: ['Ctrl+-'],
+		select_all: ['Ctrl+a', 'Meta+a'],
+		copy: ['Ctrl+c', 'Meta+c'],
+		cut: ['Ctrl+x', 'Meta+x'],
+		paste: ['Ctrl+v', 'Meta+v'],
+		open_selected: ['Enter'],
+		delete_selected: ['Delete'],
+		clear_or_close: ['Escape'],
+		toggle_selection: ['Space'],
+		toggle_selection_focused: ['Ctrl+Space', 'Meta+Space'],
+		move_up: ['ArrowUp'],
+		move_down: ['ArrowDown'],
+		move_left: ['ArrowLeft'],
+		move_right: ['ArrowRight'],
+		extend_up: ['Shift+ArrowUp'],
+		extend_down: ['Shift+ArrowDown'],
+		extend_left: ['Shift+ArrowLeft'],
+		extend_right: ['Shift+ArrowRight'],
+	},
 };
 
 // ─── Validation ─────────────────────────────────────────────────────────────
@@ -110,7 +180,47 @@ type PartialLfmConfig = {
 	behavior?: PartialConfigSection<LfmConfigBehavior>;
 	terminal?: PartialConfigSection<LfmConfigTerminal>;
 	explorer?: PartialConfigSection<LfmConfigExplorer>;
+	shortcuts?: PartialConfigSection<LfmConfigShortcuts>;
 };
+
+export type ShortcutConfigKey = keyof LfmConfigShortcuts;
+
+export const SHORTCUT_FIELD_ORDER: Array<{
+	key: ShortcutConfigKey;
+	label: string;
+}> = [
+	{ key: 'back', label: 'Back' },
+	{ key: 'forward', label: 'Forward' },
+	{ key: 'refresh', label: 'Refresh' },
+	{ key: 'focus_search', label: 'Focus Search' },
+	{ key: 'help', label: 'Help' },
+	{ key: 'rename', label: 'Rename' },
+	{ key: 'toggle_preview', label: 'Toggle Preview Pane' },
+	{ key: 'toggle_ai', label: 'Toggle AI Sidebar' },
+	{ key: 'goto_default_path', label: 'Open Default Path' },
+	{ key: 'open_settings', label: 'Open Settings' },
+	{ key: 'next_tab', label: 'Next Tab' },
+	{ key: 'previous_tab', label: 'Previous Tab' },
+	{ key: 'increase_icon_size', label: 'Increase Icon Size' },
+	{ key: 'decrease_icon_size', label: 'Decrease Icon Size' },
+	{ key: 'select_all', label: 'Select All' },
+	{ key: 'copy', label: 'Copy' },
+	{ key: 'cut', label: 'Cut' },
+	{ key: 'paste', label: 'Paste' },
+	{ key: 'open_selected', label: 'Open Selected Item' },
+	{ key: 'delete_selected', label: 'Delete Selected Item' },
+	{ key: 'clear_or_close', label: 'Clear Selection / Close Overlay' },
+	{ key: 'toggle_selection', label: 'Toggle Selection' },
+	{ key: 'toggle_selection_focused', label: 'Toggle Focused Item Selection' },
+	{ key: 'move_up', label: 'Move Selection Up' },
+	{ key: 'move_down', label: 'Move Selection Down' },
+	{ key: 'move_left', label: 'Move Selection Left' },
+	{ key: 'move_right', label: 'Move Selection Right' },
+	{ key: 'extend_up', label: 'Extend Selection Up' },
+	{ key: 'extend_down', label: 'Extend Selection Down' },
+	{ key: 'extend_left', label: 'Extend Selection Left' },
+	{ key: 'extend_right', label: 'Extend Selection Right' },
+];
 
 const VALID_ICON_SIZES: LfmConfigAppearance['icon_size'][] = [
 	'small',
@@ -125,6 +235,26 @@ const VALID_HIDDEN_FILE_STYLES: LfmConfigAppearance['hidden_files_visual_style']
 	'blurred',
 ];
 
+function validateShortcutBindings(
+	raw: Partial<LfmConfigShortcuts> | undefined,
+	defaults: LfmConfigShortcuts
+): LfmConfigShortcuts {
+	const result = {} as LfmConfigShortcuts;
+
+	for (const key of Object.keys(defaults) as ShortcutConfigKey[]) {
+		const value = raw?.[key];
+		result[key] = Array.isArray(value)
+			? value.filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0)
+			: defaults[key];
+
+		if (result[key].length === 0) {
+			result[key] = defaults[key];
+		}
+	}
+
+	return result;
+}
+
 /**
  * Validates a raw config object, filling in missing fields with defaults.
  * Returns a fully-typed, safe `LfmConfig`.
@@ -135,6 +265,7 @@ export function validateConfig(raw: PartialLfmConfig): LfmConfig {
 	const behavior = raw.behavior ?? {};
 	const terminal = raw.terminal ?? {};
 	const explorer = raw.explorer ?? {};
+	const shortcuts = raw.shortcuts;
 
 	return {
 		appearance: {
@@ -181,5 +312,6 @@ export function validateConfig(raw: PartialLfmConfig): LfmConfig {
 					? explorer.show_mount_points
 					: d.explorer.show_mount_points,
 		},
+		shortcuts: validateShortcutBindings(shortcuts, d.shortcuts),
 	};
 }
