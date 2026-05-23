@@ -8,37 +8,10 @@ const showThemeController = false;
 </script>
 
 <template lang="pug">
-header.LFM-app-header(data-tauri-drag-region)
-	.LFM-header-left
+header(class="w-full flex items-center justify-between bg-base-300 border-b border-base-content/5 h-[46px] shrink-0 [-webkit-app-region:drag]" data-tauri-drag-region)
+	div(class="flex-1 h-full flex items-stretch")
 		AppHeaderTabStrip
-	.LFM-header-right
+	div(class="flex items-center h-full pr-0")
 		ThemeControllerMini(v-if="showThemeController")
 		AppHeaderButtons
 </template>
-
-<style lang="sass" scoped>
-@reference "tailwindcss"
-
-.LFM-app-header
-	width: 100%
-	display: flex
-	align-items: center
-	justify-content: space-between
-	background: var(--color-base-300)
-	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 8%, transparent)
-	height: 46px
-	flex-shrink: 0
-	-webkit-app-region: drag
-
-.LFM-header-left
-	flex: 1
-	height: 100%
-	display: flex
-	align-items: stretch
-
-.LFM-header-right
-	display: flex
-	align-items: center
-	height: 100%
-	padding-right: 0
-</style>

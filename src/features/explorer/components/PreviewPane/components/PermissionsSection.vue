@@ -7,7 +7,7 @@
  * All bit-manipulation logic is delegated to `FileInfoService`.
  */
 import { ref, watch } from 'vue';
-import { useToast } from 'vue-toastification';
+
 
 import { FileInfoService } from '@/services/FileInfoService';
 import type { FilePermissions } from '@/types/file-manager';
@@ -16,7 +16,7 @@ const props = defineProps<{
 	permissions?: FilePermissions | null;
 }>();
 
-const toast = useToast();
+const toast = { success: console.log, error: console.error, info: console.log, warning: console.warn };
 
 // ── Reactive permission state ───────────────────────────────────────────────
 
@@ -136,38 +136,43 @@ section.LFM-preview-section
 		button(@click="handleApply" class="btn btn-xs btn-primary rounded-lg px-4") Apply
 </template>
 
-<style lang="sass" scoped>
-@reference "tailwindcss"
+<style scoped>
+@reference "tailwindcss";
+.LFM-preview-section {
+  display: flex;
+  flex-direction: column;
+}
 
-.LFM-preview-section
-	display: flex
-	flex-direction: column
+.LFM-section-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-base-content);
+  opacity: 0.4;
+  margin-bottom: 0;
+}
 
-.LFM-section-title
-	font-size: 0.7rem
-	font-weight: 800
-	text-transform: uppercase
-	letter-spacing: 0.1em
-	color: var(--color-base-content)
-	opacity: 0.4
-	margin-bottom: 0
+.LFM-permissions-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  align-items: center;
+  row-gap: 1rem;
+  column-gap: 0.5rem;
+  font-size: 0.875rem;
+}
+.LFM-permissions-grid span {
+  font-weight: 600;
+  opacity: 0.8;
+}
+.LFM-permissions-grid input[type=checkbox] {
+  justify-self: center;
+}
 
-.LFM-permissions-grid
-	display: grid
-	grid-template-columns: 2fr 1fr 1fr 1fr
-	align-items: center
-	row-gap: 1rem
-	column-gap: 0.5rem
-	font-size: 0.875rem
-	span
-		font-weight: 600
-		opacity: 0.8
-	input[type="checkbox"]
-		justify-self: center
-
-.LFM-perm-header
-	font-size: 0.65rem
-	font-weight: 900
-	opacity: 0.3
-	text-transform: uppercase
+.LFM-perm-header {
+  font-size: 0.65rem;
+  font-weight: 900;
+  opacity: 0.3;
+  text-transform: uppercase;
+}
 </style>

@@ -31,73 +31,18 @@ const breadcrumbSegments = computed(() => appRouteAliasBreadcrumbs.value ?? stor
 </script>
 
 <template lang="pug">
-div(class="LFM-breadcrumb-bar rounded-full" role="navigation" aria-label="Breadcrumb")
-	RouterLink(to="/" class="LFM-breadcrumb-home" title="Home")
+div(class="flex items-center flex-1 h-8 px-2.5 overflow-hidden mx-2 my-0 shadow-inner rounded-full bg-base-100 border border-base-content/10" role="navigation" aria-label="Breadcrumb")
+	RouterLink(to="/" class="flex items-center text-primary shrink-0 p-1 rounded transition-colors duration-150 hover:bg-base-content/5 text-[18px]" title="Home")
 		IconHome
 
-	IconChevronRight(class="LFM-breadcrumb-sep")
+	IconChevronRight(class="text-base-content opacity-30 mx-0.5 text-[16px] shrink-0")
 
-	div(class="flex items-center overflow-x-auto no-scrollbar")
+	div(class="flex items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden")
 		template(v-for="(crumb, i) in breadcrumbSegments" :key="crumb.label")
-			RouterLink(v-if="i < breadcrumbSegments.length - 1 && crumb.path" :to="crumb.path" class="LFM-breadcrumb-crumb LFM-breadcrumb-crumb--link")
+			RouterLink(v-if="i < breadcrumbSegments.length - 1 && crumb.path" :to="crumb.path" class="text-[12px] whitespace-nowrap px-1.5 py-0.5 rounded transition-colors duration-150 text-base-content no-underline hover:bg-base-content/5 hover:text-primary")
 				| {{ crumb.label }}
-			span(v-else class="LFM-breadcrumb-crumb LFM-breadcrumb-crumb--current")
+			span(v-else class="text-[12px] whitespace-nowrap px-1.5 py-0.5 rounded transition-colors duration-150 text-base-content font-semibold")
 				| {{ crumb.label }}
 
-			IconChevronRight(v-if="i < breadcrumbSegments.length - 1" class="LFM-breadcrumb-sep")
+			IconChevronRight(v-if="i < breadcrumbSegments.length - 1" class="text-base-content opacity-30 mx-0.5 text-[16px] shrink-0")
 </template>
-
-<style lang="sass" scoped>
-@reference "tailwindcss"
-
-.LFM-breadcrumb-bar
-  background: var(--color-base-100)
-  border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-  @apply flex items-center flex-1 h-8 px-2.5 overflow-hidden mx-2 my-0 shadow-inner
-
-.LFM-breadcrumb-home
-  display: flex
-  align-items: center
-  color: var(--color-primary)
-  flex-shrink: 0
-  padding: 4px
-  border-radius: 4px
-  transition: background 150ms
-  font-size: 18px
-
-  &:hover
-    background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-
-.LFM-breadcrumb-sep
-  color: var(--color-base-content)
-  opacity: 0.3
-  margin: 0 2px
-  font-size: 16px
-  flex-shrink: 0
-
-.LFM-breadcrumb-crumb
-  font-size: 12px
-  white-space: nowrap
-  padding: 2px 6px
-  border-radius: 4px
-  transition: background 150ms
-
-.LFM-breadcrumb-crumb--link
-  color: var(--color-base-content)
-  text-decoration: none
-
-  &:hover
-    background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-    color: var(--color-primary)
-
-.LFM-breadcrumb-crumb--current
-  color: var(--color-base-content)
-  font-weight: 600
-
-.no-scrollbar
-  -ms-overflow-style: none
-  scrollbar-width: none
-
-  &::-webkit-scrollbar
-    display: none
-</style>

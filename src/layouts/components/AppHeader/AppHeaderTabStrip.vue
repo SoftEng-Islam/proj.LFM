@@ -61,180 +61,31 @@ function handleNewTab() {
 </script>
 
 <template lang="pug">
-.LFM-tab-row(data-tauri-drag-region)
-	.LFM-tab-strip(role="tablist")
+div(class="flex items-stretch h-[46px] bg-base-300 shrink-0 select-none" data-tauri-drag-region)
+	div(class="flex items-stretch h-full pl-2" role="tablist")
 		transition-group(name="tab-list")
-			RouterLink.LFM-tab(
+			RouterLink(
 				v-for="tab in store.windowTabs"
 				:key="tab.id"
 				:to="{ path: resolveAppRoutePath(tab.path), query: { tab: tab.id } }"
 				@click="store.setActiveTab(tab.id)"
-				:class="{ 'LFM-tab--active': activeTabId === tab.id }"
+				:class="['group flex items-center min-w-[140px] max-w-[220px] h-[38px] mt-2 px-3 cursor-pointer text-base-content no-underline rounded-t-lg transition-all duration-150 relative text-xs border-x border-t border-transparent border-b-0', activeTabId === tab.id ? 'bg-base-100 z-10 text-primary font-semibold border-x-base-content/10 border-t-base-content/10 [box-shadow:0_-4px_12px_rgba(0,0,0,0.04)] before:content-[\\'\\'] before:absolute before:top-0 before:left-0 before:right-0 before:h-[3px] before:bg-primary before:rounded-t-lg before:[box-shadow:0_2px_8px_rgba(var(--color-primary),0.4)]' : 'hover:bg-base-content/5']"
 				role="tab"
 				:aria-selected="activeTabId === tab.id"
 			)
-				.LFM-tab-content
-					IconFolder.LFM-tab-icon(:class="tab.accent ? `text-${tab.accent}-500` : 'text-amber-500'")
-					span.LFM-tab-label {{ tab.label }}
-					button.LFM-tab-close(
+				div(class="flex items-center gap-2 w-full")
+					IconFolder(class="text-[16px] shrink-0" :class="tab.accent ? `text-${tab.accent}-500` : 'text-amber-500'")
+					span(class="flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap font-medium") {{ tab.label }}
+					button(
 						v-if="store.windowTabs.length > 1"
+						class="flex items-center justify-center w-[18px] h-[18px] rounded bg-transparent border-none cursor-pointer text-base-content text-[12px] opacity-0 group-hover:opacity-60 transition-all duration-150 hover:bg-base-content/15 hover:!opacity-100 hover:text-error"
 						title="Close tab"
 						@click.prevent="handleCloseTab(tab.id)"
 					)
 						IconClose
 
-		button.LFM-new-tab(title="New tab" @click="handleNewTab")
+		button(class="flex items-center justify-center w-7 h-7 mt-3 mx-1.5 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 hover:bg-base-content/10" title="New tab" @click="handleNewTab")
 			IconAdd
 
-	.LFM-tab-drag(data-tauri-drag-region)
+	div(class="flex-1 [-webkit-app-region:drag]" data-tauri-drag-region)
 </template>
-
-<style lang="sass" scoped>
-@reference "tailwindcss"
-
-.LFM-tab-row
-	display: flex
-	align-items: stretch
-	height: 46px
-	background: var(--color-base-300)
-	flex-shrink: 0
-	user-select: none
-
-.LFM-tab-strip
-	display: flex
-	align-items: stretch
-	height: 100%
-	padding-left: 8px
-
-.LFM-tab
-	display: flex
-	align-items: center
-	min-width: 140px
-	max-width: 220px
-	height: 38px
-	margin-top: 8px
-	padding: 0 12px
-	cursor: pointer
-	color: var(--color-base-content)
-	text-decoration: none
-	border-radius: 8px 8px 0 0
-	transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1)
-	position: relative
-	font-size: 12px
-	border: 1px solid transparent
-	border-bottom: none
-
-	// Tab separator line
-	&::after
-		content: ''
-		position: absolute
-		right: 0
-		top: 25%
-		bottom: 25%
-		width: 1px
-		background: color-mix(in srgb, var(--color-base-content) 12%, transparent)
-		transition: opacity 150ms ease
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 4%, transparent)
-
-	&--active
-		background: var(--color-base-100)
-		z-index: 2
-		color: var(--color-primary)
-		font-weight: 600
-		border-color: color-mix(in srgb, var(--color-base-content) 8%, transparent)
-		box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04)
-
-		// Top Windows-style accent line
-		&::before
-			content: ''
-			position: absolute
-			top: 0
-			left: 0
-			right: 0
-			height: 3px
-			background: var(--color-primary)
-			border-radius: 8px 8px 0 0
-			box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 40%, transparent)
-
-	// Hide separator on hovered or active tabs
-	&--active::after,
-	&:hover::after,
-	&--active + &::after
-		opacity: 0
-
-.LFM-tab-content
-	display: flex
-	align-items: center
-	gap: 8px
-	width: 100%
-
-.LFM-tab-icon
-	font-size: 16px
-	flex-shrink: 0
-
-.LFM-tab-label
-	flex: 1
-	overflow: hidden
-	text-overflow: ellipsis
-	white-space: nowrap
-	font-weight: 500
-
-.LFM-tab-close
-	display: flex
-	align-items: center
-	justify-content: center
-	width: 18px
-	height: 18px
-	border-radius: 4px
-	background: transparent
-	border: none
-	cursor: pointer
-	color: var(--color-base-content)
-	font-size: 12px
-	opacity: 0
-	transition: all 150ms ease
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 15%, transparent)
-		color: var(--color-error)
-
-.LFM-tab:hover .LFM-tab-close
-	opacity: 0.6
-
-.LFM-tab-close:hover
-	opacity: 1 !important
-
-.LFM-new-tab
-	display: flex
-	align-items: center
-	justify-content: center
-	width: 28px
-	height: 28px
-	margin-top: 12px
-	margin-left: 6px
-	margin-right: 6px
-	border-radius: 6px
-	background: transparent
-	border: none
-	cursor: pointer
-	color: var(--color-base-content)
-	font-size: 18px
-	transition: all 150ms ease
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 8%, transparent)
-
-.LFM-tab-drag
-	flex: 1
-	-webkit-app-region: drag
-
-// Animations
-.tab-list-enter-active, .tab-list-leave-active
-	transition: all 250ms ease
-
-.tab-list-enter-from, .tab-list-leave-to
-	opacity: 0
-	transform: translateY(-8px) scale(0.95)
-</style>

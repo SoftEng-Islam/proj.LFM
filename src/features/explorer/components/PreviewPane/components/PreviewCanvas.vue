@@ -12,7 +12,7 @@
  * Emits `expand` when the fullscreen button is clicked.
  */
 import { computed, ref, useTemplateRef } from 'vue';
-import { useToast } from 'vue-toastification';
+
 
 import IconFullscreen from '~icons/material-symbols/fullscreen';
 import IconFile from '~icons/material-symbols/description';
@@ -59,7 +59,7 @@ const thumbnailSrc = computed(() => {
 
 // ── Playback state ──────────────────────────────────────────────────────────
 
-const toast = useToast();
+const toast = { success: console.log, error: console.error, info: console.log, warning: console.warn };
 const videoRef = useTemplateRef<HTMLVideoElement>('videoRef');
 const audioRef = useTemplateRef<HTMLAudioElement>('audioRef');
 const isPlaying = ref(false);
@@ -116,6 +116,6 @@ div(class="relative w-full min-h-[240px] rounded-2xl overflow-hidden bg-(--color
 		span(v-if="isDirectory" class="font-bold tracking-widest text-xs uppercase") Directory
 </template>
 
-<style lang="sass" scoped>
-@reference "tailwindcss"
+<style scoped>
+@reference "tailwindcss";
 </style>

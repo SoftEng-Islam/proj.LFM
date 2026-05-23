@@ -32,6 +32,6 @@ const setTheme = (newTheme: string) => {
 				| {{ t.label }}
 </template>
 
-<style lang="sass" scoped>
-@reference "tailwindcss"
+<style scoped>
+@reference "tailwindcss";
 </style>

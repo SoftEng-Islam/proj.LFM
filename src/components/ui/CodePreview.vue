@@ -160,177 +160,22 @@ onMounted(() => {
 </script>
 
 <template lang="pug">
-.LFM-code-preview
+div(class="flex flex-col h-full bg-base-100 rounded-xl border border-base-content/10 overflow-hidden")
 	//- Header with title and copy button
-	.LFM-code-header
-		.LFM-code-title {{ props.filename || props.title || 'Code File' }}
-		button.LFM-code-copy(@click="copyCode" :title="isCopied ? 'Copied!' : 'Copy code'")
-			component(:is="isCopied ? IconCheck : IconContentCopy" class="LFM-code-copy-icon")
+	div(class="flex items-center justify-between px-4 py-3 bg-base-100 border-b border-base-content/10 gap-3")
+		div(class="text-xs font-semibold text-base-content/60 text-ellipsis overflow-hidden whitespace-nowrap flex-1") {{ props.filename || props.title || 'Code File' }}
+		button(class="w-7 h-7 rounded-md bg-transparent border border-base-content/10 text-base-content/60 cursor-pointer flex items-center justify-center transition-all duration-200 shrink-0 hover:bg-base-content/5 hover:text-base-content active:scale-95" @click="copyCode" :title="isCopied ? 'Copied!' : 'Copy code'")
+			component(:is="isCopied ? IconCheck : IconContentCopy" class="w-3.5 h-3.5")
 
 	//- Code content
-	.LFM-code-content
-		.LFM-code-loading(v-if="isLoading")
-			.LFM-code-spinner
+	div(class="flex-1 overflow-auto relative")
+		div(class="flex flex-col items-center justify-center h-full text-base-content/60 text-xs gap-2" v-if="isLoading")
+			div(class="w-5 h-5 border-2 border-base-content/10 border-t-primary rounded-full animate-spin")
 			span Loading code...
 
-		pre.LFM-code-block(v-else)
-			code.LFM-code-text(v-html="formattedCode")
+		pre(class="m-0 p-4 text-[11px] leading-[1.4] font-mono bg-transparent border-none h-full overflow-auto" v-else)
+			code(class="block whitespace-pre font-inherit text-inherit leading-inherit [&_.line-number]:inline-block [&_.line-number]:w-8 [&_.line-number]:mr-3 [&_.line-number]:text-base-content/60 [&_.line-number]:text-right [&_.line-number]:select-none [&_.line-number]:opacity-60 [&_.line-content]:inline-block [&_.hljs]:bg-transparent [&_.hljs]:text-base-content [&_.hljs-keyword]:text-[#d73a49] [&_.hljs-string]:text-[#032f62] [&_.hljs-comment]:text-[#6a737d] [&_.hljs-number]:text-[#005cc5] [&_.hljs-function]:text-[#6f42c1] [&_.hljs-title]:text-[#6f42c1] [&_.hljs-built_in]:text-[#e36209]" v-html="formattedCode")
 
-		.LFM-code-truncated(v-if="isTruncated")
-			span ... and {{ highlightedCode.split('\n').length - 200 }} more lines
+		div(class="px-4 py-2 bg-base-100 border-t border-base-content/10 text-[11px] text-base-content/60 text-center italic" v-if="isTruncated")
+			span ... and {{ highlightedCode.split('\\n').length - 200 }} more lines
 </template>
-
-<style lang="sass" scoped>
-@reference "tailwindcss"
-
-// Import highlight.js themes
-// Highlight.js themes are imported in the script block
-
-
-.LFM-code-preview
-	display: flex
-	flex-direction: column
-	height: 100%
-	background: var(--color-base-100)
-	border-radius: 12px
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	overflow: hidden
-
-.LFM-code-header
-	display: flex
-	align-items: center
-	justify-content: space-between
-	padding: 12px 16px
-	background: var(--color-base-100)
-	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	gap: 12px
-
-.LFM-code-title
-	font-size: 12px
-	font-weight: 600
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	text-overflow: ellipsis
-	overflow: hidden
-	white-space: nowrap
-	flex: 1
-
-.LFM-code-copy
-	width: 28px
-	height: 28px
-	border-radius: 6px
-	background: transparent
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	cursor: pointer
-	display: flex
-	align-items: center
-	justify-content: center
-	transition: all 200ms ease
-	flex-shrink: 0
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-		color: var(--color-base-content)
-
-	&:active
-		transform: scale(0.95)
-
-.LFM-code-copy-icon
-	width: 14px
-	height: 14px
-
-.LFM-code-content
-	flex: 1
-	overflow: auto
-	position: relative
-
-.LFM-code-loading
-	display: flex
-	flex-direction: column
-	align-items: center
-	justify-content: center
-	height: 100%
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	font-size: 12px
-	gap: 8px
-
-.LFM-code-spinner
-	width: 20px
-	height: 20px
-	border: 2px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	border-top: 2px solid var(--color-primary)
-	border-radius: 50%
-	animation: spin 1s linear infinite
-
-@keyframes spin
-	0%
-		transform: rotate(0deg)
-	100%
-		transform: rotate(360deg)
-
-.LFM-code-block
-	margin: 0
-	padding: 16px
-	font-size: 11px
-	line-height: 1.4
-	font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace
-	background: transparent
-	border: none
-	height: 100%
-	overflow: auto
-
-.LFM-code-text
-	display: block
-	white-space: pre
-	font-family: inherit
-	font-size: inherit
-	line-height: inherit
-
-	// Line number styling
-	.line-number
-		display: inline-block
-		width: 32px
-		margin-right: 12px
-		color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-		text-align: right
-		user-select: none
-		opacity: 0.6
-
-	.line-content
-		display: inline-block
-
-	// Highlight.js overrides
-	:deep(.hljs)
-		background: transparent
-		color: var(--color-base-content)
-
-	:deep(.hljs-keyword)
-		color: #d73a49
-
-	:deep(.hljs-string)
-		color: #032f62
-
-	:deep(.hljs-comment)
-		color: #6a737d
-
-	:deep(.hljs-number)
-		color: #005cc5
-
-	:deep(.hljs-function)
-		color: #6f42c1
-
-	:deep(.hljs-title)
-		color: #6f42c1
-
-	:deep(.hljs-built_in)
-		color: #e36209
-
-.LFM-code-truncated
-	padding: 8px 16px
-	background: var(--color-base-100)
-	border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	font-size: 11px
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	text-align: center
-	font-style: italic
-</style>

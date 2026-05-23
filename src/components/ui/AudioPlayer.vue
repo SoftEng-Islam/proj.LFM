@@ -110,7 +110,7 @@ watch(() => props.src, () => {
 </script>
 
 <template lang="pug">
-.LFM-audio-player
+div(class="flex flex-col gap-2 p-3 bg-base-100 rounded-xl border border-base-content/10 w-full")
 	audio(
 		ref="audioRef"
 		:src="props.src"
@@ -123,16 +123,18 @@ watch(() => props.src, () => {
 	)
 
 	//- Player Controls
-	.LFM-audio-controls
+	div(class="flex items-center gap-3 w-full")
 		//- Play/Pause Button
-		button.LFM-audio-btn(@click="togglePlayPause" title="Play/Pause")
-			component(:is="isPlaying ? IconPause : IconPlayArrow" class="LFM-audio-icon")
+		button(class="w-8 h-8 rounded-lg bg-primary text-white border-none cursor-pointer flex items-center justify-center shrink-0 transition-all duration-200 hover:opacity-90 hover:scale-105 active:scale-95" @click="togglePlayPause" title="Play/Pause")
+			component(:is="isPlaying ? IconPause : IconPlayArrow" class="w-4 h-4")
 
 		//- Time and Progress
-		.LFM-audio-progress
-			span.LFM-audio-time {{ currentTimeDisplay }}
-			input.LFM-audio-seek(
+		div(class="flex items-center gap-2 flex-1 min-w-0")
+			span(class="text-[11px] font-semibold text-base-content/60 whitespace-nowrap w-7 text-center") {{ currentTimeDisplay }}
+			input(
 				v-if="isReady"
+				class="flex-1 h-1 appearance-none rounded-[2px] cursor-pointer border-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 hover:[&::-webkit-slider-thumb]:w-[14px] hover:[&::-webkit-slider-thumb]:h-[14px] hover:[&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(59,130,246,0.5)] [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-200 hover:[&::-moz-range-thumb]:w-[14px] hover:[&::-moz-range-thumb]:h-[14px] hover:[&::-moz-range-thumb]:shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+				:style="`background: linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) ${progressPercent}%, color-mix(in srgb, var(--color-base-content) 10%, transparent) ${progressPercent}%, color-mix(in srgb, var(--color-base-content) 10%, transparent) 100%)`"
 				type="range"
 				min="0"
 				max="100"
@@ -140,14 +142,15 @@ watch(() => props.src, () => {
 				@input="handleSeek"
 				title="Seek"
 			)
-			.LFM-audio-bar(v-else)
-			span.LFM-audio-time {{ durationDisplay }}
+			div(class="flex-1 h-1 bg-base-content/10 rounded-[2px]" v-else)
+			span(class="text-[11px] font-semibold text-base-content/60 whitespace-nowrap w-7 text-center") {{ durationDisplay }}
 
 		//- Volume Control
-		.LFM-audio-volume
-			button.LFM-audio-mute(@click="toggleMute" title="Mute/Unmute")
-				component(:is="isMuted ? IconVolumeMute : IconVolumeUp" class="LFM-audio-icon")
-			input.LFM-audio-volume-slider(
+		div(class="flex items-center gap-1.5 shrink-0")
+			button(class="w-6 h-6 rounded-md bg-transparent border border-base-content/10 text-base-content/60 cursor-pointer flex items-center justify-center transition-all duration-200 hover:bg-base-content/5 hover:text-base-content" @click="toggleMute" title="Mute/Unmute")
+				component(:is="isMuted ? IconVolumeMute : IconVolumeUp" class="w-4 h-4")
+			input(
+				class="w-10 h-[3px] appearance-none bg-base-content/10 rounded-[2px] cursor-pointer border-none outline-none disabled:opacity-50 disabled:cursor-not-allowed [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-base-content/60 [&::-webkit-slider-thumb]:cursor-pointer [&:not(:disabled):hover::-webkit-slider-thumb]:bg-base-content [&::-moz-range-thumb]:w-2.5 [&::-moz-range-thumb]:h-2.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-base-content/60 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&:not(:disabled):hover::-moz-range-thumb]:bg-base-content"
 				type="range"
 				min="0"
 				max="1"
@@ -159,181 +162,5 @@ watch(() => props.src, () => {
 			)
 
 	//- Title
-	.LFM-audio-title {{ props.title }}
+	div(class="text-[11px] font-semibold text-base-content/60 text-center text-ellipsis overflow-hidden whitespace-nowrap") {{ props.title }}
 </template>
-
-<style lang="sass" scoped>
-@reference "tailwindcss"
-
-.LFM-audio-player
-	display: flex
-	flex-direction: column
-	gap: 8px
-	padding: 12px
-	background: var(--color-base-100)
-	border-radius: 12px
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	width: 100%
-
-.LFM-audio-controls
-	display: flex
-	align-items: center
-	gap: 12px
-	width: 100%
-
-.LFM-audio-btn
-	width: 32px
-	height: 32px
-	border-radius: 8px
-	background: var(--color-primary)
-	color: white
-	border: none
-	cursor: pointer
-	display: flex
-	align-items: center
-	justify-content: center
-	flex-shrink: 0
-	transition: all 200ms ease
-
-	&:hover
-		opacity: 0.9
-		transform: scale(1.05)
-
-	&:active
-		transform: scale(0.95)
-
-.LFM-audio-icon
-	width: 16px
-	height: 16px
-
-.LFM-audio-progress
-	display: flex
-	align-items: center
-	gap: 8px
-	flex: 1
-	min-width: 0
-
-.LFM-audio-time
-	font-size: 11px
-	font-weight: 600
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	white-space: nowrap
-	width: 28px
-	text-align: center
-
-.LFM-audio-seek
-	flex: 1
-	height: 4px
-	-webkit-appearance: none
-	appearance: none
-	background: linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) calc(var(--value, 0) * 100%), color-mix(in srgb, var(--color-base-content) 10%, transparent) calc(var(--value, 0) * 100%), color-mix(in srgb, var(--color-base-content) 10%, transparent) 100%)
-	border-radius: 2px
-	cursor: pointer
-	border: none
-	outline: none
-
-	&::-webkit-slider-thumb
-		-webkit-appearance: none
-		appearance: none
-		width: 12px
-		height: 12px
-		border-radius: 50%
-		background: var(--color-primary)
-		cursor: pointer
-		transition: all 200ms ease
-
-		&:hover
-			width: 14px
-			height: 14px
-			box-shadow: 0 0 8px rgba(59, 130, 246, 0.5)
-
-	&::-moz-range-thumb
-		width: 12px
-		height: 12px
-		border-radius: 50%
-		background: var(--color-primary)
-		cursor: pointer
-		border: none
-		transition: all 200ms ease
-
-		&:hover
-			width: 14px
-			height: 14px
-			box-shadow: 0 0 8px rgba(59, 130, 246, 0.5)
-
-.LFM-audio-bar
-	flex: 1
-	height: 4px
-	background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	border-radius: 2px
-
-.LFM-audio-volume
-	display: flex
-	align-items: center
-	gap: 6px
-	flex-shrink: 0
-
-.LFM-audio-mute
-	width: 24px
-	height: 24px
-	border-radius: 6px
-	background: transparent
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	cursor: pointer
-	display: flex
-	align-items: center
-	justify-content: center
-	transition: all 200ms ease
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-		color: var(--color-base-content)
-
-.LFM-audio-volume-slider
-	width: 40px
-	height: 3px
-	-webkit-appearance: none
-	appearance: none
-	background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	border-radius: 2px
-	cursor: pointer
-	border: none
-	outline: none
-
-	&::-webkit-slider-thumb
-		-webkit-appearance: none
-		appearance: none
-		width: 10px
-		height: 10px
-		border-radius: 50%
-		background: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-		cursor: pointer
-
-	&::-moz-range-thumb
-		width: 10px
-		height: 10px
-		border-radius: 50%
-		background: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-		cursor: pointer
-		border: none
-
-	&:disabled
-		opacity: 0.5
-		cursor: not-allowed
-
-	&:not(:disabled):hover::-webkit-slider-thumb
-		background: var(--color-base-content)
-
-	&:not(:disabled):hover::-moz-range-thumb
-		background: var(--color-base-content)
-
-.LFM-audio-title
-	font-size: 11px
-	font-weight: 600
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	text-align: center
-	text-overflow: ellipsis
-	overflow: hidden
-	white-space: nowrap
-</style>

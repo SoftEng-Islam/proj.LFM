@@ -56,26 +56,33 @@ aside(class="LFM-preview-pane")
         span(class="LFM-info-value") {{ props.size }}
 </template>
 
-<style lang="sass" scoped>
-@reference "tailwindcss"
+<style scoped>
+@reference "tailwindcss";
+.LFM-preview-pane {
+  @apply h-full w-80 flex flex-col bg-base-100 border-l border-base-300 overflow-hidden shadow-inner;
+}
 
-.LFM-preview-pane
-  @apply h-full w-80 flex flex-col bg-base-100 border-l border-base-300 overflow-hidden shadow-inner
+.LFM-preview-media-header {
+  @apply w-full aspect-video bg-neutral/5 relative overflow-hidden flex items-center justify-center border-b border-base-300;
+}
 
-.LFM-preview-media-header
-  @apply w-full aspect-video bg-neutral/5 relative overflow-hidden flex items-center justify-center border-b border-base-300
+.LFM-preview-placeholder {
+  @apply flex flex-col items-center justify-center;
+}
 
-.LFM-preview-placeholder
-  @apply flex flex-col items-center justify-center
+.LFM-info-list {
+  @apply space-y-3 mt-2;
+}
 
-.LFM-info-list
-  @apply space-y-3 mt-2
+.LFM-info-item {
+  @apply flex justify-between text-[11px] items-center border-b border-base-200 pb-1;
+}
 
-.LFM-info-item
-  @apply flex justify-between text-[11px] items-center border-b border-base-200 pb-1
+.LFM-info-label {
+  @apply opacity-50 font-medium uppercase tracking-wider;
+}
 
-.LFM-info-label
-  @apply opacity-50 font-medium uppercase tracking-wider
-.LFM-info-value
-  @apply font-semibold text-base-content/80
+.LFM-info-value {
+  @apply font-semibold text-base-content/80;
+}
 </style>

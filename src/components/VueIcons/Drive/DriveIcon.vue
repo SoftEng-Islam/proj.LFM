@@ -123,26 +123,32 @@ svg(
 	)
 </template>
 
-<style lang="sass" scoped>
-.LFM-drive-icon
-	display: inline-block
-	vertical-align: middle
-	transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out
+<style scoped>
+.LFM-drive-icon {
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
+}
 
-.LFM-drive-indicator
-	transition: fill-opacity 0.3s ease
+.LFM-drive-indicator {
+  transition: fill-opacity 0.3s ease;
+}
 
-.LFM-drive-indicator--active
-	animation: LFM-drive-pulse 1s ease-in-out infinite
+.LFM-drive-indicator--active {
+  animation: LFM-drive-pulse 1s ease-in-out infinite;
+}
 
-.LFM-drive-icon:hover
-	transform: scale(1.1)
-	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))
+.LFM-drive-icon:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
 
-@keyframes LFM-drive-pulse
-	0%, 100%
-		opacity: 0.45
-
-	50%
-		opacity: 1
+@keyframes LFM-drive-pulse {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
 </style>

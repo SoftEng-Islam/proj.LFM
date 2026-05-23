@@ -95,60 +95,67 @@ section.LFM-preview-section(class="animate__animated animate__fadeIn")
 		span(class="LFM-media-state-label") Media metadata not available
 </template>
 
-<style lang="sass" scoped>
-@reference "tailwindcss"
+<style scoped>
+@reference "tailwindcss";
+.LFM-preview-section {
+  display: flex;
+  flex-direction: column;
+}
 
-.LFM-preview-section
-	display: flex
-	flex-direction: column
+.LFM-section-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-base-content);
+  opacity: 0.4;
+  margin-bottom: 1rem;
+}
 
-.LFM-section-title
-	font-size: 0.7rem
-	font-weight: 800
-	text-transform: uppercase
-	letter-spacing: 0.1em
-	color: var(--color-base-content)
-	opacity: 0.4
-	margin-bottom: 1rem
+.LFM-info-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--color-base-100) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-base-content) 5%, transparent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
 
-.LFM-info-card
-	display: flex
-	flex-direction: column
-	gap: 0.75rem
-	padding: 1.25rem
-	border-radius: 1.25rem
-	background: color-mix(in srgb, var(--color-base-100) 40%, transparent)
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 5%, transparent)
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03)
+.LFM-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+.LFM-info-row label {
+  opacity: 0.5;
+  font-weight: 500;
+}
+.LFM-info-row span, .LFM-info-row strong {
+  font-weight: 600;
+  color: var(--color-base-content);
+}
 
-.LFM-info-row
-	display: flex
-	justify-content: space-between
-	align-items: center
-	font-size: 0.875rem
-	label
-		opacity: 0.5
-		font-weight: 500
-	span, strong
-		font-weight: 600
-		color: var(--color-base-content)
+.LFM-media-state {
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--color-base-100) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-base-content) 5%, transparent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0.4;
+}
 
-.LFM-media-state
-	padding: 1.5rem
-	border-radius: 1.25rem
-	background: color-mix(in srgb, var(--color-base-100) 20%, transparent)
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 5%, transparent)
-	display: flex
-	flex-direction: column
-	align-items: center
-	justify-content: center
-	gap: 0.5rem
-	opacity: 0.4
-
-.LFM-media-state-label
-	font-size: 0.625rem
-	text-transform: uppercase
-	letter-spacing: 0.1em
-	font-weight: 700
-	font-style: italic
+.LFM-media-state-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  font-style: italic;
+}
 </style>

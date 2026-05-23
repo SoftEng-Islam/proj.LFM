@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useToast } from 'vue-toastification';
+
 
 import WorkspaceOverview from '@/features/explorer/components/WorkspaceOverview.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -13,7 +13,7 @@ import type { FileEntry } from '@/types/file-manager';
 const route = useRoute();
 const router = useRouter();
 const store = useFileManagerStore();
-const toast = useToast();
+const toast = { success: console.log, error: console.error, info: console.log, warning: console.warn };
 
 const renameDialog = ref<{ visible: boolean; path: string; currentName: string }>({
 	visible: false,
@@ -79,5 +79,5 @@ AppLayout
 	)
 </template>
 
-<style lang="sass">
+<style>
 </style>

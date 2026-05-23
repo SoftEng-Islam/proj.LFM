@@ -29,17 +29,17 @@ onUnmounted(() => {
 </script>
 
 <template lang="pug">
-	div(id="LFM-shell" class="LFM-shell")
+	div(id="LFM-shell" class="flex flex-col h-screen overflow-hidden bg-base-200 text-base-content text-[12px]")
 		<AppHeader />
 		<AppNavigationBar />
 
-		div(class="LFM-body")
+		div(class="flex flex-1 overflow-hidden min-w-0")
 			<LeftSidebar />
 
-			main(id="main-content" class="LFM-content")
+			main(id="main-content" class="flex-1 overflow-y-auto overflow-x-hidden flex flex-col bg-base-100 min-w-0")
 				<slot />
 
-			div(class="LFM-right-sidebars")
+			div(class="flex shrink-0 h-full min-h-0")
 				//- File Details Preview Panel
 				ResizableRightPanel(
 					v-if="store.detailsOpen"
@@ -68,41 +68,3 @@ onUnmounted(() => {
 		<ExpandedPreview />
 		<SettingsView v-if="store.settingsOpen" @close="store.closeSettings" />
 </template>
-
-<style scoped lang="scss">
-@reference "tailwindcss";
-
-.LFM-shell {
-	display: flex;
-	flex-direction: column;
-	height: 100vh;
-	overflow: hidden;
-	background: var(--color-base-200);
-	color: var(--color-base-content);
-	font-size: 12px;
-}
-
-.LFM-body {
-	display: flex;
-	flex: 1;
-	overflow: hidden;
-	min-width: 0;
-}
-
-.LFM-content {
-	flex: 1;
-	overflow-y: auto;
-	overflow-x: hidden;
-	display: flex;
-	flex-direction: column;
-	background: var(--color-base-100);
-	min-width: 0;
-}
-
-.LFM-right-sidebars {
-	display: flex;
-	flex-shrink: 0;
-	height: 100%;
-	min-height: 0;
-}
-</style>

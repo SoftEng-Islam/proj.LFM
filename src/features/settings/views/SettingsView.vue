@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, computed, ref } from 'vue';
-import { useToast } from 'vue-toastification';
+
 import { useConfigStore } from '@/stores/config';
 import { SHORTCUT_FIELD_ORDER, type ShortcutConfigKey } from '@/schemas/config.schema';
 import IconClose from '~icons/material-symbols/close';
@@ -12,7 +12,7 @@ import IconTerminal from '~icons/material-symbols/terminal';
 const emit = defineEmits<{
 	(e: 'close'): void;
 }>();
-const toast = useToast();
+const toast = { success: console.log, error: console.error, info: console.log, warning: console.warn };
 const store = useConfigStore();
 
 const activeTab = ref('appearance');
@@ -239,231 +239,253 @@ div.LFM-settings-shell
 						span(v-else) Save configuration
 </template>
 
-<style scoped lang="sass">
-@reference "tailwindcss"
+<style scoped>
+@reference "tailwindcss";
+.LFM-settings-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
 
-.LFM-settings-shell
-	position: fixed
-	inset: 0
-	z-index: 40
-	display: flex
-	justify-content: center
-	align-items: center
-	width: 100%
-	height: 100%
-	background: rgba(0, 0, 0, 0.5)
-	pointer-events: auto
+.LFM-settings-window {
+  pointer-events: auto;
+  position: relative;
+  width: min(100%, 820px);
+  height: 80vh;
+  max-height: 700px;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  border: 1px solid var(--color-base-300);
+  border-radius: 1.5rem;
+  background: var(--color-base-100);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
 
-.LFM-settings-window
-	pointer-events: auto
-	position: relative
-	width: min(100%, 820px)
-	height: 80vh
-	max-height: 700px
-	display: flex
-	flex-direction: column
-	margin: 0 auto
-	border: 1px solid var(--color-base-300)
-	border-radius: 1.5rem
-	background: var(--color-base-100)
-	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08)
-	overflow: hidden
+.LFM-settings-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--color-base-300);
+  border-radius: 999px;
+  background: var(--color-base-200);
+  color: var(--color-base-content);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+  z-index: 10;
+}
+.LFM-settings-close:hover {
+  background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
+  border-color: var(--color-primary);
+}
 
-.LFM-settings-close
-	position: absolute
-	top: 1.25rem
-	right: 1.25rem
-	width: 2.5rem
-	height: 2.5rem
-	border: 1px solid var(--color-base-300)
-	border-radius: 999px
-	background: var(--color-base-200)
-	color: var(--color-base-content)
-	display: inline-flex
-	align-items: center
-	justify-content: center
-	cursor: pointer
-	transition: all 150ms ease
-	z-index: 10
+.LFM-settings-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
 
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-		border-color: var(--color-primary)
+.LFM-settings-header {
+  padding: 2rem 2rem 1.5rem;
+  border-bottom: 1px solid var(--color-base-300);
+}
+.LFM-settings-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+.LFM-settings-header p {
+  margin: 0.5rem 0 0 0;
+  color: color-mix(in srgb, var(--color-base-content) 70%, transparent);
+}
 
-.LFM-settings-page
-	display: flex
-	flex-direction: column
-	flex: 1
-	min-height: 0
+.LFM-settings-form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
 
-.LFM-settings-header
-	padding: 2rem 2rem 1.5rem
-	border-bottom: 1px solid var(--color-base-300)
+.LFM-settings-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
 
-	h1
-		font-size: 1.5rem
-		font-weight: 700
-		margin: 0
-	
-	p
-		margin: 0.5rem 0 0 0
-		color: color-mix(in srgb, var(--color-base-content) 70%, transparent)
+.LFM-settings-sidebar {
+  width: 220px;
+  background: var(--color-base-200);
+  border-right: 1px solid var(--color-base-300);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
 
-.LFM-settings-form
-	display: flex
-	flex-direction: column
-	flex: 1
-	min-height: 0
+.LFM-sidebar-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--color-base-content);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-align: left;
+}
+.LFM-sidebar-tab:hover {
+  background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
+}
+.LFM-sidebar-tab.is-active {
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+}
 
-.LFM-settings-layout
-	display: flex
-	flex: 1
-	min-height: 0
+.LFM-tab-icon {
+  font-size: 1.25rem;
+}
 
-.LFM-settings-sidebar
-	width: 220px
-	background: var(--color-base-200)
-	border-right: 1px solid var(--color-base-300)
-	padding: 1.5rem 1rem
-	display: flex
-	flex-direction: column
-	gap: 0.5rem
-	overflow-y: auto
+.LFM-settings-content {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  overflow-y: auto;
+  background: var(--color-base-100);
+}
 
-.LFM-sidebar-tab
-	display: flex
-	align-items: center
-	gap: 0.75rem
-	padding: 0.75rem 1rem
-	border-radius: 0.75rem
-	border: none
-	background: transparent
-	color: var(--color-base-content)
-	font-weight: 500
-	cursor: pointer
-	transition: all 150ms ease
-	text-align: left
+.LFM-settings-group {
+  border: 1px solid var(--color-base-300);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  background: var(--color-base-100);
+}
+.LFM-settings-group legend {
+  font-weight: 700;
+  font-size: 1.125rem;
+  padding: 0 0.5rem;
+  color: var(--color-base-content);
+}
 
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
+.LFM-control {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+.LFM-control:last-child {
+  margin-bottom: 0;
+}
+.LFM-control label {
+  font-weight: 600;
+  color: var(--color-base-content);
+}
 
-	&.is-active
-		background: var(--color-primary)
-		color: var(--color-primary-content)
+.LFM-checkbox-control {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+.LFM-checkbox-control label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: normal;
+}
+.LFM-checkbox-control label input[type=checkbox] {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
 
-.LFM-tab-icon
-	font-size: 1.25rem
+.LFM-accent-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+.LFM-accent-list.is-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
 
-.LFM-settings-content
-	flex: 1
-	padding: 1.5rem 2rem
-	overflow-y: auto
-	background: var(--color-base-100)
+.LFM-accent-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
-.LFM-settings-group
-	border: 1px solid var(--color-base-300)
-	border-radius: 1rem
-	padding: 1.25rem
-	margin-bottom: 1.5rem
-	background: var(--color-base-100)
+.LFM-accent-btn {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 100ms ease;
+}
+.LFM-accent-btn:hover {
+  transform: scale(1.1);
+}
+.LFM-accent-btn.is-active {
+  border-color: var(--color-base-content);
+  box-shadow: 0 0 0 2px var(--color-base-100), 0 0 0 4px var(--color-primary);
+}
 
-	legend
-		font-weight: 700
-		font-size: 1.125rem
-		padding: 0 0.5rem
-		color: var(--color-base-content)
+.LFM-accent-name {
+  font-size: 0.875rem;
+}
 
-.LFM-control
-	display: grid
-	gap: 0.5rem
-	margin-bottom: 1.25rem
+.LFM-control input[type=text],
+.LFM-control select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-base-300);
+  background: var(--color-base-200);
+  color: var(--color-base-content);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.LFM-control input[type=text]:focus,
+.LFM-control select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
 
-	&:last-child
-		margin-bottom: 0
+.LFM-settings-hint {
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--color-base-content) 60%, transparent);
+  margin-top: -0.5rem;
+}
 
-	label
-		font-weight: 600
-		color: var(--color-base-content)
+.LFM-settings-footer {
+  padding: 1.25rem 2rem;
+  border-top: 1px solid var(--color-base-300);
+  background: var(--color-base-200);
+  display: flex;
+  justify-content: flex-end;
+}
 
-.LFM-checkbox-control
-	display: flex
-	align-items: center
-	flex-direction: row
-
-	label
-		display: flex
-		align-items: center
-		gap: 0.5rem
-		cursor: pointer
-		font-weight: normal
-
-		input[type="checkbox"]
-			width: 1.25rem
-			height: 1.25rem
-			margin: 0
-			cursor: pointer
-			accent-color: var(--color-primary)
-
-.LFM-accent-list
-	display: flex
-	flex-wrap: wrap
-	gap: 1rem
-	padding: 0.5rem 0
-
-	&.is-disabled
-		opacity: 0.5
-		pointer-events: none
-
-.LFM-accent-item
-	display: flex
-	align-items: center
-	gap: 0.5rem
-
-.LFM-accent-btn
-	width: 1.5rem
-	height: 1.5rem
-	border-radius: 999px
-	border: 2px solid transparent
-	cursor: pointer
-	transition: transform 100ms ease
-
-	&:hover
-		transform: scale(1.1)
-
-	&.is-active
-		border-color: var(--color-base-content)
-		box-shadow: 0 0 0 2px var(--color-base-100), 0 0 0 4px var(--color-primary)
-
-.LFM-accent-name
-	font-size: 0.875rem
-
-.LFM-control input[type="text"],
-.LFM-control select
-	width: 100%
-	padding: 0.75rem 1rem
-	border-radius: 0.75rem
-	border: 1px solid var(--color-base-300)
-	background: var(--color-base-200)
-	color: var(--color-base-content)
-	transition: border-color 150ms ease, box-shadow 150ms ease
-	
-	&:focus
-		outline: none
-		border-color: var(--color-primary)
-		box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 30%, transparent)
-
-.LFM-settings-hint
-	font-size: 0.75rem
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	margin-top: -0.5rem
-
-.LFM-settings-footer
-	padding: 1.25rem 2rem
-	border-top: 1px solid var(--color-base-300)
-	background: var(--color-base-200)
-	display: flex
-	justify-content: flex-end
-
-.LFM-button
-	@apply inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed
+.LFM-button {
+  @apply inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed;
+}
 </style>

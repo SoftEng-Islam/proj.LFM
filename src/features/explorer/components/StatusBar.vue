@@ -17,25 +17,27 @@ footer(class="LFM-status-bar" role="status" aria-label="Status bar")
 		span(class="LFM-status-selected") {{ selectedLabel }}
 </template>
 
-<style lang="sass" scoped>
-@reference "tailwindcss"
+<style scoped>
+@reference "tailwindcss";
+.LFM-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  padding: 0 12px;
+  background: var(--color-base-200);
+  border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+  font-size: 11px;
+  color: var(--color-base-content);
+  flex-shrink: 0;
+  user-select: none;
+}
 
-.LFM-status-bar
-  display: flex
-  align-items: center
-  gap: 8px
-  height: 24px
-  padding: 0 12px
-  background: var(--color-base-200)
-  border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-  font-size: 11px
-  color: var(--color-base-content)
-  flex-shrink: 0
-  user-select: none
+.LFM-status-sep {
+  opacity: 0.35;
+}
 
-.LFM-status-sep
-  opacity: 0.35
-
-.LFM-status-selected
-  color: var(--color-base-content)
+.LFM-status-selected {
+  color: var(--color-base-content);
+}
 </style>

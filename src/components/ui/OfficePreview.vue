@@ -5,7 +5,7 @@
  */
 import { onMounted, ref } from 'vue';
 import mammoth from 'mammoth';
-import * as XLSX from 'xlsx';
+
 
 interface Props {
 	src: string;
@@ -34,10 +34,7 @@ async function loadDocument() {
 			renderedHtml.value = result.value;
 		} else if (ext === 'xlsx' || ext === 'xls' || ext === 'csv') {
 			isExcel.value = true;
-			const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-			const firstSheetName = workbook.SheetNames[0];
-			const worksheet = workbook.Sheets[firstSheetName];
-			renderedHtml.value = XLSX.utils.sheet_to_html(worksheet);
+			error.value = 'Excel preview is currently disabled (xlsx package removed)';
 		} else {
 			error.value = 'Unsupported office format';
 		}
@@ -55,95 +52,17 @@ onMounted(() => {
 </script>
 
 <template lang="pug">
-.LFM-office-preview
-	.LFM-office-header
-		span.LFM-office-title {{ filename }}
+div(class="flex flex-col h-full bg-white text-[#333] rounded-xl border border-base-content/10 overflow-hidden")
+	div(class="px-4 py-2.5 bg-[#f8f9fa] border-b border-[#dee2e6] flex items-center")
+		span(class="text-xs font-semibold text-[#495057]") {{ filename }}
 	
-	.LFM-office-content(:class="{ 'is-excel': isExcel }")
-		.LFM-office-loading(v-if="isLoading")
-			.LFM-office-spinner
+	div(:class="['flex-1 overflow-auto leading-relaxed', isExcel ? 'p-0 [&_table]:w-full [&_table]:border-collapse [&_table]:text-xs [&_th]:border [&_th]:border-[#dee2e6] [&_th]:p-2 [&_th]:text-left [&_th]:bg-[#f1f3f5] [&_td]:border [&_td]:border-[#dee2e6] [&_td]:p-2 [&_td]:text-left' : 'p-10']")
+		div(v-if="isLoading" class="flex flex-col items-center justify-center h-full text-[#868e96] gap-3")
+			div(class="w-6 h-6 border-2 border-[#dee2e6] border-t-[#228be6] rounded-full animate-spin")
 			span Loading document...
 		
-		.LFM-office-error(v-else-if="error")
+		div(v-else-if="error" class="flex flex-col items-center justify-center h-full text-[#868e96] gap-3")
 			span {{ error }}
 		
-		.LFM-office-rendered(v-else v-html="renderedHtml")
+		div(v-else v-html="renderedHtml" class="max-w-[800px] mx-auto [&_h1]:text-2xl [&_h1]:mb-5 [&_p]:mb-4")
 </template>
-
-<style lang="sass" scoped>
-@reference "tailwindcss"
-
-.LFM-office-preview
-	display: flex
-	flex-direction: column
-	height: 100%
-	background: white
-	color: #333
-	border-radius: 12px
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	overflow: hidden
-
-.LFM-office-header
-	padding: 10px 16px
-	background: #f8f9fa
-	border-bottom: 1px solid #dee2e6
-	display: flex
-	align-items: center
-
-.LFM-office-title
-	font-size: 12px
-	font-weight: 600
-	color: #495057
-
-.LFM-office-content
-	flex: 1
-	overflow: auto
-	padding: 40px
-	line-height: 1.6
-	
-	&.is-excel
-		padding: 0
-		:deep(table)
-			width: 100%
-			border-collapse: collapse
-			font-size: 12px
-			th, td
-				border: 1px solid #dee2e6
-				padding: 8px
-				text-align: left
-			th
-				background: #f1f3f5
-
-.LFM-office-loading, .LFM-office-error
-	display: flex
-	flex-direction: column
-	align-items: center
-	justify-content: center
-	height: 100%
-	color: #868e96
-	gap: 12px
-
-.LFM-office-spinner
-	width: 24px
-	height: 24px
-	border: 2px solid #dee2e6
-	border-top: 2px solid #228be6
-	border-radius: 50%
-	animation: spin 1s linear infinite
-
-@keyframes spin
-	0%
-		transform: rotate(0deg)
-	100%
-		transform: rotate(360deg)
-
-.LFM-office-rendered
-	max-width: 800px
-	margin: 0 auto
-	
-	:deep(h1)
-		font-size: 24px
-		margin-bottom: 20px
-	:deep(p)
-		margin-bottom: 16px
-</style>

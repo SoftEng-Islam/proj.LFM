@@ -104,26 +104,28 @@ div(class="LFM-video-preview")
 	div(v-else class="text-white opacity-50") Loading media engine...
 </template>
 
-<style lang="sass" scoped>
-@reference "tailwindcss"
+<style scoped>
+@reference "tailwindcss";
+.LFM-video-preview {
+  @apply w-full h-full bg-black/20 rounded-lg overflow-hidden flex items-center justify-center;
+}
 
-.LFM-video-preview
-  @apply w-full h-full bg-black/20 rounded-lg overflow-hidden flex items-center justify-center
-
-.LFM-video-player
-  @apply w-full h-full
-
-  :deep(.video-js)
-    @apply bg-transparent font-sans
-
-    .vjs-big-play-button
-      @apply bg-(--color-primary) border-none rounded-full w-16 h-16 leading-[4rem] shadow-lg transition-all duration-200
-      &:hover
-        @apply scale-110 brightness-110
-
-    .vjs-control-bar
-      @apply bg-(--color-base-300)/90 backdrop-blur-md border-t border-white/5
-
-    .vjs-play-progress, .vjs-volume-level
-      @apply bg-(--color-primary)
+.LFM-video-player {
+  @apply w-full h-full;
+}
+.LFM-video-player :deep(.video-js) {
+  @apply bg-transparent font-sans;
+}
+.LFM-video-player :deep(.video-js) .vjs-big-play-button {
+  @apply bg-(--color-primary) border-none rounded-full w-16 h-16 leading-[4rem] shadow-lg transition-all duration-200;
+}
+.LFM-video-player :deep(.video-js) .vjs-big-play-button:hover {
+  @apply scale-110 brightness-110;
+}
+.LFM-video-player :deep(.video-js) .vjs-control-bar {
+  @apply bg-(--color-base-300)/90 backdrop-blur-md border-t border-white/5;
+}
+.LFM-video-player :deep(.video-js) .vjs-play-progress, .LFM-video-player :deep(.video-js) .vjs-volume-level {
+  @apply bg-(--color-primary);
+}
 </style>

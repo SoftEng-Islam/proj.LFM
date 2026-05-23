@@ -79,122 +79,24 @@ onMounted(() => {
 </script>
 
 <template lang="pug">
-.LFM-pdf-preview
+div(class="flex flex-col h-full bg-base-100 rounded-xl border border-base-content/10 overflow-hidden")
 	//- Header with title and page count
-	.LFM-pdf-header
-		.LFM-pdf-title {{ props.title }}
-		.LFM-pdf-info(v-if="pageCount > 0") {{ pageCount }} page{{ pageCount > 1 ? 's' : '' }}
+	div(class="flex items-center justify-between px-4 py-3 bg-base-100 border-b border-base-content/10 gap-3")
+		div(class="text-xs font-semibold text-base-content/60 text-ellipsis overflow-hidden whitespace-nowrap flex-1") {{ props.title }}
+		div(class="text-[11px] text-base-content/60 bg-base-content/5 px-1.5 py-0.5 rounded font-medium" v-if="pageCount > 0") {{ pageCount }} page{{ pageCount > 1 ? 's' : '' }}
 
 	//- PDF content
-	.LFM-pdf-content
-		.LFM-pdf-loading(v-if="isLoading")
-			.LFM-pdf-spinner
+	div(class="flex-1 flex items-center justify-center p-4 min-h-[200px]")
+		div(class="flex flex-col items-center justify-center text-base-content/60 text-xs gap-2" v-if="isLoading")
+			div(class="w-6 h-6 border-2 border-base-content/10 border-t-primary rounded-full animate-spin")
 			span Loading PDF...
 
-		.LFM-pdf-error(v-else-if="error")
+		div(class="text-red-500 text-xs italic text-center" v-else-if="error")
 			span {{ error }}
 
-		canvas.LFM-pdf-canvas(v-else ref="canvasRef" :title="'Click to open ' + props.title")
+		canvas(class="max-w-full max-h-full rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] cursor-pointer transition-transform duration-200 hover:scale-[1.02]" v-else ref="canvasRef" :title="'Click to open ' + props.title")
 
 	//- Footer with open hint
-	.LFM-pdf-footer(v-if="!isLoading && !error")
+	div(class="px-4 py-2 bg-base-100 border-t border-base-content/10 text-center text-[11px] text-base-content/60 italic" v-if="!isLoading && !error")
 		span Click to open full viewer
 </template>
-
-<style lang="sass" scoped>
-@reference "tailwindcss"
-
-.LFM-pdf-preview
-	display: flex
-	flex-direction: column
-	height: 100%
-	background: var(--color-base-100)
-	border-radius: 12px
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	overflow: hidden
-
-.LFM-pdf-header
-	display: flex
-	align-items: center
-	justify-content: space-between
-	padding: 12px 16px
-	background: var(--color-base-100)
-	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	gap: 12px
-
-.LFM-pdf-title
-	font-size: 12px
-	font-weight: 600
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	text-overflow: ellipsis
-	overflow: hidden
-	white-space: nowrap
-	flex: 1
-
-.LFM-pdf-info
-	font-size: 11px
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-	padding: 2px 6px
-	border-radius: 4px
-	font-weight: 500
-
-.LFM-pdf-content
-	flex: 1
-	display: flex
-	align-items: center
-	justify-content: center
-	padding: 16px
-	min-height: 200px
-
-.LFM-pdf-loading
-	display: flex
-	flex-direction: column
-	align-items: center
-	justify-content: center
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	font-size: 12px
-	gap: 8px
-
-.LFM-pdf-spinner
-	width: 24px
-	height: 24px
-	border: 2px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	border-top: 2px solid var(--color-primary)
-	border-radius: 50%
-	animation: spin 1s linear infinite
-
-@keyframes spin
-	0%
-		transform: rotate(0deg)
-	100%
-		transform: rotate(360deg)
-
-.LFM-pdf-error
-	color: #ef4444
-	font-size: 12px
-	font-style: italic
-	text-align: center
-
-.LFM-pdf-canvas
-	max-width: 100%
-	max-height: 100%
-	border-radius: 8px
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)
-	cursor: pointer
-	transition: transform 200ms ease
-
-	&:hover
-		transform: scale(1.02)
-
-.LFM-pdf-footer
-	padding: 8px 16px
-	background: var(--color-base-100)
-	border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	text-align: center
-
-	span
-		font-size: 11px
-		color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-		font-style: italic
-</style>

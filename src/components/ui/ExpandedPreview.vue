@@ -6,7 +6,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useFileManagerStore } from '@/stores/file-manager';
 import { storeToRefs } from 'pinia';
-import { useToast } from 'vue-toastification';
+
 import { readTextFile, convertFileSrc } from '@/services/tauri-bridge';
 
 // Icons
@@ -27,7 +27,7 @@ import OfficePreview from './OfficePreview.vue';
 
 const store = useFileManagerStore();
 const { expandedPreviewId, currentEntries } = storeToRefs(store);
-const toast = useToast();
+const toast = { success: console.log, error: console.error, info: console.log, warning: console.warn };
 
 const item = computed(() => {
 	if (!expandedPreviewId.value) return null;
@@ -232,59 +232,66 @@ onMounted(() => {
 
 <template lang="pug">
 Teleport(to="body")
-	Transition(name="modal-fade")
-		.LFM-expanded-overlay(v-if="item && !isMinimized" @click.self="close")
-			.LFM-expanded-window(
-				:class="{ 'is-fullscreen': isFullscreen }"
+	Transition(
+		enter-active-class="transition-opacity duration-300 ease-in-out"
+		leave-active-class="transition-opacity duration-300 ease-in-out"
+		enter-from-class="opacity-0"
+		leave-to-class="opacity-0"
+	)
+		div(class="fixed inset-0 bg-black/40 backdrop-blur-md z-[9999] flex items-center justify-center p-10" v-if="item && !isMinimized" @click.self="close")
+			div(
+				class="w-full max-w-[1000px] h-full max-h-[800px] bg-base-100 rounded-2xl border border-base-content/10 flex flex-col shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5),0_18px_36px_-18px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.2,1,0.3,1)]"
+				:class="{ '!max-w-none !max-h-none !rounded-none !p-0': isFullscreen }"
 				v-motion
 				:initial="{ opacity: 0, scale: 0.9, y: 20 }"
 				:enter="{ opacity: 1, scale: 1, y: 0 }"
 				:leave="{ opacity: 0, scale: 0.9, y: 20 }"
 			)
 				//- Header
-				header.LFM-expanded-header
-					.LFM-expanded-title-group
-						span.LFM-expanded-symbol {{ item.category === 'folder' ? '📁' : '📄' }}
-						h2.LFM-expanded-title {{ item.name }}
+				header(class="flex items-center justify-between px-4 py-3 bg-base-100 border-b border-base-content/10 shrink-0")
+					div(class="flex items-center gap-2.5")
+						span(class="text-[18px]") {{ item.category === 'folder' ? '📁' : '📄' }}
+						h2(class="m-0 text-[14px] font-bold text-base-content") {{ item.name }}
 
-					.LFM-expanded-actions
+					div(class="flex items-center gap-1.5")
 						//- Type-specific tools
 						template(v-if="isCode || isMarkdown")
-							button.LFM-action-btn(@click="toggleEdit" :class="{ 'is-active': isEditing }" :title="isEditing ? 'View Mode' : 'Edit Mode'")
+							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content [&.is-active]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] [&.is-active]:text-primary" @click="toggleEdit" :class="{ 'is-active': isEditing }" :title="isEditing ? 'View Mode' : 'Edit Mode'")
 								component(:is="isEditing ? IconVisibility : IconEdit")
-							button.LFM-action-btn(v-if="isEditing" @click="handleSave" title="Save Changes")
-								IconSave.text-emerald-500
+							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content" v-if="isEditing" @click="handleSave" title="Save Changes")
+								IconSave(class="text-emerald-500")
 
 						template(v-if="isImage")
-							button.LFM-action-btn(@click="toggleDrawing" :class="{ 'is-active': isDrawing }" title="Draw on image")
+							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content [&.is-active]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] [&.is-active]:text-primary" @click="toggleDrawing" :class="{ 'is-active': isDrawing }" title="Draw on image")
 								IconBrush
-							button.LFM-action-btn(@click="toggleCropping" :class="{ 'is-active': isCropping }" title="Crop Image")
+							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content [&.is-active]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] [&.is-active]:text-primary" @click="toggleCropping" :class="{ 'is-active': isCropping }" title="Crop Image")
 								IconCrop
 
-						.LFM-divider-v
+						div(class="w-[1px] h-5 bg-base-content/10 mx-1")
 
-						button.LFM-action-btn(@click="toggleFullscreen" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'")
+						button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content" @click="toggleFullscreen" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'")
 							component(:is="isFullscreen ? IconFullscreenExit : IconFullscreen")
-						button.LFM-action-btn(@click="isMinimized = true" title="Minimize")
+						button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content" @click="isMinimized = true" title="Minimize")
 							IconMinimize
-						button.LFM-action-btn.LFM-action-btn--close(@click="close" title="Close")
+						button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:!bg-red-500 hover:!text-white" @click="close" title="Close")
 							IconClose
 
 				//- Body
-				.LFM-expanded-body
-					.LFM-expanded-content-wrapper
+				div(class="flex-1 overflow-hidden bg-[#050505] relative")
+					div(class="w-full h-full flex items-center justify-center")
 						//- View Mode
 						template(v-if="!isEditing")
-							.LFM-expanded-image-container(v-if="isImage")
-								.LFM-image-wrapper(
+							div(class="relative max-w-full max-h-full flex items-center justify-center" v-if="isImage")
+								div(class="relative inline-block max-w-full max-h-full overflow-hidden"
 									@mousedown="startCrop"
 									@mousemove="updateCrop"
 									@mouseup="stopCrop"
 									@mouseleave="stopCrop"
 								)
-									img.LFM-expanded-image(:src="resolvedPreviewSrc" alt="Full Preview" draggable="false")
+									img(class="max-w-full max-h-full block select-none LFM-expanded-image" :src="resolvedPreviewSrc" alt="Full Preview" draggable="false")
 
-									canvas.LFM-drawing-canvas(
+									canvas(
+										class="absolute top-0 left-0 w-full h-full cursor-crosshair z-[5]"
 										v-if="isDrawing"
 										ref="canvasRef"
 										width="800"
@@ -295,323 +302,53 @@ Teleport(to="body")
 										@mouseleave="stopDrawing"
 									)
 
-									.LFM-crop-overlay(v-if="isCropping && cropRect.width > 0")
-										.LFM-crop-box(
+									div(class="absolute inset-0 pointer-events-none z-10" v-if="isCropping && cropRect.width > 0")
+										div(
+											class="absolute border-2 border-dashed border-primary bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] pointer-events-auto"
 											:style="{ left: cropRect.x + 'px', top: cropRect.y + 'px', width: cropRect.width + 'px', height: cropRect.height + 'px' }"
 										)
-											button.LFM-apply-crop-btn(@click.stop="applyCrop") Apply Crop
-							video.LFM-expanded-video(v-else-if="isVideo" :src="resolvedPreviewSrc" controls autoplay)
+											button(class="absolute -bottom-8 -right-[2px] bg-primary text-white border-none rounded px-3 py-1 text-xs font-semibold cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all duration-200 hover:bg-sky-500 hover:-translate-y-0.5" @click.stop="applyCrop") Apply Crop
+							video(class="w-full h-full outline-none" v-else-if="isVideo" :src="resolvedPreviewSrc" controls autoplay)
 							CodePreview(v-else-if="isCode" :src="resolvedPreviewSrc" :title="item.name")
 							MarkdownPreview(v-else-if="isMarkdown" :src="resolvedPreviewSrc" :title="item.name")
 							PDFPreview(v-else-if="isPDF" :src="resolvedPreviewSrc" :filename="item.name")
 							OfficePreview(v-else-if="isOffice" :src="resolvedPreviewSrc" :filename="item.name")
-							.LFM-expanded-fallback(v-else)
+							div(class="text-base-content/60 text-[14px]" v-else)
 								span No expanded preview available for this file type.
 
 						//- Edit Mode
 						template(v-else)
-							.LFM-editor-container
-								.LFM-editor-header
-									span.text-xs.opacity-50 Editing {{ item.name }}
-									.flex.gap-2(v-if="isMarkdown")
-										button.btn.btn-xs(@click="showPreview = !showPreview") {{ showPreview ? 'Hide Preview' : 'Show Preview' }}
+							div(class="w-full h-full flex flex-col bg-base-200")
+								div(class="px-4 py-2 bg-base-100 border-b border-base-content/10 flex justify-between items-center")
+									span(class="text-xs opacity-50") Editing {{ item.name }}
+									div(class="flex gap-2" v-if="isMarkdown")
+										button(class="btn btn-xs" @click="showPreview = !showPreview") {{ showPreview ? 'Hide Preview' : 'Show Preview' }}
 
-								.LFM-editor-layout(:class="{ 'is-split': isMarkdown && showPreview }")
-									textarea.LFM-editor-textarea(v-model="editContent" spellcheck="false")
-									.LFM-editor-preview(v-if="isMarkdown && showPreview")
+								div(class="flex-1 flex overflow-hidden [&.is-split_.LFM-editor-textarea]:border-r [&.is-split_.LFM-editor-textarea]:border-base-content/10 [&.is-split_.LFM-editor-textarea]:w-1/2" :class="{ 'is-split': isMarkdown && showPreview }")
+									textarea(class="LFM-editor-textarea flex-1 bg-transparent text-base-content p-5 font-mono text-[13px] leading-[1.6] outline-none border-none resize-none" v-model="editContent" spellcheck="false")
+									div(class="flex-1 bg-base-100 overflow-auto" v-if="isMarkdown && showPreview")
 										MarkdownPreview(:markdown="editContent" :filename="item.name")
 
 				//- Footer
-				footer.LFM-expanded-footer
-					.LFM-expanded-status
+				footer(class="px-4 py-2 bg-base-100 border-t border-base-content/10 flex justify-between items-center text-[11px] text-base-content/60")
+					div(class="flex items-center")
 						span {{ item.typeLabel }}
-						span.mx-2 •
+						span(class="mx-2") •
 						span {{ item.id }}
-					.LFM-expanded-info
+					div
 						span(v-if="isEditing") Editing...
 						span(v-else) Viewing
 
-	Transition(name="pill-slide")
-		.LFM-minimized-pill(v-if="item && isMinimized" @click="isMinimized = false")
-			.LFM-pill-content
-				span.LFM-expanded-symbol {{ item.category === 'folder' ? '📁' : '📄' }}
-				span.LFM-pill-title Viewing: {{ item.name }}
-			button.LFM-action-btn.LFM-action-btn--close(@click.stop="close" title="Close")
+	Transition(
+		enter-active-class="transition-all duration-300 ease-[cubic-bezier(0.2,1,0.3,1)]"
+		leave-active-class="transition-all duration-300 ease-[cubic-bezier(0.2,1,0.3,1)]"
+		enter-from-class="opacity-0 translate-y-10 scale-90"
+		leave-to-class="opacity-0 translate-y-10 scale-90"
+	)
+		div(class="fixed bottom-6 right-6 z-[9999] bg-base-100 border border-base-content/10 rounded-3xl py-2 px-3 pl-4 flex items-center gap-4 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.4),0_4px_10px_-2px_rgba(0,0,0,0.3)] cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-5px_rgba(0,0,0,0.5),0_6px_14px_-2px_rgba(0,0,0,0.4)] hover:border-primary" v-if="item && isMinimized" @click="isMinimized = false")
+			div(class="flex items-center gap-2")
+				span(class="text-[18px]") {{ item.category === 'folder' ? '📁' : '📄' }}
+				span(class="text-[13px] font-semibold text-base-content max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis") Viewing: {{ item.name }}
+			button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:!bg-red-500 hover:!text-white" @click.stop="close" title="Close")
 				IconClose
 </template>
-
-<style lang="sass" scoped>
-@reference "tailwindcss"
-
-.LFM-expanded-overlay
-	position: fixed
-	inset: 0
-	background: rgba(0, 0, 0, 0.4)
-	backdrop-filter: blur(8px)
-	z-index: 9999
-	display: flex
-	align-items: center
-	justify-content: center
-	padding: 40px
-
-.LFM-expanded-window
-	width: 100%
-	max-width: 1000px
-	height: 100%
-	max-height: 800px
-	background: var(--color-base-100)
-	border-radius: 16px
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	display: flex
-	flex-direction: column
-	box-shadow: 0 30px 60px -12px rgba(0,0,0,0.5), 0 18px 36px -18px rgba(0,0,0,0.5)
-	overflow: hidden
-	transition: all 300ms cubic-bezier(0.2, 1, 0.3, 1)
-
-	&.is-fullscreen
-		max-width: none
-		max-height: none
-		border-radius: 0
-		padding: 0
-
-.LFM-expanded-header
-	display: flex
-	align-items: center
-	justify-content: space-between
-	padding: 12px 16px
-	background: var(--color-base-100)
-	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	flex-shrink: 0
-
-.LFM-expanded-title-group
-	display: flex
-	align-items: center
-	gap: 10px
-
-.LFM-expanded-symbol
-	font-size: 18px
-
-.LFM-expanded-title
-	font-size: 14px
-	font-weight: 700
-	color: var(--color-base-content)
-
-.LFM-expanded-actions
-	display: flex
-	align-items: center
-	gap: 6px
-
-.LFM-action-btn
-	width: 32px
-	height: 32px
-	border-radius: 8px
-	display: flex
-	align-items: center
-	justify-content: center
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	transition: all 200ms ease
-	cursor: pointer
-	background: transparent
-	border: none
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-		color: var(--color-base-content)
-
-	&.is-active
-		background: color-mix(in srgb, var(--color-primary) 12%, transparent)
-		color: var(--color-primary)
-
-	&--close:hover
-		background: #ef4444
-		color: white
-
-.LFM-divider-v
-	width: 1px
-	height: 20px
-	background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	margin: 0 4px
-
-.LFM-expanded-body
-	flex: 1
-	overflow: hidden
-	background: #050505
-	position: relative
-
-.LFM-expanded-content-wrapper
-	width: 100%
-	height: 100%
-	display: flex
-	align-items: center
-	justify-content: center
-
-.LFM-expanded-image-container
-	position: relative
-	max-width: 100%
-	max-height: 100%
-	display: flex
-	align-items: center
-	justify-content: center
-
-.LFM-image-wrapper
-	position: relative
-	display: inline-block
-	max-width: 100%
-	max-height: 100%
-	overflow: hidden
-
-.LFM-expanded-image
-	max-width: 100%
-	max-height: 100%
-	display: block
-	user-select: none
-
-.LFM-crop-overlay
-	position: absolute
-	inset: 0
-	pointer-events: none
-	z-index: 10
-
-.LFM-crop-box
-	position: absolute
-	border: 2px dashed var(--color-primary)
-	background: transparent
-	box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5)
-	pointer-events: auto
-
-.LFM-apply-crop-btn
-	position: absolute
-	bottom: -32px
-	right: -2px
-	background: var(--color-primary)
-	color: white
-	border: none
-	border-radius: 4px
-	padding: 4px 12px
-	font-size: 12px
-	font-weight: 600
-	cursor: pointer
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3)
-	transition: all 200ms ease
-	&:hover
-		background: #0ea5e9
-		transform: translateY(-2px)
-
-.LFM-drawing-canvas
-	position: absolute
-	top: 0
-	left: 0
-	width: 100%
-	height: 100%
-	cursor: crosshair
-	z-index: 5
-
-.LFM-expanded-video
-	width: 100%
-	height: 100%
-	outline: none
-
-.LFM-expanded-fallback
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-	font-size: 14px
-
-.LFM-editor-container
-	width: 100%
-	height: 100%
-	display: flex
-	flex-direction: column
-	background: var(--color-base-200)
-
-.LFM-editor-header
-	padding: 8px 16px
-	background: var(--color-base-100)
-	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	display: flex
-	justify-content: space-between
-	align-items: center
-
-.LFM-editor-layout
-	flex: 1
-	display: flex
-	overflow: hidden
-
-	&.is-split
-		.LFM-editor-textarea
-			border-right: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-			width: 50%
-
-.LFM-editor-textarea
-	flex: 1
-	background: transparent
-	color: var(--color-base-content)
-	padding: 20px
-	font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace
-	font-size: 13px
-	line-height: 1.6
-	outline: none
-	border: none
-	resize: none
-
-.LFM-editor-preview
-	flex: 1
-	background: var(--color-base-100)
-	overflow: auto
-
-.LFM-expanded-footer
-	padding: 8px 16px
-	background: var(--color-base-100)
-	border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	display: flex
-	justify-content: space-between
-	align-items: center
-	font-size: 11px
-	color: color-mix(in srgb, var(--color-base-content) 60%, transparent)
-
-.modal-fade-enter-active, .modal-fade-leave-active
-	transition: opacity 300ms ease
-
-.modal-fade-enter-from, .modal-fade-leave-to
-	opacity: 0
-
-.LFM-minimized-pill
-	position: fixed
-	bottom: 24px
-	right: 24px
-	z-index: 9999
-	background: var(--color-base-100)
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	border-radius: 24px
-	padding: 8px 12px 8px 16px
-	display: flex
-	align-items: center
-	gap: 16px
-	box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4), 0 4px 10px -2px rgba(0,0,0,0.3)
-	cursor: pointer
-	transition: all 200ms ease
-
-	&:hover
-		transform: translateY(-2px)
-		box-shadow: 0 14px 30px -5px rgba(0,0,0,0.5), 0 6px 14px -2px rgba(0,0,0,0.4)
-		border-color: var(--color-primary)
-
-.LFM-pill-content
-	display: flex
-	align-items: center
-	gap: 8px
-
-.LFM-pill-title
-	font-size: 13px
-	font-weight: 600
-	color: var(--color-base-content)
-	max-width: 200px
-	white-space: nowrap
-	overflow: hidden
-	text-overflow: ellipsis
-
-.pill-slide-enter-active, .pill-slide-leave-active
-	transition: all 300ms cubic-bezier(0.2, 1, 0.3, 1)
-
-.pill-slide-enter-from, .pill-slide-leave-to
-	opacity: 0
-	transform: translateY(40px) scale(0.9)
-</style>

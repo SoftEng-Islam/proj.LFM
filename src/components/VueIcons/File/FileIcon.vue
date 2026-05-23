@@ -60,17 +60,19 @@ svg.LFM-file-icon.LFM-file-icon--fallback(
 	path(stroke="#c8bdb8" stroke-width="2" stroke-linecap="round" d="M13 22h6M13 27h12M13 32h30M13 37h18M36 37h7")
 </template>
 
-<style lang="sass" scoped>
-.LFM-file-icon
-	display: inline-block
-	vertical-align: middle
-	transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out
-	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))
+<style scoped>
+.LFM-file-icon {
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+.LFM-file-icon:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
 
-	&:hover
-		transform: scale(1.05)
-		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))
-
-.LFM-file-icon--fallback
-	color: #c8bdb8
+.LFM-file-icon--fallback {
+  color: #c8bdb8;
+}
 </style>

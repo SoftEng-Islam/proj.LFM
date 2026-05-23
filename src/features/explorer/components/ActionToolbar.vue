@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useToast } from 'vue-toastification';
+
 import { useFileManagerStore } from '@/stores/file-manager';
 import { useConfigStore } from '@/stores/config';
 import type { LfmConfigAppearance } from '@/schemas/config.schema';
@@ -29,7 +29,7 @@ import IconUploadFile from '~icons/material-symbols/upload-file';
 
 const store = useFileManagerStore();
 const configStore = useConfigStore();
-const toast = useToast();
+const toast = { success: console.log, error: console.error, info: console.log, warning: console.warn };
 
 // Dropdown states
 const showNewDropdown = ref(false);
@@ -160,237 +160,108 @@ async function triggerPaste() {
 </script>
 
 <template lang="pug">
-.LFM-toolbar
-	.LFM-ribbon(role="toolbar" aria-label="Command bar")
-		.LFM-ribbon-group
+div(class="border-b border-base-content/10 bg-base-300 shrink-0")
+	div(class="flex items-center justify-between h-[44px] px-3 gap-1" role="toolbar" aria-label="Command bar")
+		div(class="flex items-center gap-0.5")
 			//- New Dropdown
-			.relative
-				button.LFM-ribbon-btn.LFM-ribbon-btn--new(title="New" @click="showNewDropdown = !showNewDropdown")
-					IconAdd.LFM-ribbon-btn-icon.text-blue-500
-					span.LFM-ribbon-btn-label New
-					span.LFM-ribbon-btn-arrow ▾
+			div(class="relative")
+				button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-md bg-base-100 border border-base-content/10 shadow-sm cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap font-semibold hover:bg-base-content/5 active:bg-base-content/10" title="New" @click="showNewDropdown = !showNewDropdown")
+					IconAdd(class="text-[20px] text-blue-500")
+					span(class="text-[13px]") New
+					span(class="text-[10px] opacity-50") ▾
 
-				.LFM-dropdown-menu(v-if="showNewDropdown")
-					button.LFM-dropdown-item(@click="createDirectory")
-						IconFolder.text-amber-500
+				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-[100] min-w-[160px]" v-if="showNewDropdown")
+					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5" @click="createDirectory")
+						IconFolder(class="text-amber-500")
 						span Directory
-					.LFM-dropdown-divider
-					button.LFM-dropdown-item(@click="createNewFile('Document')")
-						IconDescription.text-blue-400
+					div(class="h-[1px] bg-base-content/10 m-1")
+					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5" @click="createNewFile('Document')")
+						IconDescription(class="text-blue-400")
 						span Text Document
-					button.LFM-dropdown-item(@click="createNewFile('Script')")
-						IconTerminal.text-emerald-500
+					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5" @click="createNewFile('Script')")
+						IconTerminal(class="text-emerald-500")
 						span Bash Script
 
-			.LFM-ribbon-sep
+			div(class="w-[1px] h-6 bg-base-content/10 mx-1.5 opacity-50")
 
-			button.LFM-ribbon-btn(title="Cut" @click="triggerCut")
-				IconContentCut.text-slate-400
-			button.LFM-ribbon-btn(title="Copy" @click="triggerCopy")
-				IconContentCopy.text-blue-500
-			button.LFM-ribbon-btn(title="Paste" @click="triggerPaste")
-				IconContentPaste.text-emerald-500
-			button.LFM-ribbon-btn(title="Shortcut")
-				IconShortcut.text-cyan-500
-			button.LFM-ribbon-btn(title="Rename" @click="triggerRename")
-				IconEdit.text-amber-500
-			button.LFM-ribbon-btn(title="Properties" @click="triggerProperties")
-				IconSettings.text-slate-500
-			button.LFM-ribbon-btn(title="Delete" @click="triggerDelete")
-				IconDelete.text-rose-500
-			button.LFM-ribbon-btn(title="More")
-				IconMoreHoriz.opacity-50
+			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Cut" @click="triggerCut")
+				IconContentCut(class="text-slate-400")
+			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Copy" @click="triggerCopy")
+				IconContentCopy(class="text-blue-500")
+			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Paste" @click="triggerPaste")
+				IconContentPaste(class="text-emerald-500")
+			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Shortcut")
+				IconShortcut(class="text-cyan-500")
+			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Rename" @click="triggerRename")
+				IconEdit(class="text-amber-500")
+			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Properties" @click="triggerProperties")
+				IconSettings(class="text-slate-500")
+			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Delete" @click="triggerDelete")
+				IconDelete(class="text-rose-500")
+			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="More")
+				IconMoreHoriz(class="opacity-50")
 
-		.LFM-ribbon-right
+		div(class="flex items-center gap-0.5")
 			//- Filter dropdown
-			.relative
-				button.LFM-ribbon-btn(title="Filter" @click="showFilterDropdown = !showFilterDropdown")
-					IconFilterAlt.text-violet-500
+			div(class="relative")
+				button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Filter" @click="showFilterDropdown = !showFilterDropdown")
+					IconFilterAlt(class="text-violet-500")
 				
-				.LFM-dropdown-menu(v-if="showFilterDropdown")
-					button.LFM-dropdown-item
-						input.LFM-filter-input(type="text" placeholder="Filter files...")
-					.LFM-dropdown-divider
-					button.LFM-dropdown-item Filter by name
-					button.LFM-dropdown-item Filter by type
-					button.LFM-dropdown-item Filter by size
+				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-[100] min-w-[160px]" v-if="showFilterDropdown")
+					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5")
+						input(class="w-full px-3 py-2 border border-base-content/10 rounded bg-base-200 text-base-content text-[13px] outline-none focus:border-primary" type="text" placeholder="Filter files...")
+					div(class="h-[1px] bg-base-content/10 m-1")
+					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5") Filter by name
+					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5") Filter by type
+					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5") Filter by size
 
 			//- Sort dropdown
-			.relative
-				button.LFM-ribbon-btn.LFM-ribbon-btn--dropdown(title="Sort by" @click="showSortDropdown = !showSortDropdown")
-					IconSort.text-sky-500
-					span.LFM-ribbon-btn-label {{ sortOptions[store.sortMode] || 'Modified' }}
-					span.LFM-ribbon-btn-arrow ▾
+			div(class="relative")
+				button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border border-base-content/10 cursor-pointer text-base-content text-[16px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Sort by" @click="showSortDropdown = !showSortDropdown")
+					IconSort(class="text-sky-500")
+					span(class="text-[13px]") {{ sortOptions[store.sortMode] || 'Modified' }}
+					span(class="text-[10px] opacity-50") ▾
 				
-				.LFM-dropdown-menu(v-if="showSortDropdown")
-					button.LFM-dropdown-item(
+				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-[100] min-w-[160px]" v-if="showSortDropdown")
+					button(
+						class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5"
 						v-for="(label, mode) in sortOptions"
 						:key="mode"
-						:class="{ 'LFM-dropdown-item--active': store.sortMode === mode }"
+						:class="{ 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-primary font-semibold': store.sortMode === mode }"
 						@click="setSortMode(mode)"
 					) {{ label }}
 
-			.LFM-ribbon-sep
+			div(class="w-[1px] h-6 bg-base-content/10 mx-1.5 opacity-50")
 
 			//- Icon size dropdown
-			.relative
-				button.LFM-ribbon-btn.LFM-ribbon-btn--dropdown(title="Icon size" @click="showIconSizeDropdown = !showIconSizeDropdown")
-					span.LFM-ribbon-btn-label {{ iconSizeLabels[currentIconSize] || 'Medium' }}
-					span.LFM-ribbon-btn-arrow ▾
+			div(class="relative")
+				button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border border-base-content/10 cursor-pointer text-base-content text-[16px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Icon size" @click="showIconSizeDropdown = !showIconSizeDropdown")
+					span(class="text-[13px]") {{ iconSizeLabels[currentIconSize] || 'Medium' }}
+					span(class="text-[10px] opacity-50") ▾
 				
-				.LFM-dropdown-menu(v-if="showIconSizeDropdown")
-					button.LFM-dropdown-item(
+				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-[100] min-w-[160px]" v-if="showIconSizeDropdown")
+					button(
+						class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5"
 						v-for="size in iconSizes"
 						:key="size"
-						:class="{ 'LFM-dropdown-item--active': currentIconSize === size }"
+						:class="{ 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-primary font-semibold': currentIconSize === size }"
 						@click="setIconSize(size)"
 					) {{ iconSizeLabels[size] }}
 
-			.LFM-ribbon-sep
+			div(class="w-[1px] h-6 bg-base-content/10 mx-1.5 opacity-50")
 
 			//- Combined view mode toggle button
-			button.LFM-ribbon-btn(
-				:class="{ 'LFM-ribbon-btn--active': store.viewMode !== 'list' }"
+			button(
+				class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10"
+				:class="{ 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-primary': store.viewMode !== 'list' }"
 				:title="store.viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'"
 				@click="toggleViewMode"
 			)
-				component(:is="store.viewMode === 'grid' ? IconTableRows : IconGridView").text-indigo-500
+				component(:is="store.viewMode === 'grid' ? IconTableRows : IconGridView" class="text-indigo-500")
 
-			.LFM-ribbon-sep
+			div(class="w-[1px] h-6 bg-base-content/10 mx-1.5 opacity-50")
 
 			//- Details Pane Toggle Button: Shows/hides the Preview/Details sidebar panel
-			button.LFM-ribbon-btn(:class="{ 'LFM-ribbon-btn--active': store.detailsOpen }" title="Details Pane" @click="store.toggleDetails()")
-				IconSideNavigation.text-fuchsia-500
+			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" :class="{ 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-primary': store.detailsOpen }" title="Details Pane" @click="store.toggleDetails()")
+				IconSideNavigation(class="text-fuchsia-500")
 </template>
-
-<style lang="sass" scoped>
-@reference "tailwindcss"
-
-.LFM-toolbar
-	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	background: var(--color-base-300)
-	flex-shrink: 0
-
-.LFM-ribbon
-	display: flex
-	align-items: center
-	justify-content: space-between
-	height: 44px
-	padding: 0 12px
-	gap: 4px
-
-.LFM-ribbon-group,
-.LFM-ribbon-right
-	display: flex
-	align-items: center
-	gap: 2px
-
-.LFM-ribbon-sep
-	width: 1px
-	height: 24px
-	background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	margin: 0 6px
-	opacity: 0.5
-
-.LFM-ribbon-btn
-	display: inline-flex
-	align-items: center
-	justify-content: center
-	gap: 6px
-	height: 34px
-	padding: 0 8px
-	border-radius: 6px
-	background: transparent
-	border: none
-	cursor: pointer
-	color: var(--color-base-content)
-	font-size: 18px
-	transition: all 150ms ease
-	white-space: nowrap
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-
-	&:active
-		background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
-
-	&--active
-		background: color-mix(in srgb, var(--color-primary) 12%, transparent)
-		color: var(--color-primary)
-
-	&--new
-		font-weight: 600
-		background: var(--color-base-100)
-		border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-		padding: 0 12px
-		@apply shadow-sm
-
-	&--dropdown
-		border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-		font-size: 16px
-
-.LFM-ribbon-btn-icon
-	font-size: 20px
-
-.LFM-ribbon-btn-label
-	font-size: 13px
-
-.LFM-ribbon-btn-arrow
-	font-size: 10px
-	opacity: 0.5
-
-/* Dropdown */
-.LFM-dropdown-menu
-	position: absolute
-	top: 100%
-	left: 0
-	margin-top: 4px
-	background: var(--color-base-100)
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	border-radius: 8px
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15)
-	padding: 4px
-	z-index: 100
-	min-width: 160px
-
-.LFM-dropdown-item
-	display: flex
-	align-items: center
-	gap: 10px
-	width: 100%
-	padding: 8px 12px
-	border-radius: 4px
-	background: transparent
-	border: none
-	cursor: pointer
-	color: var(--color-base-content)
-	font-size: 13px
-	text-align: left
-	transition: background 150ms
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-
-.LFM-filter-input
-	width: 100%
-	padding: 8px 12px
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	border-radius: 4px
-	background: var(--color-base-200)
-	color: var(--color-base-content)
-	font-size: 13px
-	outline: none
-
-	&:focus
-		border-color: hsl(var(--p))
-
-.LFM-dropdown-item--active
-	background: color-mix(in srgb, var(--color-primary) 12%, transparent)
-	color: hsl(var(--p))
-	font-weight: 600
-
-.LFM-dropdown-divider
-	height: 1px
-	background: color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	margin: 4px
-</style>

@@ -11,41 +11,11 @@ const { config } = storeToRefs(configStore);
 </script>
 
 <template lang="pug">
-.LFM-header-buttons(v-if="config.appearance.window_controls")
-	button.LFM-header-btn.LFM-header-btn--minimize(title="Minimize" @click="minimizeWindow")
+div(class="flex items-center h-full ml-auto" v-if="config.appearance.window_controls")
+	button(class="flex items-center justify-center w-[46px] h-full bg-transparent border-none cursor-pointer text-base-content transition-all duration-150 text-[16px] hover:bg-base-content/5" title="Minimize" @click="minimizeWindow")
 		IconMinimize
-	button.LFM-header-btn.LFM-header-btn--maximize(title="Maximize" @click="toggleMaximize")
+	button(class="flex items-center justify-center w-[46px] h-full bg-transparent border-none cursor-pointer text-base-content transition-all duration-150 text-[16px] hover:bg-base-content/5" title="Maximize" @click="toggleMaximize")
 		IconMaximize
-	button.LFM-header-btn.LFM-header-btn--close(title="Close" @click="closeWindow")
+	button(class="flex items-center justify-center w-[46px] h-full bg-transparent border-none cursor-pointer text-base-content transition-all duration-150 text-[16px] hover:bg-[#e81123] hover:text-white" title="Close" @click="closeWindow")
 		IconClose
 </template>
-
-<style lang="sass" scoped>
-@reference "tailwindcss"
-
-.LFM-header-buttons
-	display: flex
-	align-items: center
-	height: 100%
-	margin-left: auto
-
-.LFM-header-btn
-	display: flex
-	align-items: center
-	justify-content: center
-	width: 46px
-	height: 100%
-	background: transparent
-	border: none
-	cursor: pointer
-	color: var(--color-base-content)
-	transition: all 150ms ease
-	font-size: 16px
-
-	&:hover
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent)
-
-	&--close:hover
-		background: #e81123
-		color: white
-</style>

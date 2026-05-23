@@ -21,5 +21,5 @@ RouterView(v-slot="{ Component }")
 	component(:is="Component")
 </template>
 
-<style lang="sass">
+<style>
 </style>

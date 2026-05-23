@@ -208,24 +208,26 @@ nav.LFM-sidebar-nav(aria-label="Navigation pane")
 		)
 </template>
 
-<style scoped lang="sass">
-@reference "tailwindcss"
+<style scoped>
+@reference "tailwindcss";
+.LFM-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  height: 90%;
+  padding: 8px 0;
+  font-size: 13px;
+  color: var(--color-base-content);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 
-.LFM-sidebar-nav
-	display: flex
-	flex-direction: column
-	height: 90%
-	padding: 8px 0
-	font-size: 13px
-	color: var(--color-base-content)
-	overflow-y: auto
-	overflow-x: hidden
+.LFM-sbar-top {
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+  margin-bottom: 8px;
+}
 
-.LFM-sbar-top
-	padding-bottom: 8px
-	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent)
-	margin-bottom: 8px
-
-.LFM-sbar-section
-	margin-top: 8px
+.LFM-sbar-section {
+  margin-top: 8px;
+}
 </style>

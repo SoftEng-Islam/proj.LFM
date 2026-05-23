@@ -130,330 +130,95 @@ watch(
 </script>
 
 <template lang="pug">
-div.LFM-modal-overlay(v-if="state.visible" @click.self="emit('close')")
-	div.LFM-modal(:class="{ 'LFM-modal--advanced': state.mode === 'advanced' }")
-		h3.LFM-modal-title {{ state.mode === 'simple' ? 'Rename Item' : `Advanced Rename (${state.items.length} items)` }}
-
-		// Simple mode
-		div.LFM-modal-body(v-if="state.mode === 'simple'")
-			input(
-				ref="simpleInputRef"
-				v-model="simpleName"
-				class="LFM-modal-input"
-				type="text"
-				@keydown.enter="handleSimpleSubmit"
-				@keydown.esc="emit('close')"
+Teleport(to="body")
+	Transition(
+		enter-active-class="transition-opacity duration-200 ease-out"
+		leave-active-class="transition-opacity duration-200 ease-out"
+		enter-from-class="opacity-0"
+		leave-to-class="opacity-0"
+	)
+		div(class="fixed inset-0 z-[10000] bg-black/40 backdrop-blur-[4px] flex items-center justify-center" v-if="state.visible" @click.self="emit('close')")
+			div(
+				class="bg-base-100 border border-base-content/10 rounded-xl p-5 shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
+				:class="state.mode === 'advanced' ? 'w-[600px] max-h-[80vh] overflow-y-auto' : 'w-[400px]'"
+				v-motion
+				:initial="{ opacity: 0, scale: 0.9, y: 20 }"
+				:enter="{ opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } }"
+				:leave="{ opacity: 0, scale: 0.9, y: 20 }"
 			)
+				h3(class="text-base font-semibold mb-4 color-base-content m-0") {{ state.mode === 'simple' ? 'Rename Item' : `Advanced Rename (${state.items.length} items)` }}
 
-		// Advanced mode
-		div.LFM-modal-body(v-else)
-			// Operation selector
-			div.LFM-rename-tabs
-				button.LFM-rename-tab(
-					:class="{ 'LFM-rename-tab--active': operation === 'find-replace' }"
-					@click="operation = 'find-replace'"
-				) Find & Replace
-				button.LFM-rename-tab(
-					:class="{ 'LFM-rename-tab--active': operation === 'template' }"
-					@click="operation = 'template'"
-				) Template
+				// Simple mode
+				div(class="mb-5" v-if="state.mode === 'simple'")
+					input(
+						ref="simpleInputRef"
+						v-model="simpleName"
+						class="w-full bg-base-content/5 border border-base-content/10 rounded-md px-3 py-2 text-base-content text-[14px] outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(43,124,211,0.2)]"
+						type="text"
+						@keydown.enter="handleSimpleSubmit"
+						@keydown.esc="emit('close')"
+					)
 
-			// Find and replace
-			div.LFM-rename-section(v-if="operation === 'find-replace'")
-				div.LFM-form-group
-					label.LFM-form-label Find
-					input.LFM-modal-input(v-model="findText" type="text" placeholder="Text to find")
-				div.LFM-form-group
-					label.LFM-form-label Replace with
-					input.LFM-modal-input(v-model="replaceText" type="text" placeholder="Replacement text")
+				// Advanced mode
+				div(class="mb-5" v-else)
+					// Operation selector
+					div(class="flex gap-2 mb-4")
+						button(
+							class="flex-1 px-4 py-2 rounded-md bg-transparent border border-base-content/10 text-base-content text-[13px] font-medium cursor-pointer transition-all duration-150"
+							:class="operation === 'find-replace' ? 'bg-primary border-primary text-white hover:opacity-90' : 'hover:bg-base-content/5'"
+							@click="operation = 'find-replace'"
+						) Find & Replace
+						button(
+							class="flex-1 px-4 py-2 rounded-md bg-transparent border border-base-content/10 text-base-content text-[13px] font-medium cursor-pointer transition-all duration-150"
+							:class="operation === 'template' ? 'bg-primary border-primary text-white hover:opacity-90' : 'hover:bg-base-content/5'"
+							@click="operation = 'template'"
+						) Template
 
-			// Template
-			div.LFM-rename-section(v-else)
-				div.LFM-form-group
-					label.LFM-form-label Template
-					input.LFM-modal-input(v-model="template" type="text" placeholder="[Original file name]")
-					small.LFM-form-hint Use [Original file name] as placeholder
-				div.LFM-form-row
-					div.LFM-form-group
-						label.LFM-form-label Number format
-						select.LFM-modal-select(v-model="numberFormat")
-							option(value="1") 1, 2, 3...
-							option(value="01") 01, 02, 03...
-							option(value="001") 001, 002, 003...
-					div.LFM-form-group
-						label.LFM-form-label Position
-						select.LFM-modal-select(v-model="numberPosition")
-							option(value="prefix") Prefix
-							option(value="suffix") Suffix
-							option(value="custom") Custom
-				div.LFM-form-group(v-if="numberPosition === 'custom'")
-					label.LFM-form-label Custom position (index)
-					input.LFM-modal-input(v-model="customNumberPosition" type="number" min="0")
-				div.LFM-form-group
-					label.LFM-form-label Start number
-					input.LFM-modal-input(v-model="startNumber" type="number" min="1")
+					// Find and replace
+					div(class="flex flex-col gap-4" v-if="operation === 'find-replace'")
+						div(class="flex flex-col gap-1.5")
+							label(class="text-[12px] font-medium text-base-content opacity-80") Find
+							input(class="w-full bg-base-content/5 border border-base-content/10 rounded-md px-3 py-2 text-base-content text-[14px] outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(43,124,211,0.2)]" v-model="findText" type="text" placeholder="Text to find")
+						div(class="flex flex-col gap-1.5")
+							label(class="text-[12px] font-medium text-base-content opacity-80") Replace with
+							input(class="w-full bg-base-content/5 border border-base-content/10 rounded-md px-3 py-2 text-base-content text-[14px] outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(43,124,211,0.2)]" v-model="replaceText" type="text" placeholder="Replacement text")
 
-			// Preview
-			div.LFM-preview-section
-				h4.LFM-preview-title Preview
-				div.LFM-preview-list
-					div.LFM-preview-item(v-for="preview in previews" :key="preview.originalPath")
-						div.LFM-preview-name.LFM-preview-name--old {{ preview.originalName }}
-						div.LFM-preview-arrow →
-						div.LFM-preview-name.LFM-preview-name--new(:class="{ 'LFM-preview-name--unchanged': preview.newName === preview.originalName }") {{ preview.newName }}
+					// Template
+					div(class="flex flex-col gap-4" v-else)
+						div(class="flex flex-col gap-1.5")
+							label(class="text-[12px] font-medium text-base-content opacity-80") Template
+							input(class="w-full bg-base-content/5 border border-base-content/10 rounded-md px-3 py-2 text-base-content text-[14px] outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(43,124,211,0.2)]" v-model="template" type="text" placeholder="[Original file name]")
+							small(class="text-[11px] text-base-content/50 mt-0.5") Use [Original file name] as placeholder
+						div(class="flex gap-3")
+							div(class="flex flex-col gap-1.5 flex-1")
+								label(class="text-[12px] font-medium text-base-content opacity-80") Number format
+								select(class="w-full bg-base-content/5 border border-base-content/10 rounded-md px-3 py-2 text-base-content text-[14px] outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(43,124,211,0.2)]" v-model="numberFormat")
+									option(value="1") 1, 2, 3...
+									option(value="01") 01, 02, 03...
+									option(value="001") 001, 002, 003...
+							div(class="flex flex-col gap-1.5 flex-1")
+								label(class="text-[12px] font-medium text-base-content opacity-80") Position
+								select(class="w-full bg-base-content/5 border border-base-content/10 rounded-md px-3 py-2 text-base-content text-[14px] outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(43,124,211,0.2)]" v-model="numberPosition")
+									option(value="prefix") Prefix
+									option(value="suffix") Suffix
+									option(value="custom") Custom
+						div(class="flex flex-col gap-1.5" v-if="numberPosition === 'custom'")
+							label(class="text-[12px] font-medium text-base-content opacity-80") Custom position (index)
+							input(class="w-full bg-base-content/5 border border-base-content/10 rounded-md px-3 py-2 text-base-content text-[14px] outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(43,124,211,0.2)]" v-model="customNumberPosition" type="number" min="0")
+						div(class="flex flex-col gap-1.5")
+							label(class="text-[12px] font-medium text-base-content opacity-80") Start number
+							input(class="w-full bg-base-content/5 border border-base-content/10 rounded-md px-3 py-2 text-base-content text-[14px] outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(43,124,211,0.2)]" v-model="startNumber" type="number" min="1")
 
-		div.LFM-modal-actions
-			button.LFM-modal-btn.LFM-modal-btn--secondary(@click="emit('close')") Cancel
-			button.LFM-modal-btn.LFM-modal-btn--primary(@click="state.mode === 'simple' ? handleSimpleSubmit() : handleAdvancedSubmit()") Rename
+					// Preview
+					div(class="mt-5 pt-5 border-t border-base-content/10")
+						h4(class="text-[13px] font-semibold mb-3 text-base-content") Preview
+						div(class="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-1")
+							div(class="flex items-center gap-3 p-2 rounded-md bg-base-content/5" v-for="preview in previews" :key="preview.originalPath")
+								div(class="flex-1 text-[12px] text-base-content overflow-hidden text-ellipsis whitespace-nowrap opacity-60") {{ preview.originalName }}
+								div(class="text-base-content/40 text-[14px]") →
+								div(class="flex-1 text-[12px] text-base-content overflow-hidden text-ellipsis whitespace-nowrap font-medium" :class="{ 'opacity-40': preview.newName === preview.originalName }") {{ preview.newName }}
+
+				div(class="flex justify-end gap-3 mt-5")
+					button(class="px-4 py-2 rounded-md text-[13px] font-medium cursor-pointer transition-all duration-150 border-none bg-transparent text-base-content hover:bg-base-content/5" @click="emit('close')") Cancel
+					button(class="px-4 py-2 rounded-md text-[13px] font-medium cursor-pointer transition-all duration-150 border-none bg-primary text-white hover:opacity-90" @click="state.mode === 'simple' ? handleSimpleSubmit() : handleAdvancedSubmit()") Rename
 </template>
-
-<style scoped lang="scss">
-@reference 'tailwindcss';
-
-.LFM-modal-overlay {
-	position: fixed;
-	inset: 0;
-	z-index: 10000;
-	background: rgba(0, 0, 0, 0.4);
-	backdrop-filter: blur(4px);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	animation: fade-in 200ms ease-out;
-}
-
-.LFM-modal {
-	background: var(--color-base-100);
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
-	border-radius: 12px;
-	width: 400px;
-	padding: 20px;
-	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-	animation: modal-pop 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
-
-	&--advanced {
-		width: 600px;
-		max-height: 80vh;
-		overflow-y: auto;
-	}
-}
-
-.LFM-modal-title {
-	font-size: 16px;
-	font-weight: 600;
-	margin-bottom: 16px;
-	color: var(--color-base-content);
-}
-
-.LFM-modal-body {
-	margin-bottom: 20px;
-}
-
-.LFM-modal-input {
-	width: 100%;
-	background: color-mix(in srgb, var(--color-base-content) 5%, transparent);
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
-	border-radius: 6px;
-	padding: 8px 12px;
-	color: var(--color-base-content);
-	font-size: 14px;
-	outline: none;
-
-	&:focus {
-		border-color: var(--color-primary);
-		box-shadow: 0 0 0 2px rgba(43, 124, 211, 0.2);
-	}
-}
-
-.LFM-modal-select {
-	width: 100%;
-	background: color-mix(in srgb, var(--color-base-content) 5%, transparent);
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
-	border-radius: 6px;
-	padding: 8px 12px;
-	color: var(--color-base-content);
-	font-size: 14px;
-	outline: none;
-
-	&:focus {
-		border-color: var(--color-primary);
-		box-shadow: 0 0 0 2px rgba(43, 124, 211, 0.2);
-	}
-}
-
-.LFM-rename-tabs {
-	display: flex;
-	gap: 8px;
-	margin-bottom: 16px;
-}
-
-.LFM-rename-tab {
-	flex: 1;
-	padding: 8px 16px;
-	border-radius: 6px;
-	background: transparent;
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
-	color: var(--color-base-content);
-	font-size: 13px;
-	font-weight: 500;
-	cursor: pointer;
-	transition: all 150ms ease;
-
-	&--active {
-		background: var(--color-primary);
-		border-color: var(--color-primary);
-		color: white;
-	}
-
-	&:hover:not(.LFM-rename-tab--active) {
-		background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
-	}
-}
-
-.LFM-rename-section {
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-}
-
-.LFM-form-group {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.LFM-form-row {
-	display: flex;
-	gap: 12px;
-
-	.LFM-form-group {
-		flex: 1;
-	}
-}
-
-.LFM-form-label {
-	font-size: 12px;
-	font-weight: 500;
-	color: var(--color-base-content);
-	opacity: 0.8;
-}
-
-.LFM-form-hint {
-	font-size: 11px;
-	color: var(--color-base-content);
-	opacity: 0.5;
-	margin-top: 2px;
-}
-
-.LFM-preview-section {
-	margin-top: 20px;
-	padding-top: 20px;
-	border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
-}
-
-.LFM-preview-title {
-	font-size: 13px;
-	font-weight: 600;
-	margin-bottom: 12px;
-	color: var(--color-base-content);
-}
-
-.LFM-preview-list {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	max-height: 200px;
-	overflow-y: auto;
-}
-
-.LFM-preview-item {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 8px;
-	border-radius: 6px;
-	background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
-}
-
-.LFM-preview-name {
-	flex: 1;
-	font-size: 12px;
-	color: var(--color-base-content);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-
-	&--old {
-		opacity: 0.6;
-	}
-
-	&--new {
-		font-weight: 500;
-
-		&--unchanged {
-			opacity: 0.4;
-		}
-	}
-}
-
-.LFM-preview-arrow {
-	color: var(--color-base-content);
-	opacity: 0.4;
-	font-size: 14px;
-}
-
-.LFM-modal-actions {
-	display: flex;
-	justify-content: flex-end;
-	gap: 12px;
-	margin-top: 20px;
-}
-
-.LFM-modal-btn {
-	padding: 8px 16px;
-	border-radius: 6px;
-	font-size: 13px;
-	font-weight: 500;
-	cursor: pointer;
-	transition: all 150ms ease;
-	border: none;
-
-	&--secondary {
-		background: transparent;
-		color: var(--color-base-content);
-
-		&:hover {
-			background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
-		}
-	}
-
-	&--primary {
-		background: var(--color-primary);
-		color: white;
-
-		&:hover {
-			opacity: 0.9;
-		}
-	}
-}
-
-@keyframes fade-in {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
-}
-
-@keyframes modal-pop {
-	from {
-		transform: scale(0.9) translateY(20px);
-		opacity: 0;
-	}
-	to {
-		transform: scale(1) translateY(0);
-		opacity: 1;
-	}
-}
-</style>
