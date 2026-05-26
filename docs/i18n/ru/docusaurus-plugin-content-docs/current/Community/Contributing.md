@@ -155,15 +155,15 @@ We host our locales on the [crowdin](https://crwd.in/Files). To translate it, pl
 
 #### Priority Files to translate on Crowdin
 
-1. `src/Locales` files
+1. `src-ui/Locales` files
 2. `docs/` files
 
 #### Production
 
-Once the files on `src/Locales` have been translated for more than 80%, we will add it into the Files app, and for the docs, we will add it into production once the translation looks good!
+Once the files on `src-ui/Locales` have been translated for more than 80%, we will add it into the Files app, and for the docs, we will add it into production once the translation looks good!
 
 Please comment [here](https://github.com/softeng/Files/discussions/30) if you have any questions!
 
 ### File Library
 
-The json library of file types and thumbnail are found under `lib` folder and the icons are found under `src/Icons` folder. You may add file types and icons for file extensions you want to use and submit a PR.
+The json library of file types and thumbnail are found under `lib` folder and the icons are found under `src-ui/Icons` folder. You may add file types and icons for file extensions you want to use and submit a PR.

@@ -2,8 +2,8 @@ import os
 import re
 import json
 
-dirs_path = 'src/assets/icons/Dirs'
-themes_path = 'src/assets/icons/folder-themes'
+dirs_path = 'src-ui/assets/icons/Dirs'
+themes_path = 'src-ui/assets/icons/folder-themes'
 
 def get_fill_color(content):
     match = re.search(r'id="path4"[^>]*style="fill:([^;"]+)', content)
@@ -19,29 +19,29 @@ def get_sign(content):
     # The sign is usually the last <path> or <g> before </svg>
     # In some cases it might be the last one in a group.
     # Let's try to find the last element that is not path4, path2, path3 or linearGradient.
-    
+
     # Actually, let's just find the last <path> or <g> that has fill="#ffffff" or similar
     # or just the absolute last one.
-    
+
     elements = re.findall(r'<(path|g)\b[^>]*>(?:.*?</\1>|)', content, re.DOTALL)
     if not elements:
         return None
-    
+
     # Usually it's the last one.
     # In folder-book.svg it was a <g>
     # In folder-music.svg it was a <path>
-    
+
     # Let's use a more robust way: find the last child of <svg>
     # excluding namedview, defs, linearGradient, metadata, etc.
-    
+
     # Actually, I'll just take the last element and check if it's the sign.
     # I can manually verify a few.
-    
+
     # Find all top-level tags inside <svg>
     matches = list(re.finditer(r'<(path|g|rect|circle|ellipse|line|polyline|polygon)\b[^>]*>(?:.*?</\1>|)', content, re.DOTALL))
     if not matches:
         return None
-    
+
     # The first few are folder parts. The last one is the sign.
     # Let's take the last match.
     last_match = matches[-1]

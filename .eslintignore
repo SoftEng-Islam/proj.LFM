@@ -1,9 +1,9 @@
 test/*
-src/Typings/*
-src/Lib/**/*
+src-ui/Typings/*
+src-ui/Lib/**/*
 out/**/*
 scripts/*
-src/Components/Functions/log.ts
+src-ui/Components/Functions/log.ts
 gruntfile.js
 docs/**/*
 packages/**/*

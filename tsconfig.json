@@ -6,7 +6,7 @@
 		"moduleResolution": "Bundler",
 		"paths": {
 			"@/*": [
-				"./src/*"
+				"./src-ui/*"
 			]
 		},
 		"strict": true,
@@ -24,8 +24,10 @@
 			"DOM.Iterable"
 		],
 		"noEmit": true,
+		"composite": true,
 		"types": [
-			"unplugin-icons/types/vue"
+			"unplugin-icons/types/vue",
+			"node"
 		]
 	},
 	"vueCompilerOptions": {
@@ -34,8 +36,10 @@
 		]
 	},
 	"include": [
-		"src/**/*.ts",
-		"src/**/*.d.ts",
-		"src/**/*.vue"
+		"src-ui/**/*.ts",
+		"src-ui/**/*.d.ts",
+		"src-ui/**/*.vue",
+		"vite.config.ts",
+		"vitest.config.ts"
 	]
 }

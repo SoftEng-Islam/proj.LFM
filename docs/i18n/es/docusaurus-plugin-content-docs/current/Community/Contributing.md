@@ -155,15 +155,15 @@ Alojamos nuestros locales en [crowdin](https://crwd.in/Files). Para solucionarlo
 
 #### Archivos prioritarios para traducir en Crowdin
 
-1. `src/Locales`
+1. `src-ui/Locales`
 2. `docs/`
 
 #### Producción
 
-Una vez que los archivos en `src/Locales` han sido traducidos por más del 80%, la añadiremos a la aplicación Files y, para la documentacion, ¡la añadiremos a la producción una vez que la traducción parezca buena!
+Una vez que los archivos en `src-ui/Locales` han sido traducidos por más del 80%, la añadiremos a la aplicación Files y, para la documentacion, ¡la añadiremos a la producción una vez que la traducción parezca buena!
 
 ¡Por favor, comenta [aquí](https://github.com/softeng/Files/discussions/30) si tienes alguna pregunta!
 
 ### Biblioteca de Archivos
 
-La librería json de tipos de archivos y miniatura se encuentran en la carpeta `lib` y los iconos se encuentran en la carpeta `src/Icons`. Puedes añadir tipos de archivos e iconos para las extensiones de archivo que quieras usar y enviar un PR.
+La librería json de tipos de archivos y miniatura se encuentran en la carpeta `lib` y los iconos se encuentran en la carpeta `src-ui/Icons`. Puedes añadir tipos de archivos e iconos para las extensiones de archivo que quieras usar y enviar un PR.

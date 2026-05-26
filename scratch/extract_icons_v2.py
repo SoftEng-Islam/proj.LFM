@@ -2,8 +2,8 @@ import os
 import re
 import json
 
-dirs_path = 'src/assets/icons/Dirs'
-themes_path = 'src/assets/icons/folder-themes'
+dirs_path = 'src-ui/assets/icons/Dirs'
+themes_path = 'src-ui/assets/icons/folder-themes'
 
 def get_fill_color(content):
     # Try style="fill:#..."
@@ -24,7 +24,7 @@ def extract_tag_data(content, tag_name):
     # Extract defs
     defs_match = re.search(r'<defs[^>]*>(.*?)</defs>', content, re.DOTALL)
     defs_content = defs_match.group(1) if defs_match else ""
-    
+
     # Identify IDs in defs and uniquely prefix them
     ids = re.findall(r'id="([^"]+)"', defs_content)
     for id_val in ids:
@@ -33,15 +33,15 @@ def extract_tag_data(content, tag_name):
         content = content.replace(f'url(#{id_val})', f'url(#{new_id})')
         content = content.replace(f'xlink:href="#{id_val}"', f'xlink:href="#{new_id}"')
 
-    # Now extract the "sign" part. 
+    # Now extract the "sign" part.
     # We'll take all top-level elements that are not folder-related.
     # Folder related: path4, path2, path3, defs, namedview, metadata, sodipodi, inkscape
-    
+
     # Let's use a simpler approach: anything that is not path4, path2, path3
     # or a linearGradient/defs/etc.
-    
+
     matches = list(re.finditer(r'<(path|g|rect|circle|ellipse|line|polyline|polygon)\b[^>]*>(?:.*?</\1>|)', content, re.DOTALL))
-    
+
     sign_markup = ""
     for m in matches:
         markup = m.group(0)
@@ -53,9 +53,9 @@ def extract_tag_data(content, tag_name):
             # Verify if it's the folder body/shadow/overlay by checking the 'd' or 'fill'
             # But usually IDs are enough.
             continue
-            
+
         sign_markup += markup + "\n"
-    
+
     return defs_content.strip(), sign_markup.strip()
 
 colors = {}
@@ -75,7 +75,7 @@ for filename in sorted(os.listdir(dirs_path)):
         name = filename.replace('folder-', '').replace('.svg', '')
         if name.endswith('.svg'): # for cases like user-home.svg
              name = name.replace('.svg', '')
-        
+
         with open(os.path.join(dirs_path, filename), 'r') as f:
             content = f.read()
             tag_defs, sign_markup = extract_tag_data(content, name)

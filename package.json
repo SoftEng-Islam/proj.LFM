@@ -22,7 +22,18 @@
     "onlyBuiltDependencies": [
       "@apollo/protobufjs",
       "@parcel/watcher",
+      "bufferutil",
+      "core-js",
+      "core-js-pure",
+      "cwebp-bin",
+      "es5-ext",
       "esbuild",
+      "gifsicle",
+      "jpegtran-bin",
+      "mozjpeg",
+      "optipng-bin",
+      "pngquant-bin",
+      "utf-8-validate",
       "vue-demi"
     ]
   },

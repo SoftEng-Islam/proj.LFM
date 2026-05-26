@@ -155,15 +155,15 @@ Ospitiamo le nostre risorse locali su [crowdin](https://crwd.in/Files). Per trad
 
 #### File di priorità da tradurre su Crowdin
 
-1. Files della cartella `src/Locales`
+1. Files della cartella `src-ui/Locales`
 2. Files della cartella `docs`
 
 #### Produzione
 
-Una volta che i file della cartella `src/Locales` sono stati tradotti per oltre l'80%, li aggiungeremo nell'app Files, e per i docs, li aggiungeremo in produzione una volta che la traduzione sembra buona!
+Una volta che i file della cartella `src-ui/Locales` sono stati tradotti per oltre l'80%, li aggiungeremo nell'app Files, e per i docs, li aggiungeremo in produzione una volta che la traduzione sembra buona!
 
 Per favore commenta [qui](https://github.com/softeng/Files/discussions/30) se hai domande!
 
 ### Libreria File
 
-La libreria json dei tipi di file e delle miniature si trova nella cartella `lib` e le icone si trovano nella cartella `src/Icons`. È possibile aggiungere tipi di file e icone per le estensioni di file che si desidera utilizzare e inviare una PR.
+La libreria json dei tipi di file e delle miniature si trova nella cartella `lib` e le icone si trovano nella cartella `src-ui/Icons`. È possibile aggiungere tipi di file e icone per le estensioni di file che si desidera utilizzare e inviare una PR.

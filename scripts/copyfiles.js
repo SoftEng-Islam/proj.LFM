@@ -1,17 +1,7 @@
-const cpy = require('cpy');
+const cpy = require("cpy");
 
 (async () => {
-	await cpy(
-		[
-			'src/**/*',
-			'!src/**/*.ts',
-			'src/lib/**/*',
-			'build/**/*',
-			'!src/**/*.scss',
-		],
-		'out',
-		{
-			parents: true,
-		}
-	);
+    await cpy(["src-ui/**/*", "!src-ui/**/*.ts", "src-ui/lib/**/*", "build/**/*", "!src-ui/**/*.scss"], "out", {
+        parents: true,
+    });
 })();

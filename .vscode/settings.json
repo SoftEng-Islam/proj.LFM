@@ -13,6 +13,9 @@
 		"statusBar.noFolderForeground": "#FCFCFF"
 	},
 	"cSpell.words": [
+		"parselnk",
+		"Tauri",
 		"waydroid"
-	]
+	],
+	"github.copilot.chat.codeGeneration.useInstructionFiles": true
 }

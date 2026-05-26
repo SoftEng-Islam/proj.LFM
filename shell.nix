@@ -20,6 +20,7 @@ let
     libappindicator-gtk3
     openssl
     dbus
+    freetype
 
     # Networking modules for WebKitGTK (essential for TLS/HTTPS in the webview)
     glib-networking
