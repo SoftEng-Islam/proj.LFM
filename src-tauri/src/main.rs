@@ -229,6 +229,7 @@ async fn main() {
             change_transparent_effect,
             media_server::get_media_server_port
         ])
+        .plugin(tauri_plugin_libmpv::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_clipboard_manager::init())

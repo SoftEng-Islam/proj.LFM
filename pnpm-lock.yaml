@@ -44,12 +44,18 @@ importers:
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3))
+      tauri-plugin-libmpv-api:
+        specifier: ^0.3.2
+        version: 0.3.2
       tippy.js:
         specifier: ^6.3.7
         version: 6.3.7
       vue:
         specifier: ^3.5.33
         version: 3.5.33(typescript@6.0.3)
+      vue-audio-visual:
+        specifier: ^3.1.0
+        version: 3.1.0(typescript@6.0.3)
       vue-router:
         specifier: ^5.0.4
         version: 5.0.6(@vue/compiler-sfc@3.5.33)(pinia@3.0.4(typescript@6.0.3)(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
@@ -102,6 +108,9 @@ importers:
       '@vue/eslint-config-typescript':
         specifier: ^14.7.0
         version: 14.7.0(eslint-plugin-vue@10.8.0(@typescript-eslint/parser@8.59.1(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@10.2.1(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.2.1(jiti@2.6.1))))(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3)
+      '@vue/language-plugin-pug':
+        specifier: ^3.3.2
+        version: 3.3.2
       '@vue/test-utils':
         specifier: ^2.4.10
         version: 2.4.10(@vue/compiler-dom@3.5.33)(@vue/server-renderer@3.5.33(vue@3.5.33(typescript@6.0.3)))(vue@3.5.33(typescript@6.0.3))
@@ -295,6 +304,11 @@ importers:
         version: 2.0.2
 
 packages:
+
+  7z-wasm@1.2.0:
+    resolution: {integrity: sha512-AZjtWXFleAe5nQ27JYISs70cICjO0zZr4LU45I9pXKcrhG0qiEWgq3Vjwr9JHHihFLuqgc7uSHYVn/z3vXCjdw==}
+    engines: {node: '>=8.0.0'}
+    hasBin: true
 
   '@algolia/abtesting@1.18.0':
     resolution: {integrity: sha512-8siuLG+FIns1AjZ/g2SDVwHz9S+ObacDQISEJvS8XsNei1zl3FXqfqQrBpmrG7ACWCyesXHbicMJtvRbg00FEw==}
@@ -2174,6 +2188,9 @@ packages:
   '@tauri-apps/api@2.11.0':
     resolution: {integrity: sha512-7CinYODhky9lmO23xHnUFv0Xt43fbtWMyxZcLcRBlFkcgXKuEirBvHpmtJ89YMhyeGcq20Wuc47Fa4XjyniywA==}
 
+  '@tauri-apps/api@2.8.0':
+    resolution: {integrity: sha512-ga7zdhbS2GXOMTIZRT0mYjKJtR9fivsXzsyq5U3vjDL0s6DTMwYRm0UHNjzTY5dh4+LSC68Sm/7WEiimbQNYlw==}
+
   '@tauri-apps/cli-darwin-arm64@2.11.0':
     resolution: {integrity: sha512-UfMeDNlgIP252rm/KSTuu8yHatPua5TjtUEUf+jyIzVwBNcIl7Ywkdpfj+e5jVVg3EfCTp+4gwuL1dNpgF8clg==}
     engines: {node: '>= 10'}
@@ -2718,6 +2735,9 @@ packages:
 
   '@vue/language-core@3.2.7':
     resolution: {integrity: sha512-Gn4q/tRxbpVGLEuARQ43p3YELlNAFgRUVCgW9U5Cr+5q4vfD2bWDWpl3ABbJMXUt5xlE1dF8dkigg2aUq7JYYw==}
+
+  '@vue/language-plugin-pug@3.3.2':
+    resolution: {integrity: sha512-iJuk+FciWAt3AznYnrI8iJ9fQe4m3cKBlNgBhKUg61NVateX5uzwEdTWePEQCup+R2qUZcKyiUhQ87ptAIZ/2g==}
 
   '@vue/reactivity@3.5.33':
     resolution: {integrity: sha512-p8UfIqyIhb0rYGlSgSBV+lPhF2iUSBcRy7enhTmPqKWadHy9kcOFYF1AejYBP9P+avnd3OBbD49DU4pLWX/94A==}
@@ -7870,6 +7890,10 @@ packages:
   reading-time@1.5.0:
     resolution: {integrity: sha512-onYyVhBNr4CmAxFsKS7bz+uTLRakypIe4R+5A824vBSkQy/hB3fZepoVEf8OVAxzLvK+H/jm9TzpI3ETSm64Kg==}
 
+  readline-sync@1.4.10:
+    resolution: {integrity: sha512-gNva8/6UAe8QYepIQH/jQ2qn91Qj0B9sYjMBBs3QOB8F2CXcKgLxQaJRP76sWVRQt+QU+8fAkCbCvjjMFu7Ycw==}
+    engines: {node: '>= 0.8.0'}
+
   rechoir@0.6.2:
     resolution: {integrity: sha512-HFM8rkZ+i3zrV+4LQjwQ0W+ez98pApMGM3HUrN04j3CqzPOzl9nmP15Y8YXNm8QHGv/eacOVEjqhmWpkRV0NAw==}
     engines: {node: '>= 0.10'}
@@ -8697,6 +8721,11 @@ packages:
     engines: {node: '>=10'}
     deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
+  tauri-plugin-libmpv-api@0.3.2:
+    resolution: {integrity: sha512-vDEIE+E66cbtblZzBzJLKYs5L2eY05xrzk2dCKybByHN1giXAWXLZRKL3Gm8dq4pjukwHRjVHqjRf8b4wGbQxA==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+
   temp-dir@1.0.0:
     resolution: {integrity: sha512-xZFXEGbG7SNC3itwBzI3RYjq/cEhBkx2hJuKGIUOcEULmkQExXiHat2z/qkISYsuR+IKumhEfKKbV5qXmhICFQ==}
     engines: {node: '>=4'}
@@ -9382,8 +9411,14 @@ packages:
     resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
     engines: {node: '>=0.10.0'}
 
+  vscode-languageserver-textdocument@1.0.12:
+    resolution: {integrity: sha512-cxWNPesCnQCcMPeenjKKsOCKQZ/L6Tv19DTRIGuLWe32lyzWhihGVJ/rcckZXJxfdKCFvRLS3fpBIsV/ZGX4zA==}
+
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
+
+  vue-audio-visual@3.1.0:
+    resolution: {integrity: sha512-Yd6zUw8yRuaZQemJ3Qgqu2NjSTRl20aUgU8pv2cxNdPyP8lP4AcMS5aJrnIGA0D8rKqJnaFrFxmHt292UVkjKw==}
 
   vue-component-type-helpers@3.2.7:
     resolution: {integrity: sha512-+gPp5YGmhfsj1IN+xUo7y0fb4clfnOiiUA39y07yW1VzCRjzVgwLbtmdWlghh7mXrPsEaYc7rrIir/HT6C8vYQ==}
@@ -9790,6 +9825,10 @@ packages:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
 
 snapshots:
+
+  7z-wasm@1.2.0:
+    dependencies:
+      readline-sync: 1.4.10
 
   '@algolia/abtesting@1.18.0':
     dependencies:
@@ -12505,6 +12544,8 @@ snapshots:
 
   '@tauri-apps/api@2.11.0': {}
 
+  '@tauri-apps/api@2.8.0': {}
+
   '@tauri-apps/cli-darwin-arm64@2.11.0':
     optional: true
 
@@ -13186,6 +13227,14 @@ snapshots:
       muggle-string: 0.4.1
       path-browserify: 1.0.1
       picomatch: 4.0.4
+
+  '@vue/language-plugin-pug@3.3.2':
+    dependencies:
+      '@volar/source-map': 2.4.28
+      muggle-string: 0.4.1
+      pug-lexer: 5.0.1
+      pug-parser: 6.0.0
+      vscode-languageserver-textdocument: 1.0.12
 
   '@vue/reactivity@3.5.33':
     dependencies:
@@ -15210,7 +15259,7 @@ snapshots:
       eslint: 8.5.0
       eslint-import-resolver-node: 0.3.10
       eslint-import-resolver-typescript: 2.7.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.1(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.5.0))(eslint@8.5.0)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.5.0)(typescript@4.5.4))(eslint-import-resolver-typescript@2.7.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.1(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.5.0))(eslint@8.5.0))(eslint@8.5.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.5.0)(typescript@4.5.4))(eslint-import-resolver-typescript@2.7.1)(eslint@8.5.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.5.0)
       eslint-plugin-react: 7.37.5(eslint@8.5.0)
       eslint-plugin-react-hooks: 4.6.2(eslint@8.5.0)
@@ -15237,7 +15286,7 @@ snapshots:
     dependencies:
       debug: 4.4.3
       eslint: 8.5.0
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.5.0)(typescript@4.5.4))(eslint-import-resolver-typescript@2.7.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.1(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.5.0))(eslint@8.5.0))(eslint@8.5.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.5.0)(typescript@4.5.4))(eslint-import-resolver-typescript@2.7.1)(eslint@8.5.0)
       glob: 7.2.3
       is-glob: 4.0.3
       resolve: 1.22.12
@@ -15256,7 +15305,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.5.0)(typescript@4.5.4))(eslint-import-resolver-typescript@2.7.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.1(eslint@10.2.1(jiti@2.6.1))(typescript@6.0.3))(eslint@8.5.0))(eslint@8.5.0))(eslint@8.5.0):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@8.5.0)(typescript@4.5.4))(eslint-import-resolver-typescript@2.7.1)(eslint@8.5.0):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -18996,6 +19045,8 @@ snapshots:
 
   reading-time@1.5.0: {}
 
+  readline-sync@1.4.10: {}
+
   rechoir@0.6.2:
     dependencies:
       resolve: 1.22.12
@@ -19977,6 +20028,11 @@ snapshots:
       mkdirp: 1.0.4
       yallist: 4.0.0
 
+  tauri-plugin-libmpv-api@0.3.2:
+    dependencies:
+      7z-wasm: 1.2.0
+      '@tauri-apps/api': 2.8.0
+
   temp-dir@1.0.0: {}
 
   temp-dir@2.0.0: {}
@@ -20661,7 +20717,16 @@ snapshots:
 
   void-elements@3.1.0: {}
 
+  vscode-languageserver-textdocument@1.0.12: {}
+
   vscode-uri@3.1.0: {}
+
+  vue-audio-visual@3.1.0(typescript@6.0.3):
+    dependencies:
+      '@vueuse/core': 14.3.0(vue@3.5.33(typescript@6.0.3))
+      vue: 3.5.33(typescript@6.0.3)
+    transitivePeerDependencies:
+      - typescript
 
   vue-component-type-helpers@3.2.7: {}
 

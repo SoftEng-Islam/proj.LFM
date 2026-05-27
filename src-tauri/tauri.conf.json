@@ -72,7 +72,7 @@
 				"minHeight": 640,
 				"resizable": true,
 				"fullscreen": false,
-				"transparent": false,
+				"transparent": true,
 				"useHttpsScheme": true,
 				"decorations": false
 			}

@@ -44,7 +44,7 @@
     "build:web": "vite build",
     "build:analyze": "ANALYZE=true vite build",
     "preview": "vite preview",
-    "type-check": "vue-tsc --noEmit -p tsconfig.app.json",
+    "type-check": "vue-tsc --noEmit -p tsconfig.json",
     "check": "pnpm run type-check && pnpm run lint",
     "docs": "pnpm --dir ./docs run start",
     "test": "vitest",
@@ -87,6 +87,7 @@
     "@vue/compiler-sfc": "^3.5.33",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.7.0",
+    "@vue/language-plugin-pug": "^3.3.2",
     "@vue/test-utils": "^2.4.10",
     "autoprefixer": "^10.5.0",
     "concurrently": "^9.2.1",
@@ -130,8 +131,10 @@
     "marked": "^4.3.0",
     "pdfjs-dist": "^5.7.284",
     "pinia": "^3.0.4",
+    "tauri-plugin-libmpv-api": "^0.3.2",
     "tippy.js": "^6.3.7",
     "vue": "^3.5.33",
+    "vue-audio-visual": "^3.1.0",
     "vue-router": "^5.0.4",
     "vue-virtual-scroller": "^2.0.0-beta.8"
   }

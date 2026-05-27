@@ -51,6 +51,8 @@ let
     gobject-introspection
     strace
     file
+    llvmPackages.libclang
+    rustPlatform.bindgenHook
   ];
 in
 pkgs.mkShell {

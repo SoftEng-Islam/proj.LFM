@@ -58,49 +58,13 @@ class LFMVideoMimeResolver {
   }
 }
 
-/**
- * Custom player source object structure.
- * Implemented as a Class to satisfy LFM OOP Rule 19.
- */
-class LFMPlayerSource {
-  public readonly src: string;
-  public readonly type: string;
-
-  constructor(src: string, type: string) {
-    this.src = src;
-    this.type = type;
-  }
-}
-
-const playerSource = computed(() => {
-  const mimeType = LFMVideoMimeResolver.getMimeType(props.path);
-  return new LFMPlayerSource(videoUrl.value, mimeType);
-});
-
-/**
- * Player configuration following LFM design principles.
- * Implemented as a Class to satisfy OOP Rule 19.
- */
-class LFMVideoPlayerConfig {
-  public readonly autoplay: boolean = false;
-  public readonly controls: boolean = true;
-  public readonly responsive: boolean = true;
-  public readonly fluid: boolean = true;
-  public readonly playbackRates: number[] = [0.5, 1, 1.25, 1.5, 2];
-  public readonly controlBar = {
-    skipButtons: {
-      forward: 10,
-      backward: 10
-    }
-  };
-}
-
-const playerOptions = new LFMVideoPlayerConfig();
+const mimeType = computed(() => LFMVideoMimeResolver.getMimeType(props.path));
 </script>
 
 <template lang="pug">
 div(class="LFM-video-preview")
-	VideoPlayer(v-if="mediaPort !== null" class="LFM-video-player vjs-big-play-centered" :sources="[playerSource]" :options="playerOptions")
+	video(v-if="mediaPort !== null" class="LFM-video-player" controls preload="metadata")
+		source(:src="videoUrl" :type="mimeType")
 	div(v-else class="text-white opacity-50") Loading media engine...
 </template>
 
@@ -111,21 +75,6 @@ div(class="LFM-video-preview")
 }
 
 .LFM-video-player {
-  @apply w-full h-full;
-}
-.LFM-video-player :deep(.video-js) {
-  @apply bg-transparent font-sans;
-}
-.LFM-video-player :deep(.video-js) .vjs-big-play-button {
-  @apply bg-(--color-primary) border-none rounded-full w-16 h-16 leading-[4rem] shadow-lg transition-all duration-200;
-}
-.LFM-video-player :deep(.video-js) .vjs-big-play-button:hover {
-  @apply scale-110 brightness-110;
-}
-.LFM-video-player :deep(.video-js) .vjs-control-bar {
-  @apply bg-(--color-base-300)/90 backdrop-blur-md border-t border-white/5;
-}
-.LFM-video-player :deep(.video-js) .vjs-play-progress, .LFM-video-player :deep(.video-js) .vjs-volume-level {
-  @apply bg-(--color-primary);
+  @apply w-full h-full object-contain rounded-lg shadow-lg;
 }
 </style>

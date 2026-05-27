@@ -26,6 +26,7 @@ import IconEdit from '~icons/material-symbols/edit';
 import type { FileEntry } from '@/types/file-manager';
 import { convertFileSrc } from '@/services/tauri-bridge';
 import VideoPreview from '@/features/explorer/components/VideoPreview.vue';
+import { AVCircle } from 'vue-audio-visual';
 
 // ── Props / emits ───────────────────────────────────────────────────────────
 
@@ -96,17 +97,11 @@ div(class="relative w-full min-h-[240px] rounded-2xl overflow-hidden bg-(--color
 
 	//- Audio preview
 	div(v-else-if="isAudio && previewSrc" class="w-full p-8 flex flex-col items-center gap-4 bg-(--color-base-100)/20")
-		.LFM-audio-visualizer(class="w-16 h-16 rounded-full bg-(--color-primary)/20 flex items-center justify-center border border-(--color-primary)/30")
-			IconMusic(class="text-3xl text-(--color-primary)")
-		audio(
-			ref="audioRef"
+		AVCircle(
+			:audio-src="previewSrc"
 			:key="previewSrc"
-			:src="previewSrc"
-			controls
-			class="w-full max-w-xs"
-			preload="metadata"
-			@play="isPlaying = true"
-			@pause="isPlaying = false"
+			:canv-width="200"
+			:canv-height="200"
 		)
 
 	//- Fallback placeholder for directories and other types
