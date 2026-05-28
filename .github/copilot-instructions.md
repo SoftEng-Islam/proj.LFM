@@ -21,20 +21,6 @@ Before making changes:
 11. Prefer pnpm for JavaScript and TypeScript package management.
 12. Avoid npm unless explicitly requested.
 13. Prefer existing project tooling and conventions.
-14. **Rules for Material Design icons** Ensure all changes in [Material Design icons](/src-ui/file-associations) will follow these rules
-    1. **Use Material Design color palette**: When working with icons in [Material Design icons](/src-ui/file-associations), use colors from the [Material Design color palette](/src-ui/file-associations/material-colors.yml). This ensures visual consistency across the project.
-    2. **Adhere to the project architecture**: Familiarize yourself with the [project's architecture](/src-ui/file-associations/src/architecture.md). The core logic is separated from the extension logic. The core handles icon manifest generation, icon associations, and translation. The extension interacts with the VS Code API. Make sure to respect the dependency rules between modules.
-    3. **Design pixel-perfect icons**: Create icons that are sharp and clear at 16x16 pixels. Align icons to a **16x16 grid** to ensure sharpness and avoid blurriness. More details are available in the [CONTRIBUTING.md](/CONTRIBUTING.md#pixel-perfect-icons).
-    4. **Write clean, modular, and well-documented code**: Document your code thoroughly and ensure it is easy to understand and maintain.
-    5. **Test your changes**: Always test your changes to ensure they do not break existing functionality.
-    6. **Keep it simple**: Aim for simplicity in your solutions and avoid unnecessary complexity.
-    7. **Add new icons appropriately**:
-    - Use colors from the [Material Design color palette](https://material.io/design/color/the-color-system.html).
-    - Ensure icons have proper spacing (Read [CONTRIBUTING.md](/CONTRIBUTING.md#icon-spacing)).
-    - Assign icons uniquely to file names, extensions, or folder names according to the [project guidelines](/CONTRIBUTING.md).
-    - Provide separate icons for different color themes if necessary (Read [CONTRIBUTING.md](/CONTRIBUTING.md#icons-for-color-themes)).
-    8. **Clone existing icons when possible**: If you need a variant of an existing icon with a different color, clone the icon through configuration without creating a new SVG (Read [CONTRIBUTING.md](/CONTRIBUTING.md#icon-cloning)).
-    9. **Contribute to translations**: If you notice errors in translations, you can help fix them by editing the appropriate translation files (`package.nls*.json`).
 
 Always read relevant files completely before editing.
 Always ensure that your contributions comply with the project's guidelines and do not introduce any disallowed content.
