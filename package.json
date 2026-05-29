@@ -122,6 +122,7 @@
     "@formkit/auto-animate": "^0.9.0",
     "@tauri-apps/api": "^2.11.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
+    "@tauri-apps/plugin-log": "^2.8.0",
     "@tauri-apps/plugin-os": "^2.3.2",
     "@vueuse/core": "^14.2.1",
     "@vueuse/motion": "^3.0.3",

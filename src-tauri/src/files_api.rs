@@ -1,8 +1,10 @@
 use crate::extensions;
 use crate::file_lib;
 use crate::storage;
+use crate::utils::decode_path;
 #[cfg(target_os = "windows")]
 use dirs::data_local_dir;
+use ffmpeg_next as ffmpeg;
 use glob::{glob_with, MatchOptions};
 #[cfg(not(target_os = "macos"))]
 use normpath::PathExt;
@@ -25,7 +27,6 @@ use tauri::Listener;
 use tauri::Manager;
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
 use zip::write::FileOptions;
-use crate::utils::decode_path;
 
 #[derive(serde::Serialize, Clone, Debug)]
 pub struct LnkData {
@@ -93,7 +94,98 @@ pub struct MediaInfo {
     pub channels: Option<u32>,
 }
 
+fn positive_i64_as_u64(value: i64) -> Option<u64> {
+    if value > 0 {
+        Some(value as u64)
+    } else {
+        None
+    }
+}
 
+fn ffmpeg_duration_seconds(duration: i64) -> Option<f64> {
+    if duration > 0 {
+        Some(duration as f64 / f64::from(ffmpeg::ffi::AV_TIME_BASE))
+    } else {
+        None
+    }
+}
+
+fn rational_as_fps(rate: ffmpeg::Rational) -> Option<f32> {
+    let denominator = rate.denominator();
+    if denominator > 0 {
+        let fps = rate.numerator() as f32 / denominator as f32;
+        if fps.is_finite() && fps > 0.0 {
+            return Some(fps);
+        }
+    }
+
+    None
+}
+
+fn stream_duration_seconds(stream: &ffmpeg::Stream<'_>) -> Option<f64> {
+    if stream.duration() > 0 {
+        Some(stream.duration() as f64 * f64::from(stream.time_base()))
+    } else {
+        None
+    }
+}
+
+fn probe_media_with_ffmpeg(file_path: &str, info: &mut MediaInfo) -> Result<(), String> {
+    ffmpeg::init().map_err(|error| format!("Failed to initialize FFmpeg: {}", error))?;
+
+    let input = ffmpeg::format::input(&file_path)
+        .map_err(|error| format!("Failed to open media with FFmpeg: {}", error))?;
+
+    info.container = Some(input.format().name().to_string());
+    info.duration = ffmpeg_duration_seconds(input.duration());
+    info.bitrate = positive_i64_as_u64(input.bit_rate());
+
+    if let Some(video_stream) = input.streams().best(ffmpeg::media::Type::Video) {
+        let stream_duration = stream_duration_seconds(&video_stream);
+        let video_context =
+            ffmpeg::codec::context::Context::from_parameters(video_stream.parameters())
+                .map_err(|error| format!("Failed to read video stream parameters: {}", error))?;
+        let video_codec = video_context.id().name().to_string();
+        let video_decoder = video_context
+            .decoder()
+            .video()
+            .map_err(|error| format!("Failed to create video decoder: {}", error))?;
+
+        info.width = Some(video_decoder.width());
+        info.height = Some(video_decoder.height());
+        info.video_codec = Some(video_codec);
+        info.video_bitrate = positive_i64_as_u64(video_decoder.bit_rate() as i64);
+        info.frame_rate = rational_as_fps(video_stream.avg_frame_rate())
+            .or_else(|| rational_as_fps(video_stream.rate()));
+
+        if info.duration.is_none() {
+            info.duration = stream_duration;
+        }
+    }
+
+    if let Some(audio_stream) = input.streams().best(ffmpeg::media::Type::Audio) {
+        let stream_duration = stream_duration_seconds(&audio_stream);
+        let audio_context =
+            ffmpeg::codec::context::Context::from_parameters(audio_stream.parameters())
+                .map_err(|error| format!("Failed to read audio stream parameters: {}", error))?;
+        let audio_codec = audio_context.id().name().to_string();
+        let audio_decoder = audio_context
+            .decoder()
+            .audio()
+            .map_err(|error| format!("Failed to create audio decoder: {}", error))?;
+
+        info.audio_codec = Some(audio_codec);
+        info.audio_bitrate = positive_i64_as_u64(audio_decoder.bit_rate() as i64);
+        info.sample_rate = Some(audio_decoder.rate());
+        info.channels = Some(u32::from(audio_decoder.channels()));
+
+        if info.duration.is_none() {
+            info.duration = stream_duration;
+        }
+    }
+
+    Ok(())
+}
 
 #[derive(serde::Serialize)]
 pub struct FolderInformation {
@@ -305,7 +397,9 @@ pub fn get_file_permissions(file_path: &str) -> Result<FilePermissions, String> 
 #[tauri::command]
 pub fn set_file_permissions(file_path: String, mode: u32) -> Result<bool, String> {
     use std::os::unix::fs::PermissionsExt;
-    let mut permissions = fs::metadata(&file_path).map_err(|e| e.to_string())?.permissions();
+    let mut permissions = fs::metadata(&file_path)
+        .map_err(|e| e.to_string())?
+        .permissions();
     permissions.set_mode(mode);
     fs::set_permissions(file_path, permissions).map_err(|e| e.to_string())?;
     Ok(true)
@@ -314,7 +408,11 @@ pub fn set_file_permissions(file_path: String, mode: u32) -> Result<bool, String
 #[tauri::command]
 pub async fn get_media_info(file_path: String) -> Result<MediaInfo, String> {
     let path = Path::new(&file_path);
-    let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("").to_lowercase();
+    let ext = path
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_lowercase();
 
     let mut info = MediaInfo {
         width: None,
@@ -338,80 +436,17 @@ pub async fn get_media_info(file_path: String) -> Result<MediaInfo, String> {
             info.height = Some(dim.1);
         }
     }
-    // Video/Audio via ffprobe
-    else if ["mp4", "mkv", "avi", "mov", "webm", "mp3", "wav", "ogg", "flac"].contains(&ext.as_str()) {
-        let output_format = Command::new("ffprobe")
-            .args(&[
-                "-v", "error",
-                "-show_entries", "format=format_name,bit_rate",
-                "-of", "json",
-                &file_path
-            ])
-            .output();
-
-        if let Ok(out) = output_format {
-            let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap_or(serde_json::Value::Null);
-            if let Some(format) = json["format"].as_object() {
-                info.container = format["format_name"].as_str().map(|s| s.to_string());
-                info.bitrate = format["bit_rate"].as_str().and_then(|s| s.parse().ok());
-            }
-        }
-
-        let output_video = Command::new("ffprobe")
-            .args(&[
-                "-v", "error",
-                "-select_streams", "v:0",
-                "-show_entries", "stream=width,height,codec_name,avg_frame_rate,bit_rate",
-                "-of", "json",
-                &file_path
-            ])
-            .output();
-
-        if let Ok(out) = output_video {
-            let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap_or(serde_json::Value::Null);
-            if let Some(stream) = json["streams"].as_array().and_then(|a| a.get(0)) {
-                info.width = stream["width"].as_u64().map(|v| v as u32);
-                info.height = stream["height"].as_u64().map(|v| v as u32);
-                info.video_codec = stream["codec_name"].as_str().map(|s| s.to_string());
-                info.video_bitrate = stream["bit_rate"].as_str().and_then(|s| s.parse().ok());
-
-                if let Some(fr_str) = stream["avg_frame_rate"].as_str() {
-                    let parts: Vec<&str> = fr_str.split('/').collect();
-                    if parts.len() == 2 {
-                        let num: f32 = parts[0].parse().unwrap_or(0.0);
-                        let den: f32 = parts[1].parse().unwrap_or(1.0);
-                        if den > 0.0 { info.frame_rate = Some(num / den); }
-                    }
-                }
-            }
-        }
-
-        let output_audio = Command::new("ffprobe")
-            .args(&[
-                "-v", "error",
-                "-select_streams", "a:0",
-                "-show_entries", "stream=codec_name,sample_rate,channels,duration,bit_rate",
-                "-of", "json",
-                &file_path
-            ])
-            .output();
-
-        if let Ok(out) = output_audio {
-            let json: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap_or(serde_json::Value::Null);
-            if let Some(stream) = json["streams"].as_array().and_then(|a| a.get(0)) {
-                info.audio_codec = stream["codec_name"].as_str().map(|s| s.to_string());
-                info.sample_rate = stream["sample_rate"].as_str().and_then(|s| s.parse().ok());
-                info.channels = stream["channels"].as_u64().map(|v| v as u32);
-                info.duration = stream["duration"].as_str().and_then(|s| s.parse().ok());
-                info.audio_bitrate = stream["bit_rate"].as_str().and_then(|s| s.parse().ok());
-            }
-        }
+    // Video/Audio via statically linked FFmpeg.
+    else if [
+        "mp4", "mkv", "avi", "mov", "webm", "mp3", "wav", "ogg", "flac",
+    ]
+    .contains(&ext.as_str())
+    {
+        probe_media_with_ffmpeg(&file_path, &mut info)?;
     }
 
     Ok(info)
 }
-
-
 
 #[tauri::command]
 #[inline]

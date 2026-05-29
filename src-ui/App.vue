@@ -20,6 +20,3 @@ AppPreloader(:isReady="store.isInitialized")
 RouterView(v-slot="{ Component }")
 	component(:is="Component")
 </template>
-
-<style>
-</style>

@@ -14,6 +14,7 @@
     "dialog:default",
     "os:default",
     "clipboard-manager:default",
-    "window-state:default"
+    "window-state:default",
+    "libmpv:default"
   ]
 }

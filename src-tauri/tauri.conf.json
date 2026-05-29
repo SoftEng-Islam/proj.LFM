@@ -20,7 +20,8 @@
 		"resources": [
 			"../lib/files.json",
 			"../lib/folder.json",
-			"./src/extractIcon.ps1"
+			"./src/extractIcon.ps1",
+			"./lib/**/*"
 		],
 		"externalBin": [],
 		"copyright": "Apache-2.0",
