@@ -32,7 +32,7 @@ const isLoading = ref(true);
 
 // Configure marked with syntax highlighting
 marked.setOptions({
-	highlight: (code, lang) => {
+	highlight: (code: string, lang: string) => {
 		if (lang && hljs.getLanguage(lang)) {
 			return hljs.highlight(code, { language: lang }).value;
 		}

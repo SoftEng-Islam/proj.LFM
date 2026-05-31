@@ -8,7 +8,7 @@
 
 ## 🎨 Philosophy: "Linux-Native, Windows-Familiar"
 
-LFM bridges the gap between the power of the Linux filesystem and the polished user interface patterns familiar to modern Windows 11 users. 
+LFM bridges the gap between the power of the Linux filesystem and the polished user interface patterns familiar to modern Windows 11 users.
 
 - **Linux-First**: Native integration with Linux workflows, focused on speed and reliability.
 - **Modern Aesthetics**: A curated UI using **Tailwind CSS 4** and **DaisyUI 5**, featuring smooth animations and a refined dark mode.
@@ -48,6 +48,22 @@ pnpm install
 pnpm run dev
 ```
 
+### Native Video Playback
+
+LFM uses `tauri-plugin-libmpv` for native video preview support. On Linux, this requires the native wrapper library `libmpv-wrapper.so` to be present in `src-tauri/lib/`.
+
+If the file is missing, run:
+
+```bash
+pnpm run download:libmpv-wrapper
+```
+
+Then rebuild the app with:
+
+```bash
+pnpm run build
+```
+
 ---
 
 ## 🛡️ Forking & Contribution Policy
@@ -55,7 +71,8 @@ pnpm run dev
 LFM is **Free and Open Source** under the **GPL-v3 License**.
 
 ### Centralized Development
-To maintain a high-quality, unified experience for all users, we strongly encourage all developers to contribute directly to this repository rather than creating independent versions. 
+
+To maintain a high-quality, unified experience for all users, we strongly encourage all developers to contribute directly to this repository rather than creating independent versions.
 
 - **Contribute**: Please submit Pull Requests for features and bug fixes.
 - **Branding**: The name **LFM**, its logo, and its specific design tokens are part of the official project identity. If you fork this project, you **must** rename it and use distinct branding to avoid user confusion.

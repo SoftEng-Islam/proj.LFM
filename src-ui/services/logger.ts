@@ -21,30 +21,60 @@ export async function initializeLogger(): Promise<void> {
     }
 }
 
+function normalizeKeyValues(keyValues?: Record<string, unknown>): Record<string, string | undefined> | undefined {
+    if (!keyValues) return undefined;
+
+    const normalized: Record<string, string | undefined> = {};
+    for (const [key, value] of Object.entries(keyValues)) {
+        if (value === undefined) {
+            normalized[key] = undefined;
+            continue;
+        }
+        if (typeof value === "string") {
+            normalized[key] = value;
+            continue;
+        }
+        if (value === null) {
+            normalized[key] = "null";
+            continue;
+        }
+        try {
+            normalized[key] = typeof value === "object" ? JSON.stringify(value) : String(value);
+        } catch {
+            normalized[key] = String(value);
+        }
+    }
+    return normalized;
+}
+
 export function debug(message: string, keyValues?: Record<string, unknown>): void {
     console.debug("[Logger]", message, keyValues ?? "");
-    void tauriDebug(message, { keyValues }).catch((error) => {
+    const options = normalizeKeyValues(keyValues);
+    void tauriDebug(message, options ? { keyValues: options } : undefined).catch((error) => {
         console.debug("[Logger] tauri debug failed", error);
     });
 }
 
 export function info(message: string, keyValues?: Record<string, unknown>): void {
     console.info("[Logger]", message, keyValues ?? "");
-    void tauriInfo(message, { keyValues }).catch((error) => {
+    const options = normalizeKeyValues(keyValues);
+    void tauriInfo(message, options ? { keyValues: options } : undefined).catch((error) => {
         console.warn("[Logger] tauri info failed", error);
     });
 }
 
 export function warn(message: string, keyValues?: Record<string, unknown>): void {
     console.warn("[Logger]", message, keyValues ?? "");
-    void tauriWarn(message, { keyValues }).catch((error) => {
+    const options = normalizeKeyValues(keyValues);
+    void tauriWarn(message, options ? { keyValues: options } : undefined).catch((error) => {
         console.warn("[Logger] tauri warn failed", error);
     });
 }
 
 export function error(message: string, keyValues?: Record<string, unknown>): void {
     console.error("[Logger]", message, keyValues ?? "");
-    void tauriError(message, { keyValues }).catch((err) => {
+    const options = normalizeKeyValues(keyValues);
+    void tauriError(message, options ? { keyValues: options } : undefined).catch((err) => {
         console.error("[Logger] tauri error failed", err);
     });
 }
