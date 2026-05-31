@@ -60,6 +60,7 @@ async function loadPDF() {
 		// Render page
 		const renderContext = {
 			canvasContext: context,
+			canvas,
 			viewport: scaledViewport,
 		};
 

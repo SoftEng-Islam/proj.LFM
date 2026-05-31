@@ -2,41 +2,41 @@
 import { type Component } from 'vue';
 
 const props = withDefaults(defineProps<{
-	to: string;
-	active?: boolean;
-	label: string;
-	meta: string;
-	icon?: Component;
-	iconClass?: string;
+  to: string;
+  active?: boolean;
+  label: string;
+  meta: string;
+  icon?: Component;
+  iconClass?: string;
 }>(), {
-	active: false,
-	iconClass: 'text-slate-500',
+  active: false,
+  iconClass: 'text-slate-500',
 });
 </script>
 
 <template lang="pug">
-RouterLink.LFM-sbar-item.LFM-sbar-item--drive(
-	:to="to"
-	:class="{ 'LFM-sbar-item--active': active }"
+RouterLink(
+  class="LFM-sbar-item LFM-sbar-item--drive h-12 flex items-center justify-center"
+  :to="to"
+  :class="{ 'LFM-sbar-item--active': active }"
 )
-	span.LFM-sbar-icon
-		slot(name="icon")
-			component.LFM-material-drive-icon(
-				v-if="icon"
-				:is="icon"
-				:class="iconClass"
-				aria-hidden="true"
-			)
-	span.LFM-sbar-drive-copy
-		span.LFM-sbar-label {{ label }}
-		span.LFM-sbar-meta {{ meta }}
+  span(class="LFM-sbar-icon h-full")
+    slot(name="icon")
+      component.LFM-material-drive-icon(
+        v-if="icon"
+        :is="icon"
+        :class="iconClass"
+        aria-hidden="true"
+      )
+  span(class="LFM-sbar-drive-copy h-full")
+    span.LFM-sbar-label {{ label }}
+    span.LFM-sbar-meta {{ meta }}
 </template>
 
 <style scoped>
 @reference "tailwindcss";
+
 .LFM-sbar-item {
-  display: flex;
-  align-items: center;
   gap: 12px;
   min-height: 36px;
   padding: 0 12px;
@@ -47,15 +47,19 @@ RouterLink.LFM-sbar-item.LFM-sbar-item--drive(
   transition: all 150ms ease;
   position: relative;
   margin: 1px 8px;
+  background: var(--color-base-300);
 }
+
 .LFM-sbar-item:hover {
   background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
 }
+
 .LFM-sbar-item--active {
   background: color-mix(in srgb, var(--color-primary) 12%, transparent);
   color: var(--color-primary);
   font-weight: 600;
 }
+
 .LFM-sbar-item--active::before {
   content: "";
   position: absolute;
@@ -78,6 +82,7 @@ RouterLink.LFM-sbar-item.LFM-sbar-item--drive(
   align-items: center;
   justify-content: center;
   width: 20px;
+  height: 100%;
   flex-shrink: 0;
   font-size: 18px;
 }
