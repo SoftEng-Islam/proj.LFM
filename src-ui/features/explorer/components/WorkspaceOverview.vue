@@ -4,6 +4,8 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { on as busOn } from '@/renderer/events/bus';
 import { useRouter } from 'vue-router';
 
+import { openFile } from '@/services/tauri-bridge';
+
 import ActionToolbar from '@/features/explorer/components/ActionToolbar.vue';
 import ContextMenu from '@/features/explorer/components/ContextMenu.vue';
 import RenameModal from '@/components/ui/RenameModal.vue';
@@ -426,8 +428,14 @@ function handleItemClick(entry: FileEntry, e: MouseEvent) {
  * Directories are pushed to the router (triggers openSection via route watch).
  * Files are opened via the Tauri backend with the system default application.
  */
-async function openItem(entry: FileEntry) {
-	await store.openItem(entry.id);
+function openItem(entry: FileEntry) {
+	if (isFolder(entry)) {
+		// Push to router — the route watcher in FileManagerView calls store.openSection
+		router.push(entry.id);
+	} else {
+		// Tauri IPC: open with system default app
+		openFile(entry.id);
+	}
 }
 
 // ── Date formatter ──────────────────────────────────────────────────────────
@@ -601,261 +609,252 @@ onUnmounted(() => {
 
 <style scoped>
 .LFM-workspace {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	background: var(--color-base-100);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-base-100);
 }
 
 .LFM-workspace-content {
-	flex: 1;
-	overflow-y: auto;
-	overflow-x: hidden;
-	padding: 8px;
-	position: relative;
-	user-select: none;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+  position: relative;
+  user-select: none;
 }
 
 .LFM-selection-box {
-	position: fixed;
-	border: 1px solid var(--color-primary);
-	background: rgba(43, 124, 211, 0.1);
-	pointer-events: none;
-	z-index: 1000;
+  position: fixed;
+  border: 1px solid var(--color-primary);
+  background: rgba(43, 124, 211, 0.1);
+  pointer-events: none;
+  z-index: 1000;
 }
 
 .LFM-grid {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px;
-	align-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-content: flex-start;
 }
 
 .LFM-grid-item {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	width: var(--lfm-grid-item-width, 100px);
-	padding: 8px 4px 6px;
-	border-radius: 4px;
-	border: 2px solid transparent;
-	background: transparent;
-	cursor: pointer;
-	color: var(--color-base-content);
-	transition: background 100ms, border-color 100ms;
-	text-align: center;
-	outline: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: var(--lfm-grid-item-width, 100px);
+  padding: 8px 4px 6px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-base-content);
+  transition: background 100ms, border-color 100ms;
+  text-align: center;
+  outline: none;
 }
-
 .LFM-grid-item:hover {
-	background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
-
 .LFM-grid-item--selected {
-	background: color-mix(in srgb, var(--color-primary) 14%, transparent);
-	border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  border-color: var(--color-primary);
 }
 
 .LFM-grid-item-icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: var(--lfm-grid-icon-container-size, 64px);
-	width: var(--lfm-grid-icon-container-size, 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--lfm-grid-icon-container-size, 64px);
+  width: var(--lfm-grid-icon-container-size, 64px);
 }
 
 .LFM-grid-item-name {
-	margin-top: 6px;
-	font-size: 11px;
-	line-height: 1.3;
-	max-width: calc(var(--lfm-grid-item-width, 100px) - 8px);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
-	word-break: break-word;
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.3;
+  max-width: calc(var(--lfm-grid-item-width, 100px) - 8px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
 }
 
 .LFM-media-thumbnail {
-	max-width: var(--lfm-grid-icon-container-size, 64px);
-	max-height: var(--lfm-grid-icon-container-size, 64px);
-	object-fit: cover;
-	border-radius: 4px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  max-width: var(--lfm-grid-icon-container-size, 64px);
+  max-height: var(--lfm-grid-icon-container-size, 64px);
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .LFM-list-media-thumbnail {
-	width: var(--lfm-list-folder-size, 20px);
-	height: var(--lfm-list-folder-size, 20px);
-	object-fit: cover;
-	border-radius: 3px;
+  width: var(--lfm-list-folder-size, 20px);
+  height: var(--lfm-list-folder-size, 20px);
+  object-fit: cover;
+  border-radius: 3px;
 }
 
 .LFM-list {
-	width: 100%;
+  width: 100%;
 }
 
 .LFM-list-header {
-	display: grid;
-	grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr;
-	gap: 4px;
-	padding: 4px 8px;
-	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
-	font-size: 11px;
-	font-weight: 600;
-	color: var(--color-base-content);
-	cursor: pointer;
-	user-select: none;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr;
+  gap: 4px;
+  padding: 4px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-base-content);
+  cursor: pointer;
+  user-select: none;
 }
 
 .LFM-list-row {
-	display: grid;
-	grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr;
-	gap: 4px;
-	padding: 3px 8px;
-	border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
-	background: transparent;
-	border-left: none;
-	border-right: none;
-	border-top: none;
-	cursor: pointer;
-	color: var(--color-base-content);
-	font-size: 12px;
-	text-align: left;
-	width: 100%;
-	transition: background 80ms;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 1.2fr 1fr 0.7fr;
+  gap: 4px;
+  padding: 3px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  cursor: pointer;
+  color: var(--color-base-content);
+  font-size: 12px;
+  text-align: left;
+  width: 100%;
+  transition: background 80ms;
 }
-
 .LFM-list-row:hover {
-	background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
+  background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
 }
-
 .LFM-list-row--selected {
-	background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
 }
 
 .LFM-list-col {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
-
 .LFM-list-col--name {
-	gap: 6px;
+  gap: 6px;
 }
-
 .LFM-list-col--right {
-	justify-content: flex-end;
+  justify-content: flex-end;
 }
 
 .LFM-list-file-icon {
-	width: 22px;
-	height: 22px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .LFM-list-item-name {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .LFM-file-entry--hidden {
-	opacity: 0.58;
+  opacity: 0.58;
 }
-
 .LFM-file-entry--hidden .LFM-grid-item-icon,
 .LFM-file-entry--hidden .LFM-list-file-icon {
-	filter: grayscale(0.4) saturate(0.75);
+  filter: grayscale(0.4) saturate(0.75);
 }
 
 .LFM-file-entry--hidden-blurred .LFM-grid-item-icon,
 .LFM-file-entry--hidden-blurred .LFM-list-file-icon {
-	filter: grayscale(0.4) saturate(0.75) blur(0.7px);
+  filter: grayscale(0.4) saturate(0.75) blur(0.7px);
 }
 
 .LFM-file-entry--hidden-normal {
-	opacity: 1;
+  opacity: 1;
 }
-
 .LFM-file-entry--hidden-normal .LFM-grid-item-icon,
 .LFM-file-entry--hidden-normal .LFM-list-file-icon {
-	filter: none;
+  filter: none;
 }
 
 .LFM-nav-error {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 12px;
-	height: 100%;
-	min-height: 300px;
-	padding: 48px 24px;
-	text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+  min-height: 300px;
+  padding: 48px 24px;
+  text-align: center;
 }
 
 .LFM-nav-error-icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 96px;
-	height: 96px;
-	border-radius: 50%;
-	background: rgba(239, 68, 68, 0.1);
-	color: rgba(239, 68, 68, 0.8);
-	margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  color: rgba(239, 68, 68, 0.8);
+  margin-bottom: 8px;
 }
 
 .LFM-nav-error-title {
-	font-size: 18px;
-	font-weight: 600;
-	color: var(--color-base-content);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-base-content);
 }
 
 .LFM-nav-error-desc {
-	font-size: 13px;
-	color: var(--color-base-content);
-	opacity: 0.6;
-	max-width: 360px;
-	line-height: 1.5;
+  font-size: 13px;
+  color: var(--color-base-content);
+  opacity: 0.6;
+  max-width: 360px;
+  line-height: 1.5;
 }
 
 .LFM-nav-error-path {
-	font-size: 11px;
-	font-family: monospace;
-	background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
-	color: var(--color-base-content);
-	opacity: 0.7;
-	padding: 4px 12px;
-	border-radius: 4px;
-	max-width: 100%;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+  font-size: 11px;
+  font-family: monospace;
+  background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
+  color: var(--color-base-content);
+  opacity: 0.7;
+  padding: 4px 12px;
+  border-radius: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .LFM-nav-error-btn {
-	margin-top: 4px;
-	padding: 8px 20px;
-	border-radius: 6px;
-	background: var(--color-base-100);
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
-	color: var(--color-base-content);
-	font-size: 13px;
-	cursor: pointer;
-	transition: background 150ms, border-color 150ms;
+  margin-top: 4px;
+  padding: 8px 20px;
+  border-radius: 6px;
+  background: var(--color-base-100);
+  border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+  color: var(--color-base-content);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms;
 }
-
 .LFM-nav-error-btn:hover {
-	background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
-	border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
+  border-color: var(--color-primary);
 }
 </style>

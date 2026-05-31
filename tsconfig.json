@@ -41,10 +41,5 @@
 		"src-ui/**/*.vue",
 		"vite.config.ts",
 		"vitest.config.ts"
-	],
-	"exclude": [
-		"src-ui/file-associations",
-		"node_modules",
-		"dist"
 	]
 }

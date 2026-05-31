@@ -1,5 +1,4 @@
 packages:
-    - docs
-    - api/updater
-    - packages/*
-    - src-ui/file-associations
+  - docs
+  - api/updater
+  - packages/*

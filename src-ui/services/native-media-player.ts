@@ -20,11 +20,12 @@ const OBSERVED_PROPERTIES = [
 
 const MPV_CONFIG: MpvConfig = {
     initialOptions: {
-        hwdec: "no",
+        vo: "gpu-next",
+        hwdec: "auto-safe",
         "keep-open": "yes",
         "force-window": "yes",
-        osc: "yes",
-        "input-default-bindings": "yes",
+        osc: "no",
+        "input-default-bindings": "no",
     },
     observedProperties: OBSERVED_PROPERTIES,
 };
