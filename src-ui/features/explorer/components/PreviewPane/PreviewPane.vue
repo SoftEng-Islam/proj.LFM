@@ -131,39 +131,43 @@ div(class="LFM-preview-pane w-full h-full p-5 flex flex-col gap-y-8 overflow-y-a
 
 <style scoped>
 @reference 'tailwindcss';
+
 .LFM-preview-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  height: 100%;
-  color: hsl(var(--bc)/0.4);
-  gap: 1.5rem;
-  padding: 3rem 1.5rem;
-  text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	height: 100%;
+	color: hsl(var(--bc)/0.4);
+	gap: 1.5rem;
+	padding: 3rem 1.5rem;
+	text-align: center;
 }
+
 .LFM-preview-empty .LFM-empty-icon {
-  font-size: 5rem;
-  opacity: 0.2;
-  filter: blur(1px);
+	font-size: 5rem;
+	opacity: 0.2;
+	filter: blur(1px);
 }
+
 .LFM-preview-empty h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-  color: hsl(var(--bc)/0.8);
-  text-shadow: 0 2px 8px hsl(var(--n)/0.3);
+	font-size: 1.25rem;
+	font-weight: 600;
+	margin: 0;
+	color: hsl(var(--bc)/0.8);
+	text-shadow: 0 2px 8px hsl(var(--n)/0.3);
 }
+
 .LFM-preview-empty p {
-  font-size: 0.875rem;
-  margin: 0;
-  color: hsl(var(--bc)/0.5);
-  line-height: 1.5;
+	font-size: 0.875rem;
+	margin: 0;
+	color: hsl(var(--bc)/0.5);
+	line-height: 1.5;
 }
 
 .LFM-preview-section {
-  display: flex;
-  flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 </style>

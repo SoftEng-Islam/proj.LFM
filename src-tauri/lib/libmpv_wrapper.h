@@ -28,7 +28,10 @@ typedef void (*EventCallback)(const char *event, void *userdata);
  * @param event_userdata A user-supplied pointer that will be passed to the event_callback.
  * @return A pointer to the opaque mpv handle, or NULL on failure.
  */
-struct MpvHandle *mpv_wrapper_create(const char *initial_options, const char *observed_properties, EventCallback event_callback, void *event_userdata);
+struct MpvHandle *mpv_wrapper_create(const char *initial_options,
+                                     const char *observed_properties,
+                                     EventCallback event_callback,
+                                     void *event_userdata);
 
 /**
  * Destroys the mpv handle and terminates the mpv core.

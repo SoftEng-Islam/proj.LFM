@@ -40,75 +40,82 @@ RouterLink.LFM-sbar-item(
 
 <style scoped>
 @reference "tailwindcss";
+
 .LFM-sbar-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 36px;
-  padding: 0 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--color-base-content);
-  transition: all 150ms ease;
-  position: relative;
-  margin: 1px 8px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 36px;
+	padding: 0 12px;
+	border-radius: 8px;
+	cursor: pointer;
+	text-decoration: none;
+	color: var(--color-base-content);
+	transition: all 150ms ease;
+	position: relative;
+	margin: 1px 8px;
 }
+
 .LFM-sbar-item:hover {
-  background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
+	background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
 }
+
 .LFM-sbar-item--active {
-  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-  color: var(--color-primary);
-  font-weight: 600;
+	background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+	color: var(--color-primary);
+	font-weight: 600;
 }
+
 .LFM-sbar-item--active::before {
-  content: "";
-  position: absolute;
-  left: -8px;
-  top: 6px;
-  bottom: 6px;
-  width: 4px;
-  background: var(--color-primary);
-  border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 10px var(--color-primary);
+	content: "";
+	position: absolute;
+	left: -8px;
+	top: 6px;
+	bottom: 6px;
+	width: 4px;
+	background: var(--color-primary);
+	border-radius: 0 4px 4px 0;
+	box-shadow: 0 0 10px var(--color-primary);
 }
+
 .LFM-sbar-item--special {
-  margin-bottom: 2px;
-  height: 38px;
+	margin-bottom: 2px;
+	height: 38px;
 }
+
 .LFM-sbar-item--special .LFM-sbar-icon {
-  font-size: 20px;
+	font-size: 20px;
 }
+
 .LFM-sbar-item--special .LFM-sbar-label {
-  font-size: 14px;
-  font-weight: 700;
+	font-size: 14px;
+	font-weight: 700;
 }
 
 .LFM-sbar-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  flex-shrink: 0;
-  font-size: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	flex-shrink: 0;
+	font-size: 18px;
 }
 
 .LFM-sbar-label {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	flex: 1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .LFM-sbar-pin {
-  opacity: 0;
-  font-size: 14px;
-  transition: opacity 150ms;
-  color: var(--color-base-content);
+	opacity: 0;
+	font-size: 14px;
+	transition: opacity 150ms;
+	color: var(--color-base-content);
 }
 
 .LFM-sbar-item:hover .LFM-sbar-pin {
-  opacity: 0.4;
+	opacity: 0.4;
 }
 </style>

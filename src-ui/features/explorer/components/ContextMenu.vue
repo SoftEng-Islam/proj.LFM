@@ -209,108 +209,115 @@ Teleport(to="body")
 
 <style scoped>
 @reference "tailwindcss";
+
 .LFM-context-menu {
-  position: fixed;
-  z-index: 9999;
-  min-width: 260px;
-  background: var(--color-base-100);
-  backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--color-base-content) 12%, transparent);
-  border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-  padding: 6px;
-  color: var(--color-base-content);
-  font-size: 13px;
-  user-select: none;
-  animation: menu-pop 150ms ease-out;
+	position: fixed;
+	z-index: 9999;
+	min-width: 260px;
+	background: var(--color-base-100);
+	backdrop-filter: blur(12px);
+	border: 1px solid color-mix(in srgb, var(--color-base-content) 12%, transparent);
+	border-radius: 12px;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+	padding: 6px;
+	color: var(--color-base-content);
+	font-size: 13px;
+	user-select: none;
+	animation: menu-pop 150ms ease-out;
 }
 
 @keyframes menu-pop {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+	from {
+		opacity: 0;
+		transform: scale(0.95) translateY(-10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
 }
+
 .LFM-context-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 4px;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	padding: 4px;
 }
 
 .LFM-context-cmd {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--color-base-content);
-  transition: all 150ms ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 8px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: var(--color-base-content);
+	transition: all 150ms ease;
 }
+
 .LFM-context-cmd:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-base-content) 8%, transparent);
-  color: var(--color-primary);
+	background: color-mix(in srgb, var(--color-base-content) 8%, transparent);
+	color: var(--color-primary);
 }
+
 .LFM-context-cmd--disabled {
-  opacity: 0.3;
-  cursor: default;
+	opacity: 0.3;
+	cursor: default;
 }
 
 .LFM-context-cmd-icon {
-  font-size: 18px;
+	font-size: 18px;
 }
 
 .LFM-context-divider {
-  height: 1px;
-  background: color-mix(in srgb, var(--color-base-content) 10%, transparent);
-  margin: 6px 4px;
-  opacity: 0.6;
+	height: 1px;
+	background: color-mix(in srgb, var(--color-base-content) 10%, transparent);
+	margin: 6px 4px;
+	opacity: 0.6;
 }
 
 .LFM-context-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--color-base-content);
-  text-align: left;
-  transition: all 150ms ease;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+	padding: 8px 12px;
+	border-radius: 6px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	color: var(--color-base-content);
+	text-align: left;
+	transition: all 150ms ease;
 }
+
 .LFM-context-item:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-base-content) 8%, transparent);
+	background: color-mix(in srgb, var(--color-base-content) 8%, transparent);
 }
+
 .LFM-context-item--disabled {
-  opacity: 0.4;
-  cursor: default;
+	opacity: 0.4;
+	cursor: default;
 }
 
 .LFM-context-item-icon {
-  font-size: 18px;
-  width: 20px;
-  text-align: center;
-  flex-shrink: 0;
-  opacity: 0.8;
+	font-size: 18px;
+	width: 20px;
+	text-align: center;
+	flex-shrink: 0;
+	opacity: 0.8;
 }
 
 .LFM-context-item-label {
-  flex: 1;
+	flex: 1;
 }
 
 .LFM-context-item-arrow {
-  opacity: 0.4;
-  font-size: 16px;
+	opacity: 0.4;
+	font-size: 16px;
 }
 </style>

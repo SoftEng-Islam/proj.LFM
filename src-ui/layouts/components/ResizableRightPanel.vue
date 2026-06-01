@@ -29,7 +29,7 @@ function onCapturedPointerUp(e: PointerEvent) {
 	el?.removeEventListener('pointermove', onCapturedPointerMove);
 	el?.removeEventListener('pointerup', onCapturedPointerUp);
 	el?.removeEventListener('pointercancel', onCapturedPointerUp);
-	
+
 	document.body.style.removeProperty('cursor');
 	document.body.style.removeProperty('user-select');
 }
@@ -39,12 +39,12 @@ function beginResize(e: PointerEvent) {
 	const el = e.currentTarget as HTMLElement;
 	startX = e.clientX;
 	startW = props.width;
-	
+
 	el.setPointerCapture(e.pointerId);
 	el.addEventListener('pointermove', onCapturedPointerMove);
 	el.addEventListener('pointerup', onCapturedPointerUp);
 	el.addEventListener('pointercancel', onCapturedPointerUp);
-	
+
 	document.body.style.cursor = 'col-resize';
 	document.body.style.userSelect = 'none';
 	e.preventDefault();
