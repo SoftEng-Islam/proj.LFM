@@ -11,14 +11,15 @@ const selectedLabel = computed(() => (selectedCount.value > 0 ? `${selectedCount
 
 <template lang="pug">
 footer(class="LFM-status-bar" role="status" aria-label="Status bar")
-	span(class="LFM-status-count") {{ itemCount }} items
-	template(v-if="selectedLabel")
-		span(class="LFM-status-sep") |
-		span(class="LFM-status-selected") {{ selectedLabel }}
+  span(class="LFM-status-count") {{ itemCount }} items
+  template(v-if="selectedLabel")
+    span(class="LFM-status-sep") |
+    span(class="LFM-status-selected") {{ selectedLabel }}
 </template>
 
 <style scoped>
 @reference "tailwindcss";
+
 .LFM-status-bar {
   display: flex;
   align-items: center;
