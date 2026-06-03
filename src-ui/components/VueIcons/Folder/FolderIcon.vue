@@ -86,13 +86,14 @@ svg(
 
 <style scoped>
 .LFM-folder-icon {
-  display: inline-block;
-  vertical-align: middle;
-  transition: transform 0.2s ease-in-out;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+	display: inline-block;
+	vertical-align: middle;
+	transition: transform 0.2s ease-in-out;
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
+
 .LFM-folder-icon:hover {
-  transform: scale(1.05);
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+	transform: scale(1.05);
+	filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 </style>

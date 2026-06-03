@@ -1,52 +1,52 @@
-import type { RouteRecordRaw } from 'vue-router';
+import type { RouteRecordRaw } from "vue-router";
 
-import FileManagerView from '@/features/explorer/views/FileManagerView.vue';
-import SettingsView from '@/features/settings/views/SettingsView.vue';
-import DrivesOverviewView from '@/features/storage/views/DrivesOverviewView.vue';
-import { useConfigStore } from '@/stores/config';
-import { getHomeDir } from '@/composables/useFilesystem';
+import FileManagerView from "@/views/FileManagerView.vue";
+import SettingsView from "@/modules/settings/views/SettingsView.vue";
+import DrivesOverviewView from "@/views/DrivesOverviewView.vue";
+import { useConfigStore } from "@/stores/config";
+import { getHomeDir } from "@/composables/useFilesystem";
 
 const routes: RouteRecordRaw[] = [
-	{
-		path: '/settings',
-		name: 'settings',
-		component: SettingsView,
-		alias: ['/@settings'],
-		meta: {
-			title: 'LFM Settings',
-		},
-	},
-	{
-		path: '/drives',
-		name: 'drives',
-		component: DrivesOverviewView,
-		alias: ['/locations', '/@drives', '/@locations'],
-		meta: {
-			title: 'Storage Overview',
-		},
-	},
-	{
-		path: '/',
-		name: 'root',
-		redirect: () => {
-			const store = useConfigStore();
-			const defaultPath = store.config.behavior.default_path;
-			// Use stored path, or resolve to home directory dynamically, or fallback to /drives
-			if (defaultPath && defaultPath.startsWith('/')) {
-				return defaultPath;
-			}
-			const home = getHomeDir();
-			return home && home !== '/' ? home : '/drives';
-		},
-	},
-	{
-		path: '/:path(.*)*',
-		name: 'browser',
-		component: FileManagerView,
-		meta: {
-			title: 'LFM Explorer',
-		},
-	},
+    {
+        path: "/settings",
+        name: "settings",
+        component: SettingsView,
+        alias: ["/@settings"],
+        meta: {
+            title: "LFM Settings",
+        },
+    },
+    {
+        path: "/drives",
+        name: "drives",
+        component: DrivesOverviewView,
+        alias: ["/locations", "/@drives", "/@locations"],
+        meta: {
+            title: "Storage Overview",
+        },
+    },
+    {
+        path: "/",
+        name: "root",
+        redirect: () => {
+            const store = useConfigStore();
+            const defaultPath = store.config.behavior.default_path;
+            // Use stored path, or resolve to home directory dynamically, or fallback to /drives
+            if (defaultPath && defaultPath.startsWith("/")) {
+                return defaultPath;
+            }
+            const home = getHomeDir();
+            return home && home !== "/" ? home : "/drives";
+        },
+    },
+    {
+        path: "/:path(.*)*",
+        name: "browser",
+        component: FileManagerView,
+        meta: {
+            title: "LFM Explorer",
+        },
+    },
 ];
 
 export default routes;

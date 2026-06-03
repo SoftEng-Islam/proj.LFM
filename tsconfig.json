@@ -13,6 +13,7 @@
 		"jsx": "preserve",
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
+		"allowImportingTsExtensions": true,
 		"forceConsistentCasingInFileNames": true,
 		"noUncheckedIndexedAccess": true,
 		"exactOptionalPropertyTypes": true,

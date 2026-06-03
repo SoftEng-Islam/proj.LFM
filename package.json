@@ -73,7 +73,6 @@
   ],
   "license": "GPL-3.0-only",
   "devDependencies": {
-    "@types/marked": "^4.3.0",
     "@crowdin/cli": "^3.19.4",
     "@iconify-json/material-symbols": "^1.2.70",
     "@tailwindcss/forms": "^0.5.11",
@@ -82,6 +81,7 @@
     "@tailwindcss/vite": "^4.2.4",
     "@tauri-apps/cli": "^2.11.0",
     "@types/dompurify": "^3.2.0",
+    "@types/marked": "^4.3.0",
     "@types/node": "^25.6.0",
     "@vitejs/plugin-vue": "^6.0.6",
     "@vitest/coverage-v8": "^4.1.5",
@@ -118,7 +118,7 @@
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.5",
     "vue-pug-plugin": "^2.0.4",
-    "vue-tsc": "^3.2.7"
+    "vue-tsc": "^3.3.3"
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.9.0",

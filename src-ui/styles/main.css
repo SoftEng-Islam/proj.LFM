@@ -1,3 +1,5 @@
+@reference "tailwindcss";
+
 :root {
   --lfm-icon-size: 24px;
   --lfm-font-size: 14px;
@@ -60,8 +62,7 @@ html[data-theme=dark] {
 html,
 body,
 #app {
-  height: 100%;
-  min-height: 100%;
+  @apply overflow-hidden h-full min-h-full p-0;
 }
 
 body {
@@ -76,6 +77,7 @@ body {
 
 * {
   box-sizing: border-box;
+  outline: none;
 }
 
 button,
@@ -136,78 +138,207 @@ a {
   padding: 2px 4px;
 }
 
-.tippy-box[data-theme~=lfm][data-placement^=top] > .tippy-arrow::before {
+.tippy-box[data-theme~=lfm][data-placement^=top]>.tippy-arrow::before {
   border-top-color: rgba(50, 50, 50, 0.96);
 }
 
-.tippy-box[data-theme~=lfm][data-placement^=bottom] > .tippy-arrow::before {
+.tippy-box[data-theme~=lfm][data-placement^=bottom]>.tippy-arrow::before {
   border-bottom-color: rgba(50, 50, 50, 0.96);
 }
+
 /* AppPreloader Keyframes */
 @keyframes floatGlow {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(50px, 40px) scale(1.1); }
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  100% {
+    transform: translate(50px, 40px) scale(1.1);
+  }
 }
+
 @keyframes radarPulse {
-  0%, 100% { transform: rotateX(60deg) translateY(20px) scale(0.9); opacity: 0.3; }
-  50% { transform: rotateX(60deg) translateY(20px) scale(1.1); opacity: 0.8; }
+
+  0%,
+  100% {
+    transform: rotateX(60deg) translateY(20px) scale(0.9);
+    opacity: 0.3;
+  }
+
+  50% {
+    transform: rotateX(60deg) translateY(20px) scale(1.1);
+    opacity: 0.8;
+  }
 }
+
 @keyframes driveFloat {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-8px); }
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-8px);
+  }
 }
+
 @keyframes rotateTrack {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
+
 @keyframes rotateTrackReverse {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
 }
+
 @keyframes armRead {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-2.5deg); }
-  50% { transform: rotate(1deg); }
-  75% { transform: rotate(-1deg); }
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-2.5deg);
+  }
+
+  50% {
+    transform: rotate(1deg);
+  }
+
+  75% {
+    transform: rotate(-1deg);
+  }
 }
+
 @keyframes ledPulse {
-  from { opacity: 0.6; r: 2px; }
-  to { opacity: 1; r: 3px; }
+  from {
+    opacity: 0.6;
+    r: 2px;
+  }
+
+  to {
+    opacity: 1;
+    r: 3px;
+  }
 }
+
 @keyframes ledBlinkGreen {
-  0%, 100% { fill: #22c55e; opacity: 1; }
-  50% { fill: #15803d; opacity: 0.4; }
+
+  0%,
+  100% {
+    fill: #22c55e;
+    opacity: 1;
+  }
+
+  50% {
+    fill: #15803d;
+    opacity: 0.4;
+  }
 }
+
 @keyframes ledBlinkBlue {
-  0%, 100% { fill: #3b82f6; opacity: 1; }
-  50% { fill: #1d4ed8; opacity: 0.4; }
+
+  0%,
+  100% {
+    fill: #3b82f6;
+    opacity: 1;
+  }
+
+  50% {
+    fill: #1d4ed8;
+    opacity: 0.4;
+  }
 }
+
 @keyframes ledBlinkRed {
-  0%, 100% { fill: #ef4444; opacity: 1; }
-  50% { fill: #991b1b; opacity: 0.3; }
+
+  0%,
+  100% {
+    fill: #ef4444;
+    opacity: 1;
+  }
+
+  50% {
+    fill: #991b1b;
+    opacity: 0.3;
+  }
 }
+
 @keyframes scanBeam {
-  0%, 100% { top: 25%; opacity: 0; }
-  10%, 90% { opacity: 1; }
-  50% { top: 65%; }
+
+  0%,
+  100% {
+    top: 25%;
+    opacity: 0;
+  }
+
+  10%,
+  90% {
+    opacity: 1;
+  }
+
+  50% {
+    top: 65%;
+  }
 }
+
 @keyframes orbit {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
+
 @keyframes orbit-reverse {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
 }
+
 @keyframes counter-orbit {
-  from { transform: rotate(0deg) rotateX(-60deg); }
-  to { transform: rotate(-360deg) rotateX(-60deg); }
+  from {
+    transform: rotate(0deg) rotateX(-60deg);
+  }
+
+  to {
+    transform: rotate(-360deg) rotateX(-60deg);
+  }
 }
+
 @keyframes counter-orbit-reverse {
-  from { transform: rotate(-360deg) rotateX(-60deg); }
-  to { transform: rotate(0deg) rotateX(-60deg); }
+  from {
+    transform: rotate(-360deg) rotateX(-60deg);
+  }
+
+  to {
+    transform: rotate(0deg) rotateX(-60deg);
+  }
 }
+
 @keyframes progressMove {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(250%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(250%);
+  }
 }
