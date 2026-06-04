@@ -227,7 +227,21 @@ div.LFM-settings-shell
 							.LFM-control.LFM-checkbox-control
 								label
 									input(type="checkbox" v-model="store.config.appearance.window_controls")
-									span Show window controls (close/minimize/maximize)
+									span Show window controls
+
+							div(class="ml-6 flex flex-col gap-y-2 mt-[-8px] mb-4" v-if="store.config.appearance.window_controls")
+								.LFM-control.LFM-checkbox-control
+									label
+										input(type="checkbox" v-model="store.config.appearance.show_minimize")
+										span Show minimize button
+								.LFM-control.LFM-checkbox-control
+									label
+										input(type="checkbox" v-model="store.config.appearance.show_maximize")
+										span Show maximize button
+								.LFM-control.LFM-checkbox-control
+									label
+										input(type="checkbox" v-model="store.config.appearance.show_close")
+										span Show close button
 
 							.LFM-control
 								label(for="emulator") Terminal emulator

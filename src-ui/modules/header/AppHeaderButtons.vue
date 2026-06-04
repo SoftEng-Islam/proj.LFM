@@ -14,10 +14,10 @@ console.log(closeWindow);
 
 <template lang="pug">
 div(class="flex items-center h-full ml-auto gap-x-2 pr-2 [&>button]:border-none [&>button]:cursor-pointer [&>button]:flex [&>button]:items-center [&>button]:justify-center [&>button]:w-8 [&>button]:h-8 [&>button]:rounded-lg [&>button]:text-base-content [&>button]:text-[16px]" v-if="config.appearance.window_controls")
-	button(class="bg-(--color-warning)/20 hover:bg-(--color-warning) text-base-content transition-all duration-150 text-[16px]" title="Minimize" @click="minimizeWindow")
+	button(class="bg-(--color-warning)/20 hover:bg-(--color-warning) text-base-content transition-all duration-150 text-[16px]" title="Minimize" @click="minimizeWindow" v-if="config.appearance.show_minimize")
 		IconMinimize
-	button(class="bg-(--color-success)/20 hover:bg-(--color-success) text-base-content transition-all duration-150 text-[16px]" title="Maximize" @click="toggleMaximize")
+	button(class="bg-(--color-success)/20 hover:bg-(--color-success) text-base-content transition-all duration-150 text-[16px]" title="Maximize" @click="toggleMaximize" v-if="config.appearance.show_maximize")
 		IconMaximize
-	button(class="bg-(--color-error)/20 hover:bg-(--color-error) transition-all duration-150 " title="Close" @click="closeWindow()")
+	button(class="bg-(--color-error)/20 hover:bg-(--color-error) transition-all duration-150 " title="Close" @click="closeWindow()" v-if="config.appearance.show_close")
 		IconClose
 </template>

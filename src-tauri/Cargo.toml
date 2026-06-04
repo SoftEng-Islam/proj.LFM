@@ -46,6 +46,7 @@ tower-http = { version = "0.5", features = ["fs", "cors"] }
 nom-exif = "1.3"
 tauri-plugin-libmpv = { version = "0.3.2" }
 ffmpeg-next = { version = "8.1.0" }
+tauri-plugin-shell = "2.3.5"
 
 [target."cfg(any(target_os = \"windows\", target_os = \"macos\"))".dependencies]
 window-vibrancy = { git = "https://github.com/tauri-apps/window-vibrancy" }

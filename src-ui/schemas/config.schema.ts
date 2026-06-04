@@ -31,6 +31,12 @@ export interface LfmConfigAppearance {
     hidden_files_visual_style: "dimmed" | "normal" | "blurred";
     /** Show native window control buttons (close/minimize/maximize) */
     window_controls: boolean;
+    /** Show minimize button in window controls */
+    show_minimize: boolean;
+    /** Show maximize button in window controls */
+    show_maximize: boolean;
+    /** Show close button in window controls */
+    show_close: boolean;
     /** Accent color palette key (e.g. 'orange', 'blue', 'teal') */
     accent: string;
 }
@@ -121,6 +127,9 @@ export const DEFAULT_CONFIG: LfmConfig = {
         show_hidden_files: false,
         hidden_files_visual_style: "dimmed",
         window_controls: true,
+        show_minimize: true,
+        show_maximize: true,
+        show_close: true,
         accent: "orange",
     },
     behavior: {
@@ -273,6 +282,9 @@ export function validateConfig(raw: PartialLfmConfig): LfmConfig {
                 ? (appearance.hidden_files_visual_style as LfmConfigAppearance["hidden_files_visual_style"])
                 : d.appearance.hidden_files_visual_style,
             window_controls: typeof appearance.window_controls === "boolean" ? appearance.window_controls : d.appearance.window_controls,
+            show_minimize: typeof appearance.show_minimize === "boolean" ? appearance.show_minimize : d.appearance.show_minimize,
+            show_maximize: typeof appearance.show_maximize === "boolean" ? appearance.show_maximize : d.appearance.show_maximize,
+            show_close: typeof appearance.show_close === "boolean" ? appearance.show_close : d.appearance.show_close,
             accent: typeof appearance.accent === "string" ? appearance.accent : d.appearance.accent,
         },
         behavior: {

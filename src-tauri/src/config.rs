@@ -28,6 +28,18 @@ fn default_window_controls() -> bool {
     true
 }
 
+fn default_show_minimize() -> bool {
+    true
+}
+
+fn default_show_maximize() -> bool {
+    true
+}
+
+fn default_show_close() -> bool {
+    true
+}
+
 fn default_icon_size() -> String {
     "medium".to_string()
 }
@@ -54,6 +66,12 @@ pub struct Appearance {
     pub accent: String,
     #[serde(default = "default_window_controls")]
     pub window_controls: bool,
+    #[serde(default = "default_show_minimize")]
+    pub show_minimize: bool,
+    #[serde(default = "default_show_maximize")]
+    pub show_maximize: bool,
+    #[serde(default = "default_show_close")]
+    pub show_close: bool,
     #[serde(default = "default_icon_size")]
     pub icon_size: String,
     #[serde(default = "default_hidden_files_visual_style")]
@@ -206,6 +224,9 @@ impl Default for Appearance {
             show_hidden_files: false,
             accent: default_accent(),
             window_controls: default_window_controls(),
+            show_minimize: default_show_minimize(),
+            show_maximize: default_show_maximize(),
+            show_close: default_show_close(),
             icon_size: default_icon_size(),
             hidden_files_visual_style: default_hidden_files_visual_style(),
         }
