@@ -208,75 +208,20 @@ const mimeType = computed(() => LFMVideoMimeResolver.getMimeType(props.path));
 </script>
 
 <template lang="pug">
-div(class="LFM-video-preview")
-	div(v-if="nativeReady && !fallbackMode" class="LFM-video-native")
-		div(class="LFM-video-native-surface")
-			div(class="LFM-video-engine-badge") {{ statusLabel }}
-			div(class="LFM-video-file-name") {{ nativeState.filename || fileName }}
-		div(class="LFM-video-controls")
-			button(class="LFM-video-control-button" type="button" @click="toggleNativePlayback" title="Play/Pause")
+div(class="w-full h-full min-h-65 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center")
+	div(v-if="nativeReady && !fallbackMode" class="relative w-full h-full min-h-65 flex flex-col justify-end overflow-hidden rounded-lg bg-transparent")
+		div(class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/10 text-white")
+			div(class="rounded-md border border-white/15 bg-black/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/70 backdrop-blur-md") {{ statusLabel }}
+			div(class="max-w-[80%] truncate text-sm font-semibold text-white/80") {{ nativeState.filename || fileName }}
+		div(class="relative z-10 flex items-center gap-3 border-t border-white/10 bg-black/55 px-3 py-2 text-white backdrop-blur-md")
+			button(class="grid size-8 place-items-center rounded-lg border border-white/10 bg-white/10 text-white transition hover:bg-white/20 active:scale-95" type="button" @click="toggleNativePlayback" title="Play/Pause")
 				component(:is="nativeState.isPaused ? IconPlay : IconPause")
-			span(class="LFM-video-time") {{ formatTime(nativeState.currentTime) }}
-			input(class="LFM-video-slider" type="range" min="0" max="100" :value="progress" @input="handleSeek" title="Seek")
-			span(class="LFM-video-time") {{ formatTime(nativeState.duration) }}
-			IconVolumeUp(class="LFM-video-volume-icon")
-			input(class="LFM-video-volume" type="range" min="0" max="100" :value="nativeState.volume" @input="handleVolume" title="Volume")
-		p(v-if="loadError" class="LFM-video-error") {{ loadError }}
-	video(v-else ref="videoRef" class="LFM-video-player" controls preload="metadata" :src="videoUrl" :key="videoUrl" @error="handleVideoError" @loadedmetadata="handleVideoLoadedMetadata")
-	p(v-if="loadError" class="LFM-video-error") {{ loadError }}
+			span(class="w-10 text-center text-[11px] font-semibold tabular-nums text-white/70") {{ formatTime(nativeState.currentTime) }}
+			input(class="h-1 flex-1 cursor-pointer appearance-none rounded bg-white/20 accent-white" type="range" min="0" max="100" :value="progress" @input="handleSeek" title="Seek")
+			span(class="w-10 text-center text-[11px] font-semibold tabular-nums text-white/70") {{ formatTime(nativeState.duration) }}
+			IconVolumeUp(class="size-4 text-white/70")
+			input(class="h-1 w-16 cursor-pointer appearance-none rounded bg-white/20 accent-white" type="range" min="0" max="100" :value="nativeState.volume" @input="handleVolume" title="Volume")
+		p(v-if="loadError" class="relative z-10 m-0 border-t border-amber-400/20 bg-amber-500/15 px-3 py-2 text-xs text-amber-100") {{ loadError }}
+	video(v-else ref="videoRef" class="w-full h-full object-contain rounded-lg shadow-lg" controls preload="metadata" :src="videoUrl" :key="videoUrl" @error="handleVideoError" @loadedmetadata="handleVideoLoadedMetadata")
+	p(v-if="loadError" class="relative z-10 m-0 border-t border-amber-400/20 bg-amber-500/15 px-3 py-2 text-xs text-amber-100") {{ loadError }}
 </template>
-
-<style scoped>
-@reference "tailwindcss";
-.LFM-video-preview {
-	@apply w-full h-full min-h-[260px] bg-black/20 rounded-lg overflow-hidden flex items-center justify-center;
-}
-
-.LFM-video-player {
-	@apply w-full h-full object-contain rounded-lg shadow-lg;
-}
-
-.LFM-video-native {
-	@apply relative w-full h-full min-h-[260px] flex flex-col justify-end overflow-hidden rounded-lg bg-transparent;
-}
-
-.LFM-video-native-surface {
-	@apply absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/10 text-white;
-}
-
-.LFM-video-engine-badge {
-	@apply rounded-md border border-white/15 bg-black/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/70 backdrop-blur-md;
-}
-
-.LFM-video-file-name {
-	@apply max-w-[80%] truncate text-sm font-semibold text-white/80;
-}
-
-.LFM-video-controls {
-	@apply relative z-10 flex items-center gap-3 border-t border-white/10 bg-black/55 px-3 py-2 text-white backdrop-blur-md;
-}
-
-.LFM-video-control-button {
-	@apply grid size-8 place-items-center rounded-lg border border-white/10 bg-white/10 text-white transition hover:bg-white/20 active:scale-95;
-}
-
-.LFM-video-time {
-	@apply w-10 text-center text-[11px] font-semibold tabular-nums text-white/70;
-}
-
-.LFM-video-slider {
-	@apply h-1 flex-1 cursor-pointer appearance-none rounded bg-white/20 accent-white;
-}
-
-.LFM-video-volume-icon {
-	@apply size-4 text-white/70;
-}
-
-.LFM-video-volume {
-	@apply h-1 w-16 cursor-pointer appearance-none rounded bg-white/20 accent-white;
-}
-
-.LFM-video-error {
-	@apply relative z-10 m-0 border-t border-amber-400/20 bg-amber-500/15 px-3 py-2 text-xs text-amber-100;
-}
-</style>

@@ -128,8 +128,8 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 @custom-variant lsrosepine (&:where([data-theme=lsrosepine], [data-theme=lsrosepine] *));
 @custom-variant lsrosepine-dark (&:where([data-theme=lsrosepine-dark], [data-theme=lsrosepine-dark] *));
-@custom-variant lsgrouvbox (&:where([data-theme=lsgrouvbox], [data-theme=lsgrouvbox] *));
-@custom-variant lsgrouvbox-dark (&:where([data-theme=lsgrouvbox-dark], [data-theme=lsgrouvbox-dark] *));
+@custom-variant lsgruvbox (&:where([data-theme=lsgruvbox], [data-theme=lsgruvbox] *));
+@custom-variant lsgruvbox-dark (&:where([data-theme=lsgruvbox-dark], [data-theme=lsgruvbox-dark] *));
 @custom-variant lsnord (&:where([data-theme=lsnord], [data-theme=lsnord] *));
 @custom-variant lsnord-dark (&:where([data-theme=lsnord-dark], [data-theme=lsnord-dark] *));
 @custom-variant lsatom (&:where([data-theme=lsatom], [data-theme=lsatom] *));

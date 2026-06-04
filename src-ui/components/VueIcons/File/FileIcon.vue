@@ -37,8 +37,9 @@ watchEffect(async (onCleanup) => {
 </script>
 
 <template lang="pug">
-img.LFM-file-icon(
+img(
 	v-if="iconUrl"
+	class="inline-block align-middle transition-all duration-200 ease-in-out drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:scale-105 hover:drop-shadow-[0_4px_8px_rgba(0,0,0,0.2)]"
 	:src="iconUrl"
 	:width="size"
 	:height="size"
@@ -46,8 +47,9 @@ img.LFM-file-icon(
 	loading="lazy"
 	decoding="async"
 )
-svg.LFM-file-icon.LFM-file-icon--fallback(
+svg(
 	v-else
+	class="inline-block align-middle transition-all duration-200 ease-in-out drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:scale-105 hover:drop-shadow-[0_4px_8px_rgba(0,0,0,0.2)] text-[#c8bdb8]"
 	:width="size"
 	:height="size"
 	viewBox="0 0 56 56"
@@ -59,20 +61,3 @@ svg.LFM-file-icon.LFM-file-icon--fallback(
 	path(fill="#d9d7ca" d="M37.5.151V12h11.849L37.5.151Z")
 	path(stroke="#c8bdb8" stroke-width="2" stroke-linecap="round" d="M13 22h6M13 27h12M13 32h30M13 37h18M36 37h7")
 </template>
-
-<style scoped>
-.LFM-file-icon {
-  display: inline-block;
-  vertical-align: middle;
-  transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-.LFM-file-icon:hover {
-  transform: scale(1.05);
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-}
-
-.LFM-file-icon--fallback {
-  color: #c8bdb8;
-}
-</style>

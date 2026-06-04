@@ -64,7 +64,7 @@ const stateIndicator = computed(() => {
 const drivePaths = computed(() => {
 	// Base drive enclosure path
 	const basePath = "M4 6h16c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1H4c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1z";
-	
+
 	// Type-specific inner details
 	const innerPaths: Record<string, string> = {
 		root: "M8 9l4-3 4 3v6H8z M10 9v6 M10 12h4", // Root - has partition lines
@@ -76,7 +76,7 @@ const drivePaths = computed(() => {
 		network: "M4 9c0-1.1.9-2 2-2h1l1-2h6l1 2h1c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2h-1l-1 2H9l-1-2H7c-1.1 0-2-.9-2-2V9z", // Network - globe-ish
 		removable: "M7 7h10v6H7z M9 14h6", // Removable - with eject line
 	};
-	
+
 	const typeKey = props.type as string;
 	return innerPaths[typeKey] || innerPaths.internal;
 });
@@ -89,21 +89,21 @@ svg(
 	viewBox="0 0 24 24"
 	fill="none"
 	xmlns="http://www.w3.org/2000/svg"
-	class="LFM-drive-icon"
+	class="inline-block align-middle transition-all duration-200 ease-in-out hover:scale-110 hover:drop-shadow-md"
 )
 	//- Drive enclosure
 	path(
 		:fill="hexColor"
 		d="M4 5c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1H4z"
 	)
-	
+
 	//- Inner detail/indicator
 	path(
 		fill="#ffffff"
 		fill-opacity="0.9"
 		:d="drivePaths"
 	)
-	
+
 	//- LED indicator
 	circle(
 		:cx="18"
@@ -111,8 +111,8 @@ svg(
 		r="2"
 		:fill="stateIndicator.indicator"
 		:fill-opacity="stateIndicator.indicatorOpacity"
-		class="LFM-drive-indicator"
-		:class="{ 'LFM-drive-indicator--active': hasActivity || isEjecting }"
+		class="transition-opacity duration-300 ease-in-out"
+		:class="{ 'animate-pulse': hasActivity || isEjecting }"
 	)
 
 	//- Glossy highlight on top
@@ -122,33 +122,3 @@ svg(
 		d="M4 6c0-.55.45-1 1-1h4V5c0-.55.45-1 1-1h1c.55 0 1 .45 1 1v1h10c.55 0 1 .45 1 1v3c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V6z"
 	)
 </template>
-
-<style scoped>
-.LFM-drive-icon {
-  display: inline-block;
-  vertical-align: middle;
-  transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
-}
-
-.LFM-drive-indicator {
-  transition: fill-opacity 0.3s ease;
-}
-
-.LFM-drive-indicator--active {
-  animation: LFM-drive-pulse 1s ease-in-out infinite;
-}
-
-.LFM-drive-icon:hover {
-  transform: scale(1.1);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-}
-
-@keyframes LFM-drive-pulse {
-  0%, 100% {
-    opacity: 0.45;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-</style>

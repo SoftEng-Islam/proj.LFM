@@ -459,17 +459,23 @@ export function listenStylesheetChange(): Promise<void> {
 /** Minimize the current application window. */
 export async function minimizeWindow(): Promise<void> {
     const window = getCurrentWindow();
+    //! FIXME
+    //! Unhandled Promise Rejection: window.minimize not allowed. Permissions associated with this command: core:window:allow-minimize
     await window.minimize();
 }
 
 /** Toggle between maximized and restored window states. */
 export async function toggleMaximize(): Promise<void> {
     const window = getCurrentWindow();
+    //! FIXME
+    //! Unhandled Promise Rejection: window.toggle_maximize not allowed. Permissions associated with this command: core:window:allow-toggle-maximize
     await window.toggleMaximize();
 }
 
 /** Close the current application window. */
 export async function closeWindow(): Promise<void> {
     const window = getCurrentWindow();
+    //! FIXME
+    //! Unhandled Promise Rejection: window.close not allowed. Permissions associated with this command: core:window:allow-close
     await window.close();
 }

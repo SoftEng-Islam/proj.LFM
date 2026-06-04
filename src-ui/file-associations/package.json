@@ -26,8 +26,7 @@
     "vscode:prepublish": "bun run lint && bun run build",
     "verify": "sheriff verify",
     "prepublishOnly": "bun ./src-ui/scripts/module/prepare.ts",
-    "postpublish": "git checkout package.json && git checkout README.md",
-    "prepare": "husky"
+    "postpublish": "git checkout package.json && git checkout README.md"
   },
   "publisher": "PKief",
   "author": {

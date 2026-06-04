@@ -50,7 +50,7 @@ svg(
 	viewBox="0 0 48 48"
 	fill="none"
 	xmlns="http://www.w3.org/2000/svg"
-	class="LFM-folder-icon"
+	class="inline-block align-middle transition-all duration-200 ease-in-out drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] hover:scale-105 hover:drop-shadow-[0_4px_8px_rgba(0,0,0,0.2)]"
 )
 	defs
 		//- Primary Overlay Gradient (Consistent across all folders)
@@ -83,17 +83,3 @@ svg(
 	//- Tag / Sign (The icon inside the folder)
 	g(v-if="tagMarkup" v-html="tagMarkup")
 </template>
-
-<style scoped>
-.LFM-folder-icon {
-	display: inline-block;
-	vertical-align: middle;
-	transition: transform 0.2s ease-in-out;
-	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-.LFM-folder-icon:hover {
-	transform: scale(1.05);
-	filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-}
-</style>

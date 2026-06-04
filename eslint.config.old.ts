@@ -5,7 +5,7 @@ import skipFormatting from "@vue/eslint-config-prettier/skip-formatting";
 
 export default defineConfigWithVueTs(
     {
-        ignores: ["dist/**", "coverage/**", "node_modules/**"],
+        ignores: ["dist/**", "coverage/**", "node_modules/**", "src-tauri/**"],
     },
     // Base JS rules applied globally (respecting your ignores)
     js.configs.recommended,
