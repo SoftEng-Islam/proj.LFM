@@ -11,7 +11,7 @@ import LeftSidebar from '@/modules/left-navigation/LeftSidebar.vue';
 import ResizableModal from '@/components/ui/ResizableModal.vue';
 import AiChatSidebar from '@/modules/chat/AiChatSidebar.vue';
 import PreviewPane from '@/modules/right-preview-panel/PreviewPane.vue';
-import ExpandedPreview from '@/components/previews/ExpandedPreview.vue';
+import ExpandedPreview from '@/components/previewers/ExpandedPreview.vue';
 import SettingsView from '@/modules/settings/views/SettingsView.vue';
 
 const store = useFileManagerStore();

@@ -25,7 +25,7 @@ import IconEdit from '~icons/material-symbols/edit';
 
 import type { FileEntry } from '@/types/file-manager';
 import { convertFileSrc } from '@/services/tauri-bridge';
-import VideoPreview from '@/components/previews/VideoPreview.vue';
+import VideoPreview from '@/components/previewers/VideoPreview.vue';
 import AudioPlayer from '@/components/ui/AudioPlayer.vue';
 import { AVCircle } from 'vue-audio-visual';
 
