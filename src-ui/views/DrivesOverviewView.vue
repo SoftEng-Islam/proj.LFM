@@ -100,7 +100,7 @@ div.LFM-drives-page
   div.LFM-drives-header(class="flex flex-col gap-2")
     div(class="flex gap-2 flex-row items-center justify-start")
       IconStorage(class="text-4xl")
-      h1(class="m-0 p-0") Storage Overview
+      h1(class="m-0 p-0") Drives Overview
     p View available storage on all mounted partitions and drives.
 
   .LFM-drives-loading(v-if="loading")
@@ -193,7 +193,7 @@ div.LFM-drives-page
   border: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
   border-radius: 1rem;
   padding: 1.5rem;
-  background: var(--color-base-100);
+  background: var(--color-base-200);
   transition: all 150ms ease;
   cursor: pointer;
 }

@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import WorkspaceOverview from '@/views/WorkspaceOverview.vue';
+import Workspace from '@/components/ui/Workspace.vue';
 import RenameModal from '@/components/ui/RenameModal.vue';
 import PropertiesModal from '@/components/ui/PropertiesModal.vue';
 import { useFileManagerStore } from '@/stores/file-manager';
@@ -21,7 +21,7 @@ const renameDialog = ref<{ visible: boolean; path: string; currentName: string }
 
 const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null }>({
 	visible: false,
-	item: null,
+	item: null
 });
 
 function handleKeydown(e: KeyboardEvent) {
@@ -68,11 +68,12 @@ watch(
 </script>
 
 <template lang="pug">
-WorkspaceOverview(@open-properties="openPropertiesDialog")
+Workspace(@open-properties="openPropertiesDialog")
 PropertiesModal(
 	v-if="propertiesDialog.visible"
 	v-model="propertiesDialog.visible"
 	:item="propertiesDialog.item"
+	:show="true"
 )
 </template>
 

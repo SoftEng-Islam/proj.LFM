@@ -59,10 +59,15 @@ html[data-theme=dark] {
   --color-primary-subtle: var(--LFM-default-accent-subtle);
 }
 
+* {
+  box-sizing: border-box;
+  outline: none;
+}
+
 html,
 body,
 #app {
-  @apply overflow-hidden h-full min-h-full p-0;
+  @apply flex items-center justify-start h-full w-full min-h-full p-0 overflow-hidden;
 }
 
 body {
@@ -75,10 +80,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-* {
-  box-sizing: border-box;
-  outline: none;
-}
 
 button,
 input,

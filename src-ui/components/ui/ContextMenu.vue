@@ -30,7 +30,7 @@ import IconSettings from '~icons/material-symbols/settings';
 const props = defineProps<{
 	x: number;
 	y: number;
-	itemName?: string;
+	itemName?: string | undefined;
 	filePath?: string;
 }>();
 

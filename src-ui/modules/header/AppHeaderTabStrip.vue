@@ -61,30 +61,30 @@ function handleNewTab() {
 </script>
 
 <template lang="pug">
-div(class="flex items-stretch h-12 bg-base-300 shrink-0 select-none" data-tauri-drag-region)
-	div(class="flex items-stretch h-full pl-2 pt-2" role="tablist")
+div(class="flex items-center h-full bg-base-300 shrink-0 select-none" data-tauri-drag-region)
+	div(class="flex items-center h-full gap-2" role="tablist")
 		transition-group(name="tab-list")
 			RouterLink(
 				v-for="tab in store.windowTabs"
 				:key="tab.id"
 				:to="{ path: resolveAppRoutePath(tab.path), query: { tab: tab.id } }"
 				@click="store.setActiveTab(tab.id)"
-				:class="['group flex items-center min-w-35 max-w-55 h-9.5 px-3 cursor-pointer text-base-content no-underline rounded-t-lg transition-all duration-150 relative text-xs border-x border-t border-transparent border-b-0', activeTabId === tab.id ? 'bg-(--color-primary)/20 z-10 text-primary font-semibold border-x-base-content/10 border-t-base-content/10' : 'hover:bg-base-content/5']"
+				:class="['group relative flex items-center min-w-35 max-w-55 h-9.5 px-3 cursor-pointer text-xs no-underline rounded-lg transition-all duration-150', activeTabId === tab.id ? 'bg-(--color-primary)/20 z-10 text-primary font-semibold' : 'bg-base-content/15 hover:bg-base-content/30']"
 				role="tab"
 				:aria-selected="activeTabId === tab.id"
 			)
-				div(class="flex items-center justify-center gap-2 w-full h-6 overflow-hidden")
-					FolderIcon(:color="'var(--color-primary)'" :size="18")
-					span(class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-normal pt-1") {{ tab.label }}
+				div(class="flex items-center justify-center gap-x-2 w-full overflow-hidden")
+					FolderIcon(:color="'var(--color-primary)'" :size="18" class="pb-1")
+					span(class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-normal") {{ tab.label }}
 					button(
 						v-if="store.windowTabs.length > 1"
-						class="flex items-center justify-center w-4.5 h-4.5 rounded bg-transparent border-none cursor-pointer text-base-content text-[12px] opacity-0 group-hover:opacity-60 transition-all duration-150 hover:bg-base-content/15 hover:opacity-100! hover:text-error"
+						class="flex items-center justify-center w-5 h-5 rounded-md bg-base-100 border-none cursor-pointer text-base-content text-[12px] hover:text-error"
 						title="Close tab"
 						@click.prevent="handleCloseTab(tab.id)"
 					)
 						IconClose
 
-		button(class="flex items-center justify-center w-7 h-7 mt-3 mx-1.5 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 hover:bg-base-content/10" title="New tab" @click="handleNewTab")
+		button(class="flex items-center justify-center w-7 h-7 ml-1.5 rounded-md border-none cursor-pointer text-lg bg-base-content/10 hover:bg-(--color-primary)/50" title="New tab" @click="handleNewTab")
 			IconAdd
 
 	div(class="flex-1 [-webkit-app-region:drag]" data-tauri-drag-region)

@@ -40,18 +40,18 @@ const showFilterDropdown = ref(false);
 // Icon sizes
 const iconSizes: LfmConfigAppearance['icon_size'][] = ['small', 'medium', 'large', 'extra-large'];
 const iconSizeLabels: Record<string, string> = {
-  small: 'Small',
-  medium: 'Medium',
-  large: 'Large',
-  'extra-large': 'Extra Large',
+	small: 'Small',
+	medium: 'Medium',
+	large: 'Large',
+	'extra-large': 'Extra Large',
 };
 
 // Sort options
 const sortOptions: Record<SortMode, string> = {
-  name: 'Name',
-  size: 'Size',
-  kind: 'Type',
-  modified: 'Date modified',
+	name: 'Name',
+	size: 'Size',
+	kind: 'Type',
+	modified: 'Date modified',
 };
 
 const currentIconSize = computed(() => configStore.config.appearance.icon_size);
@@ -169,20 +169,20 @@ async function triggerPaste() {
 
 <template lang="pug">
 div(class="border-b border-base-content/10 bg-base-300 shrink-0")
-	div(class="flex items-center justify-between h-[44px] px-3 gap-1" role="toolbar" aria-label="Command bar")
+	div(class="flex items-center justify-between h-11 px-3 gap-1" role="toolbar" aria-label="Command bar")
 		div(class="flex items-center gap-0.5")
 			//- New Dropdown
 			div(class="relative")
-				button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-3 rounded-md bg-base-100 border border-base-content/10 shadow-sm cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap font-semibold hover:bg-base-content/5 active:bg-base-content/10" title="New" @click="showNewDropdown = !showNewDropdown")
+				button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-3 rounded-md bg-base-100 border border-base-content/10 shadow-sm cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap font-semibold hover:bg-base-content/5 active:bg-base-content/10" title="New" @click="showNewDropdown = !showNewDropdown")
 					IconAdd(class="text-[20px] text-blue-500")
 					span(class="text-[13px]") New
 					span(class="text-[10px] opacity-50") ▾
 
-				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-[100] min-w-[160px]" v-if="showNewDropdown")
+				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-100 min-w-40" v-if="showNewDropdown")
 					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5" @click="createDirectory")
 						IconFolder(class="text-amber-500")
 						span Directory
-					div(class="h-[1px] bg-base-content/10 m-1")
+					div(class="h-px bg-base-content/10 m-1")
 					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5" @click="createNewFile('Document')")
 						IconDescription(class="text-blue-400")
 						span Text Document
@@ -190,47 +190,47 @@ div(class="border-b border-base-content/10 bg-base-300 shrink-0")
 						IconTerminal(class="text-emerald-500")
 						span Bash Script
 
-			div(class="w-[1px] h-6 bg-base-content/10 mx-1.5 opacity-50")
+			div(class="w-px h-6 bg-base-content/10 mx-1.5 opacity-50")
 
-			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Cut" @click="triggerCut")
+			button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Cut" @click="triggerCut")
 				IconContentCut(class="text-slate-400")
-			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Copy" @click="triggerCopy")
+			button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Copy" @click="triggerCopy")
 				IconContentCopy(class="text-blue-500")
-			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Paste" @click="triggerPaste")
+			button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Paste" @click="triggerPaste")
 				IconContentPaste(class="text-emerald-500")
-			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Shortcut")
+			button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Shortcut")
 				IconShortcut(class="text-cyan-500")
-			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Rename" @click="triggerRename")
+			button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Rename" @click="triggerRename")
 				IconEdit(class="text-amber-500")
-			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Properties" @click="triggerProperties")
+			button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Properties" @click="triggerProperties")
 				IconSettings(class="text-slate-500")
-			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Delete" @click="triggerDelete")
+			button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Delete" @click="triggerDelete")
 				IconDelete(class="text-rose-500")
-			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="More")
+			button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="More")
 				IconMoreHoriz(class="opacity-50")
 
 		div(class="flex items-center gap-0.5")
 			//- Filter dropdown
 			div(class="relative")
-				button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Filter" @click="showFilterDropdown = !showFilterDropdown")
+				button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Filter" @click="showFilterDropdown = !showFilterDropdown")
 					IconFilterAlt(class="text-violet-500")
-				
-				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-[100] min-w-[160px]" v-if="showFilterDropdown")
+
+				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-100 min-w-40" v-if="showFilterDropdown")
 					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5")
 						input(class="w-full px-3 py-2 border border-base-content/10 rounded bg-base-200 text-base-content text-[13px] outline-none focus:border-primary" type="text" placeholder="Filter files...")
-					div(class="h-[1px] bg-base-content/10 m-1")
+					div(class="h-px bg-base-content/10 m-1")
 					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5") Filter by name
 					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5") Filter by type
 					button(class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5") Filter by size
 
 			//- Sort dropdown
 			div(class="relative")
-				button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border border-base-content/10 cursor-pointer text-base-content text-[16px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Sort by" @click="showSortDropdown = !showSortDropdown")
+				button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border border-base-content/10 cursor-pointer text-base-content text-[16px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Sort by" @click="showSortDropdown = !showSortDropdown")
 					IconSort(class="text-sky-500")
 					span(class="text-[13px]") {{ sortOptions[store.sortMode] || 'Modified' }}
 					span(class="text-[10px] opacity-50") ▾
-				
-				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-[100] min-w-[160px]" v-if="showSortDropdown")
+
+				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-100 min-w-40" v-if="showSortDropdown")
 					button(
 						class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5"
 						v-for="(label, mode) in sortOptions"
@@ -239,15 +239,15 @@ div(class="border-b border-base-content/10 bg-base-300 shrink-0")
 						@click="setSortMode(mode)"
 					) {{ label }}
 
-			div(class="w-[1px] h-6 bg-base-content/10 mx-1.5 opacity-50")
+			div(class="w-px h-6 bg-base-content/10 mx-1.5 opacity-50")
 
 			//- Icon size dropdown
 			div(class="relative")
-				button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border border-base-content/10 cursor-pointer text-base-content text-[16px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Icon size" @click="showIconSizeDropdown = !showIconSizeDropdown")
+				button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border border-base-content/10 cursor-pointer text-base-content text-[16px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" title="Icon size" @click="showIconSizeDropdown = !showIconSizeDropdown")
 					span(class="text-[13px]") {{ iconSizeLabels[currentIconSize] || 'Medium' }}
 					span(class="text-[10px] opacity-50") ▾
-				
-				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-[100] min-w-[160px]" v-if="showIconSizeDropdown")
+
+				div(class="absolute top-full left-0 mt-1 bg-base-100 border border-base-content/10 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] p-1 z-100 min-w-40" v-if="showIconSizeDropdown")
 					button(
 						class="flex items-center gap-2.5 w-full px-3 py-2 rounded bg-transparent border-none cursor-pointer text-base-content text-[13px] text-left transition-colors duration-150 hover:bg-base-content/5"
 						v-for="size in iconSizes"
@@ -256,20 +256,20 @@ div(class="border-b border-base-content/10 bg-base-300 shrink-0")
 						@click="setIconSize(size)"
 					) {{ iconSizeLabels[size] }}
 
-			div(class="w-[1px] h-6 bg-base-content/10 mx-1.5 opacity-50")
+			div(class="w-px h-6 bg-base-content/10 mx-1.5 opacity-50")
 
 			//- Combined view mode toggle button
 			button(
-				class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10"
+				class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10"
 				:class="{ 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-primary': store.viewMode !== 'list' }"
 				:title="store.viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'"
 				@click="toggleViewMode"
 			)
 				component(:is="store.viewMode === 'grid' ? IconTableRows : IconGridView" class="text-indigo-500")
 
-			div(class="w-[1px] h-6 bg-base-content/10 mx-1.5 opacity-50")
+			div(class="w-px h-6 bg-base-content/10 mx-1.5 opacity-50")
 
 			//- Details Pane Toggle Button: Shows/hides the Preview/Details sidebar panel
-			button(class="inline-flex items-center justify-center gap-1.5 h-[34px] px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" :class="{ 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-primary': store.detailsOpen }" title="Details Pane" @click="store.toggleDetails()")
+			button(class="inline-flex items-center justify-center gap-1.5 h-8.5 px-2 rounded-md bg-transparent border-none cursor-pointer text-base-content text-[18px] transition-all duration-150 whitespace-nowrap hover:bg-base-content/5 active:bg-base-content/10" :class="{ 'bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-primary': store.detailsOpen }" title="Details Pane" @click="store.toggleDetails()")
 				IconSideNavigation(class="text-fuchsia-500")
 </template>

@@ -50,16 +50,16 @@ function onComposerKeydown(e: KeyboardEvent) {
 
 <template lang="pug">
 div(class="flex flex-col h-full min-h-0 bg-base-300 text-[12px] text-base-content")
-	header(class="flex items-center justify-between gap-2 min-h-[44px] px-3 border-b border-base-content/10 bg-base-300")
+	header(class="flex items-center justify-between gap-2 min-h-11 px-3 border-b border-base-content/10 bg-base-300")
 		div(class="flex items-center gap-3 min-w-0")
-			div(class="shrink-0 w-[34px] h-[34px] rounded-md flex items-center justify-center text-primary bg-base-100 border border-base-content/10" aria-hidden="true")
+			div(class="shrink-0 w-8.5 h-8.5 rounded-md flex items-center justify-center text-primary bg-base-100 border border-base-content/10" aria-hidden="true")
 				IconRobot(class="text-[20px] shrink-0 text-blue-500 animate-pulse" :size="20")
 			div(class="min-w-0")
 				h3(class="m-0 text-[13px] font-semibold text-base-content leading-[1.2]") LFM Assistant
 				p(class="mt-0.5 text-[11px] font-medium text-blue-400") Workspace copilot
-		button(class="flex items-center justify-center w-[34px] h-[34px] border-none rounded-[10px] bg-transparent text-base-content/60 cursor-pointer transition-all duration-150 hover:bg-base-content/10 hover:text-base-content focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:scale-95" type="button" aria-label="Close assistant" @click="store.toggleAiChat")
+		button(class="flex items-center justify-center w-8.5 h-8.5 border-none rounded-[10px] bg-transparent text-base-content/60 cursor-pointer transition-all duration-150 hover:bg-base-content/10 hover:text-base-content focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 active:scale-95" type="button" aria-label="Close assistant" @click="store.toggleAiChat")
 			IconClose(class="text-[20px] shrink-0 text-rose-500" :size="20")
-	div(class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-2.5 pb-3 flex flex-col gap-2.5 [scrollbar-gutter:stable] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-thumb]:rounded-[3px] [&::-webkit-scrollbar-thumb]:bg-[rgba(100,100,100,0.35)] [&::-webkit-scrollbar-track]:bg-transparent" ref="messagesEl" role="log" aria-live="polite" aria-relevant="additions")
+	div(class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-2.5 pb-3 flex flex-col gap-2.5 scrollbar-gutter-stable [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-[3px] [&::-webkit-scrollbar-thumb]:bg-[rgba(100,100,100,0.35)] [&::-webkit-scrollbar-track]:bg-transparent" ref="messagesEl" role="log" aria-live="polite" aria-relevant="additions")
 		div(
 			v-for="(chat, i) in chatHistory"
 			:key="i"
@@ -74,20 +74,20 @@ div(class="flex flex-col h-full min-h-0 bg-base-300 text-[12px] text-base-conten
 	footer(class="px-2 py-2 pb-2.5 border-t border-base-content/10 bg-base-300")
 		div(class="relative flex items-end gap-1.5 p-1 pl-2.5 bg-base-100 border border-base-content/10 rounded-lg transition-all duration-150 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/12")
 			textarea(
-				class="flex-1 min-w-0 min-h-[40px] max-h-[120px] py-2 pr-10 bg-transparent border-none outline-none resize-none text-[12px] leading-[1.45] text-base-content placeholder:text-base-content/60 placeholder:opacity-75"
+				class="flex-1 min-w-0 min-h-10 max-h-30 py-2 pr-10 bg-transparent border-none outline-none resize-none text-[12px] leading-[1.45] text-base-content placeholder:text-base-content/60 placeholder:opacity-75"
 				v-model="message"
 				placeholder="Ask about files, paths, or organization…"
 				rows="1"
 				aria-label="Message to assistant"
 				@keydown="onComposerKeydown"
 			)
-			button(class="shrink-0 self-end w-[34px] h-[34px] m-0.5 mr-0 rounded-md bg-primary text-white border-none cursor-pointer flex items-center justify-center transition-all duration-150 hover:bg-[color-mix(in_srgb,var(--color-primary)_88%,#000)] active:bg-[color-mix(in_srgb,var(--color-primary)_78%,#000)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:opacity-38 disabled:cursor-not-allowed" type="button" aria-label="Send message" :disabled="!message.trim()" @click="sendMessage")
+			button(class="shrink-0 self-end w-8.5 h-8.5 m-0.5 mr-0 rounded-md bg-primary text-white border-none cursor-pointer flex items-center justify-center transition-all duration-150 hover:bg-[color-mix(in_srgb,var(--color-primary)_88%,#000)] active:bg-[color-mix(in_srgb,var(--color-primary)_78%,#000)] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:opacity-38 disabled:cursor-not-allowed" type="button" aria-label="Send message" :disabled="!message.trim()" @click="sendMessage")
 				IconSend(class="text-[20px] shrink-0 text-white" :size="20")
-		p(class="mt-1.5 mx-0.5 text-[11px] font-medium text-base-content/60 leading-[1.4] [&>kbd]:inline-block [&>kbd]:px-[5px] [&>kbd]:py-[1px] [&>kbd]:rounded-sm [&>kbd]:text-[9px] [&>kbd]:font-mono [&>kbd]:bg-base-content/10 [&>kbd]:border [&>kbd]:border-base-content/10 [&>kbd]:text-base-content/60")
+		p(class="mt-1.5 mx-0.5 text-[11px] font-medium text-base-content/60 leading-[1.4] [&>kbd]:inline-block [&>kbd]:px-1.25 [&>kbd]:py-px [&>kbd]:rounded-sm [&>kbd]:text-[9px] [&>kbd]:font-mono [&>kbd]:bg-base-content/10 [&>kbd]:border [&>kbd]:border-base-content/10 [&>kbd]:text-base-content/60")
 			kbd Enter
-			|  to send · 
+			|  to send ·
 			kbd Shift
-			|  + 
+			|  +
 			kbd Enter
 			|  for new line
 </template>

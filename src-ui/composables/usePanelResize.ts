@@ -7,8 +7,8 @@
  *  - Persisted widths via localStorage
  */
 
-import { nextTick, ref, watch } from 'vue';
-import { useStorage } from '@vueuse/core';
+import { nextTick, ref, watch } from "vue";
+import { useStorage } from "@vueuse/core";
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 
@@ -16,109 +16,162 @@ const NAV_WIDTH = 240;
 const MIN_RIGHT_PANEL = 260;
 const MAX_RIGHT_PANEL = 720;
 const MIN_MAIN_CONTENT = 360;
+
+// Status Bar Hight Range
+const MIN_STATUS_BAR_HEIGHT = 30;
+const MAX_STATUS_BAR_HEIGHT = 300;
+
+// width
+const DEFAULT_LEFT_SIDEBAR_WIDTH = 360;
 const DEFAULT_DETAILS_PANEL_WIDTH = 360;
 const DEFAULT_AI_CHAT_PANEL_WIDTH = 320;
+
+// Height
+const DEFAULT_STATUS_BAR_HEIGHT = 35;
 
 // ─── Composable ───────────────────────────────────────────────────────────────
 
 export function usePanelResize() {
-	const detailsOpen = ref(true);
-	const aiChatOpen = ref(false);
+    const leftSidebarOpen = ref(true);
+    const detailsOpen = ref(true);
+    const aiChatOpen = ref(false);
+    const statusBarOpen = ref(true);
 
-	const detailsPanelWidth = useStorage('lfm-details-panel-width', DEFAULT_DETAILS_PANEL_WIDTH);
-	const aiChatPanelWidth = useStorage('lfm-ai-chat-panel-width', DEFAULT_AI_CHAT_PANEL_WIDTH);
+    const leftSidebarWidth = useStorage("lfm-left-sidebar-width", DEFAULT_LEFT_SIDEBAR_WIDTH);
+    const detailsPanelWidth = useStorage("lfm-details-panel-width", DEFAULT_DETAILS_PANEL_WIDTH);
+    const aiChatPanelWidth = useStorage("lfm-ai-chat-panel-width", DEFAULT_AI_CHAT_PANEL_WIDTH);
 
-	/** Maximum combined width for both right panels given the current viewport. */
-	function maxCombinedWidth(): number {
-		if (typeof window === 'undefined') return MAX_RIGHT_PANEL * 2;
-		return Math.max(MIN_RIGHT_PANEL * 2, window.innerWidth - NAV_WIDTH - MIN_MAIN_CONTENT);
-	}
+    // Status
+    const statusBarHeight = useStorage("lfm-status-bar-width", DEFAULT_STATUS_BAR_HEIGHT);
 
-	function setDetailsPanelWidth(next: number) {
-		const cap = maxCombinedWidth();
-		let w = Math.round(Math.min(MAX_RIGHT_PANEL, Math.max(MIN_RIGHT_PANEL, next)));
+    /** Maximum combined width for both right panels given the current viewport. */
+    function maxCombinedWidth(): number {
+        if (typeof window === "undefined") return MAX_RIGHT_PANEL * 2;
+        return Math.max(MIN_RIGHT_PANEL * 2, window.innerWidth - NAV_WIDTH - MIN_MAIN_CONTENT);
+    }
 
-		if (aiChatOpen.value) {
-			w = Math.min(w, cap - Math.max(MIN_RIGHT_PANEL, aiChatPanelWidth.value));
-			w = Math.max(MIN_RIGHT_PANEL, w);
-		} else {
-			w = Math.min(w, Math.max(MIN_RIGHT_PANEL, cap));
-		}
+    function setLeftSidebarWidth(next: number) {
+        const cap = maxCombinedWidth();
+        let w = Math.round(Math.min(MAX_RIGHT_PANEL, Math.max(MIN_RIGHT_PANEL, next)));
 
-		detailsPanelWidth.value = w;
-	}
+        if (aiChatOpen.value) {
+            w = Math.min(w, cap - Math.max(MIN_RIGHT_PANEL, aiChatPanelWidth.value));
+            w = Math.max(MIN_RIGHT_PANEL, w);
+        } else {
+            w = Math.min(w, Math.max(MIN_RIGHT_PANEL, cap));
+        }
 
-	function setAiChatPanelWidth(next: number) {
-		const cap = maxCombinedWidth();
-		let w = Math.round(Math.min(MAX_RIGHT_PANEL, Math.max(MIN_RIGHT_PANEL, next)));
+        leftSidebarWidth.value = w;
+    }
 
-		if (detailsOpen.value) {
-			w = Math.min(w, cap - Math.max(MIN_RIGHT_PANEL, detailsPanelWidth.value));
-			w = Math.max(MIN_RIGHT_PANEL, w);
-		} else {
-			w = Math.min(w, Math.max(MIN_RIGHT_PANEL, cap));
-		}
+    function resetLeftSidebarWidth() {
+        leftSidebarWidth.value = DEFAULT_LEFT_SIDEBAR_WIDTH;
+        reconcilePanelWidths();
+    }
 
-		aiChatPanelWidth.value = w;
-	}
+    function setDetailsPanelWidth(next: number) {
+        const cap = maxCombinedWidth();
+        let w = Math.round(Math.min(MAX_RIGHT_PANEL, Math.max(MIN_RIGHT_PANEL, next)));
 
-	/** Ensure the combined panel widths stay within the available viewport. */
-	function reconcilePanelWidths() {
-		if (!detailsOpen.value && !aiChatOpen.value) return;
+        if (aiChatOpen.value) {
+            w = Math.min(w, cap - Math.max(MIN_RIGHT_PANEL, aiChatPanelWidth.value));
+            w = Math.max(MIN_RIGHT_PANEL, w);
+        } else {
+            w = Math.min(w, Math.max(MIN_RIGHT_PANEL, cap));
+        }
 
-		if (detailsOpen.value) setDetailsPanelWidth(detailsPanelWidth.value);
-		if (aiChatOpen.value) setAiChatPanelWidth(aiChatPanelWidth.value);
+        detailsPanelWidth.value = w;
+    }
 
-		if (detailsOpen.value && aiChatOpen.value) {
-			const cap = maxCombinedWidth();
-			const sum = detailsPanelWidth.value + aiChatPanelWidth.value;
+    function setAiChatPanelWidth(next: number) {
+        const cap = maxCombinedWidth();
+        let w = Math.round(Math.min(MAX_RIGHT_PANEL, Math.max(MIN_RIGHT_PANEL, next)));
 
-			if (sum > cap) {
-				let over = sum - cap;
-				const nextAi = Math.max(MIN_RIGHT_PANEL, aiChatPanelWidth.value - over);
-				over -= aiChatPanelWidth.value - nextAi;
-				aiChatPanelWidth.value = nextAi;
-				if (over > 0) {
-					detailsPanelWidth.value = Math.max(MIN_RIGHT_PANEL, detailsPanelWidth.value - over);
-				}
-			}
-		}
-	}
+        if (detailsOpen.value) {
+            w = Math.min(w, cap - Math.max(MIN_RIGHT_PANEL, detailsPanelWidth.value));
+            w = Math.max(MIN_RIGHT_PANEL, w);
+        } else {
+            w = Math.min(w, Math.max(MIN_RIGHT_PANEL, cap));
+        }
 
-	function resetDetailsPanelWidth() {
-		detailsPanelWidth.value = DEFAULT_DETAILS_PANEL_WIDTH;
-		reconcilePanelWidths();
-	}
+        aiChatPanelWidth.value = w;
+    }
 
-	function resetAiChatPanelWidth() {
-		aiChatPanelWidth.value = DEFAULT_AI_CHAT_PANEL_WIDTH;
-		reconcilePanelWidths();
-	}
+    /** Ensure the combined panel widths stay within the available viewport. */
+    function reconcilePanelWidths() {
+        if (!detailsOpen.value && !aiChatOpen.value) return;
 
-	function toggleDetails() {
-		detailsOpen.value = !detailsOpen.value;
-	}
+        if (leftSidebarOpen.value) setLeftSidebarWidth(leftSidebarWidth.value);
+        if (detailsOpen.value) setDetailsPanelWidth(detailsPanelWidth.value);
+        if (aiChatOpen.value) setAiChatPanelWidth(aiChatPanelWidth.value);
 
-	function toggleAiChat() {
-		aiChatOpen.value = !aiChatOpen.value;
-	}
+        if (detailsOpen.value && aiChatOpen.value) {
+            const cap = maxCombinedWidth();
+            const sum = detailsPanelWidth.value + aiChatPanelWidth.value;
 
-	// Re-reconcile widths whenever either panel opens or closes
-	watch([detailsOpen, aiChatOpen], () => {
-		void nextTick(() => reconcilePanelWidths());
-	});
+            if (sum > cap) {
+                let over = sum - cap;
+                const nextAi = Math.max(MIN_RIGHT_PANEL, aiChatPanelWidth.value - over);
+                over -= aiChatPanelWidth.value - nextAi;
+                aiChatPanelWidth.value = nextAi;
+                if (over > 0) {
+                    detailsPanelWidth.value = Math.max(MIN_RIGHT_PANEL, detailsPanelWidth.value - over);
+                }
+            }
+        }
+    }
 
-	return {
-		detailsOpen,
-		aiChatOpen,
-		detailsPanelWidth,
-		aiChatPanelWidth,
-		setDetailsPanelWidth,
-		setAiChatPanelWidth,
-		reconcilePanelWidths,
-		resetDetailsPanelWidth,
-		resetAiChatPanelWidth,
-		toggleDetails,
-		toggleAiChat,
-	};
+    function resetDetailsPanelWidth() {
+        detailsPanelWidth.value = DEFAULT_DETAILS_PANEL_WIDTH;
+        reconcilePanelWidths();
+    }
+
+    function resetAiChatPanelWidth() {
+        aiChatPanelWidth.value = DEFAULT_AI_CHAT_PANEL_WIDTH;
+        reconcilePanelWidths();
+    }
+
+    function setStatusBarHeight(next: number) {
+        const h = Math.round(Math.min(MAX_STATUS_BAR_HEIGHT, Math.max(MIN_STATUS_BAR_HEIGHT, next)));
+        statusBarHeight.value = h;
+    }
+
+    function resetStatusBarHeight() {
+        statusBarHeight.value = DEFAULT_STATUS_BAR_HEIGHT;
+    }
+
+    function toggleDetails() {
+        detailsOpen.value = !detailsOpen.value;
+    }
+
+    function toggleAiChat() {
+        aiChatOpen.value = !aiChatOpen.value;
+    }
+
+    // Re-reconcile widths whenever either panel opens or closes
+    watch([detailsOpen, aiChatOpen], () => {
+        void nextTick(() => reconcilePanelWidths());
+    });
+
+    return {
+        leftSidebarOpen,
+        detailsOpen,
+        aiChatOpen,
+        statusBarOpen,
+        statusBarHeight,
+        leftSidebarWidth,
+        detailsPanelWidth,
+        aiChatPanelWidth,
+        setLeftSidebarWidth,
+        setDetailsPanelWidth,
+        setAiChatPanelWidth,
+        setStatusBarHeight,
+        reconcilePanelWidths,
+        resetLeftSidebarWidth,
+        resetDetailsPanelWidth,
+        resetAiChatPanelWidth,
+        resetStatusBarHeight,
+        toggleDetails,
+        toggleAiChat,
+    };
 }

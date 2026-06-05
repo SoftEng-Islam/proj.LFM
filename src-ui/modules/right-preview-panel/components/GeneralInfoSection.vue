@@ -67,9 +67,9 @@ fieldset(class="LFM-preview-section fieldset bg-base-200 border-base-300 rounded
 	font-weight: 800;
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
-	color: var(--color-base-content);
 	opacity: 0.4;
 	margin-bottom: 1rem;
+	@apply bg-(--color-primary) rounded-full pl-2;
 }
 
 .LFM-info-row {

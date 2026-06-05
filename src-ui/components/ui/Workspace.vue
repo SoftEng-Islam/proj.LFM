@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router';
 import { openFile } from '@/services/tauri-bridge';
 
 import ActionToolbar from '@/modules/ActionToolbar/ActionToolbar.vue';
-import ContextMenu from '@/modules/ContextMenu/ContextMenu.vue';
+import ContextMenu from '@/components/ui/ContextMenu.vue';
 import RenameModal from '@/components/ui/RenameModal.vue';
 import PropertiesModal from '@/components/ui/PropertiesModal.vue';
 import FolderIcon from '@/components/VueIcons/Folder/FolderIcon.vue';

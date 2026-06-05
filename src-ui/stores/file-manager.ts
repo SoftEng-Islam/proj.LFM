@@ -337,6 +337,8 @@ export const useFileManagerStore = defineStore("file-manager", () => {
                     tags: [],
                     collaborators: [],
                     pinned: false,
+                    // FIXME needed to be dynamic value.
+                    childCount: 0,
                 });
 
                 // Generate thumbnails asynchronously
@@ -685,15 +687,23 @@ export const useFileManagerStore = defineStore("file-manager", () => {
         isInitialized,
 
         // Panel state (from usePanelResize)
+        leftSidebarOpen: panels.leftSidebarOpen,
         detailsOpen: panels.detailsOpen,
         aiChatOpen: panels.aiChatOpen,
+        statusBarOpen: panels.statusBarOpen,
+        statusBarHeight: panels.statusBarHeight,
+        leftSidebarWidth: panels.leftSidebarWidth,
         detailsPanelWidth: panels.detailsPanelWidth,
         aiChatPanelWidth: panels.aiChatPanelWidth,
+        setLeftSidebarWidth: panels.setLeftSidebarWidth,
         setDetailsPanelWidth: panels.setDetailsPanelWidth,
         setAiChatPanelWidth: panels.setAiChatPanelWidth,
+        setStatusBarHeight: panels.setStatusBarHeight,
         reconcileRightPanelWidths: panels.reconcilePanelWidths,
+        resetLeftSidebarWidth: panels.resetLeftSidebarWidth,
         resetDetailsPanelWidth: panels.resetDetailsPanelWidth,
         resetAiChatPanelWidth: panels.resetAiChatPanelWidth,
+        resetStatusBarHeight: panels.resetStatusBarHeight,
         toggleDetails: panels.toggleDetails,
         toggleAiChat: panels.toggleAiChat,
 

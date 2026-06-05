@@ -23,7 +23,7 @@ aside.LFM-sidebar(aria-label="Navigation pane")
 @reference "tailwindcss";
 
 .LFM-sidebar {
-	width: 240px;
+	width: 100%;
 	flex-shrink: 0;
 	display: flex;
 	flex-direction: column;
