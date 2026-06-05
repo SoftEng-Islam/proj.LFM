@@ -10,28 +10,20 @@ const selectedLabel = computed(() => (selectedCount.value > 0 ? `${selectedCount
 </script>
 
 <template lang="pug">
-footer(class="LFM-status-bar" role="status" aria-label="Status bar")
-  span(class="LFM-status-count") {{ itemCount }} items
-  template(v-if="selectedLabel")
-    span(class="LFM-status-sep") |
-    span(class="LFM-status-selected") {{ selectedLabel }}
+footer(class="LFM-status-bar" role="status" aria-label="Status bar" class="")
+  div(class="head w-full flex items-center h-4 gap-2")
+    span(class="LFM-status-count") {{ itemCount }} items
+    template(v-if="selectedLabel")
+      span(class="LFM-status-sep") |
+      span(class="LFM-status-selected") {{ selectedLabel }}
 </template>
 
 <style scoped>
 @reference "tailwindcss";
 
 .LFM-status-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 24px;
-  padding: 0 12px;
-  background: var(--color-base-200);
+  @apply flex shrink-0 items-center gap-2 h-full px-3 py-0 bg-(--color-base-300) select-none text-sm text-(--color-base-content);
   border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
-  font-size: 11px;
-  color: var(--color-base-content);
-  flex-shrink: 0;
-  user-select: none;
 }
 
 .LFM-status-sep {

@@ -72,7 +72,6 @@ function beginResize(e: PointerEvent) {
 </script>
 
 <template lang="pug">
-//- div(class="container" :style="{ width: `${width}px` }")
 div(class="container" :data-orientation="ariaOrientation" :data-direction="direction" :style="[ariaOrientation === 'vertical' ? { width: `${width}px` } : { height: `${height ?? 40}px` }]")
 	div.resizer(
 		role="separator"
@@ -84,10 +83,6 @@ div(class="container" :data-orientation="ariaOrientation" :data-direction="direc
 		tabindex="0"
 		@pointerdown="beginResize"
 		@dblclick.prevent="emit('reset')"
-		@keydown.left.prevent="ariaOrientation === 'vertical' ? emit('update:width', (width ?? 0) + 16) : emit('update:height', (height ?? 0) + 16)"
-		@keydown.right.prevent="ariaOrientation === 'vertical' ? emit('update:width', (width ?? 0) - 16) : emit('update:height', (height ?? 0) - 16)"
-		@keydown.up.prevent="ariaOrientation === 'vertical' ? emit('update:width', (width ?? 0) + 16) : emit('update:height', (height ?? 0) - 16)"
-		@keydown.down.prevent="ariaOrientation === 'vertical' ? emit('update:width', (width ?? 0) - 16) : emit('update:height', (height ?? 0) + 16)"
 	)
 	div(class="content" :data-orientation="ariaOrientation" :data-direction="direction" :aria-label="ariaLabel")
 		slot

@@ -138,41 +138,44 @@ section.LFM-preview-section
 
 <style scoped>
 @reference "tailwindcss";
+
 .LFM-preview-section {
-  display: flex;
-  flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 
 .LFM-section-title {
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-base-content);
-  opacity: 0.4;
-  margin-bottom: 0;
+	font-size: 0.7rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--color-base-content);
+	opacity: 0.4;
+	margin-bottom: 0;
 }
 
 .LFM-permissions-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  align-items: center;
-  row-gap: 1rem;
-  column-gap: 0.5rem;
-  font-size: 0.875rem;
+	display: grid;
+	grid-template-columns: 2fr 1fr 1fr 1fr;
+	align-items: center;
+	row-gap: 1rem;
+	column-gap: 0.5rem;
+	font-size: 0.875rem;
 }
+
 .LFM-permissions-grid span {
-  font-weight: 600;
-  opacity: 0.8;
+	font-weight: 600;
+	opacity: 0.8;
 }
+
 .LFM-permissions-grid input[type=checkbox] {
-  justify-self: center;
+	justify-self: center;
 }
 
 .LFM-perm-header {
-  font-size: 0.65rem;
-  font-weight: 900;
-  opacity: 0.3;
-  text-transform: uppercase;
+	font-size: 0.65rem;
+	font-weight: 900;
+	opacity: 0.3;
+	text-transform: uppercase;
 }
 </style>

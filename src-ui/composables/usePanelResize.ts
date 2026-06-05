@@ -18,8 +18,8 @@ const MAX_RIGHT_PANEL = 720;
 const MIN_MAIN_CONTENT = 360;
 
 // Status Bar Hight Range
-const MIN_STATUS_BAR_HEIGHT = 30;
-const MAX_STATUS_BAR_HEIGHT = 300;
+const MIN_STATUS_BAR_HEIGHT = 20;
+const MAX_STATUS_BAR_HEIGHT = 500;
 
 // width
 const DEFAULT_LEFT_SIDEBAR_WIDTH = 360;
@@ -27,7 +27,7 @@ const DEFAULT_DETAILS_PANEL_WIDTH = 360;
 const DEFAULT_AI_CHAT_PANEL_WIDTH = 320;
 
 // Height
-const DEFAULT_STATUS_BAR_HEIGHT = 35;
+const DEFAULT_STATUS_BAR_HEIGHT = 25;
 
 // ─── Composable ───────────────────────────────────────────────────────────────
 
@@ -42,7 +42,7 @@ export function usePanelResize() {
     const aiChatPanelWidth = useStorage("lfm-ai-chat-panel-width", DEFAULT_AI_CHAT_PANEL_WIDTH);
 
     // Status
-    const statusBarHeight = useStorage("lfm-status-bar-width", DEFAULT_STATUS_BAR_HEIGHT);
+    const statusBarHeight = useStorage("lfm-status-bar-height", DEFAULT_STATUS_BAR_HEIGHT);
 
     /** Maximum combined width for both right panels given the current viewport. */
     function maxCombinedWidth(): number {
