@@ -576,6 +576,17 @@ export const useFileManagerStore = defineStore("file-manager", () => {
         }
     }
 
+    function reorderTabs(fromIndex: number, toIndex: number) {
+        if (fromIndex === toIndex) return;
+        if (fromIndex < 0 || fromIndex >= windowTabs.value.length) return;
+        if (toIndex < 0 || toIndex >= windowTabs.value.length) return;
+
+        const tab = windowTabs.value[fromIndex];
+        if (!tab) return;
+        windowTabs.value.splice(fromIndex, 1);
+        windowTabs.value.splice(toIndex, 0, tab);
+    }
+
     async function openItem(filePath: string) {
         try {
             if (await isDir(filePath)) {
@@ -753,6 +764,7 @@ export const useFileManagerStore = defineStore("file-manager", () => {
         togglePinnedForSelection,
         addTab,
         closeTab,
+        reorderTabs,
         openItem,
         deleteSelection,
         openInTerminal,
