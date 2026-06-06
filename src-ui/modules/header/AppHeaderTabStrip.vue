@@ -2,13 +2,20 @@
 import { computed, nextTick, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useFileManagerStore } from "@/stores/file-manager";
+import { useConfigStore } from "@/stores/config";
+import { storeToRefs } from "pinia";
 import IconAdd from "~icons/material-symbols/add";
 import FolderIcon from "@/components/VueIcons/Folder/FolderIcon.vue";
 import IconClose from "~icons/material-symbols/close";
+import IconArrowBack from "~icons/material-symbols/arrow-back";
+import IconArrowForward from "~icons/material-symbols/arrow-forward";
 
 const store = useFileManagerStore();
+const configStore = useConfigStore();
 const router = useRouter();
 const route = useRoute();
+const { config } = storeToRefs(configStore);
+
 const tabStripRef = ref<HTMLElement | null>(null);
 const draggedTabId = ref<string | null>(null);
 const dropIndex = ref<number | null>(null);
@@ -39,6 +46,9 @@ function resolveAppRoutePath(path: string) {
     if (path === "/@settings") return "/@settings";
     return path;
 }
+
+// Default path from config
+const defaultTabPath = computed(() => config.value.behavior.default_path || '@drives');
 
 function handleCloseTab(tabId: string) {
     const idx = store.windowTabs.findIndex((t: any) => t.id === tabId);
@@ -140,16 +150,21 @@ function handleDragOver(event: DragEvent) {
     event.preventDefault();
     if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
 
-    dropIndex.value = getDropIndex(event.clientX);
-    dragOverTabId.value = getDragOverTabId(event.clientX);
+    const hoveredTabId = getDragOverTabId(event.clientX);
+    const hoveredIndex = hoveredTabId ? store.windowTabs.findIndex((t: any) => t.id === hoveredTabId) : -1;
+
+    dragOverTabId.value = hoveredTabId;
+    dropIndex.value = hoveredIndex === -1 ? getDropIndex(event.clientX) : hoveredIndex;
 }
 
 function moveDraggedTab() {
     const fromIndex = store.windowTabs.findIndex((t: any) => t.id === draggedTabId.value);
     if (fromIndex === -1 || dropIndex.value === null) return;
 
-    const adjustedToIndex = fromIndex < dropIndex.value ? dropIndex.value - 1 : dropIndex.value;
-    const toIndex = Math.max(0, Math.min(adjustedToIndex, store.windowTabs.length - 1));
+    // When hovering a tab, `dropIndex` is that tab's current index. After
+    // `reorderTabs` removes the dragged tab, that same index swaps adjacent tabs
+    // in either direction, including first -> second.
+    const toIndex = Math.max(0, Math.min(dropIndex.value, store.windowTabs.length - 1));
 
     if (fromIndex !== toIndex) store.reorderTabs(fromIndex, toIndex);
 }
