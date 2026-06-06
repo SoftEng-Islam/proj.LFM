@@ -7,8 +7,7 @@
  *  - Persisted widths via localStorage
  */
 
-import { nextTick, ref, watch } from "vue";
-import { useStorage } from "@vueuse/core";
+import { nextTick, onScopeDispose, ref, watch, type Ref } from "vue";
 
 // ─── Layout constants ─────────────────────────────────────────────────────────
 
@@ -31,18 +30,57 @@ const DEFAULT_STATUS_BAR_HEIGHT = 25;
 
 // ─── Composable ───────────────────────────────────────────────────────────────
 
+function getStoredNumber(key: string, fallback: number): number {
+    if (typeof localStorage === "undefined") return fallback;
+
+    const value = Number(localStorage.getItem(key));
+    return Number.isFinite(value) ? value : fallback;
+}
+
+function usePersistedPanelSize(key: string, fallback: number): Ref<number> {
+    const value = ref(getStoredNumber(key, fallback));
+    let persistTimer: number | undefined;
+
+    function persist(next: number) {
+        if (typeof localStorage === "undefined") return;
+        localStorage.setItem(key, String(next));
+    }
+
+    watch(value, (next) => {
+        if (typeof window === "undefined") {
+            persist(next);
+            return;
+        }
+
+        if (persistTimer !== undefined) window.clearTimeout(persistTimer);
+        persistTimer = window.setTimeout(() => {
+            persistTimer = undefined;
+            persist(next);
+        }, 120);
+    });
+
+    onScopeDispose(() => {
+        if (persistTimer !== undefined) {
+            window.clearTimeout(persistTimer);
+            persist(value.value);
+        }
+    });
+
+    return value;
+}
+
 export function usePanelResize() {
     const leftSidebarOpen = ref(true);
     const detailsOpen = ref(true);
     const aiChatOpen = ref(false);
     const statusBarOpen = ref(true);
 
-    const leftSidebarWidth = useStorage("lfm-left-sidebar-width", DEFAULT_LEFT_SIDEBAR_WIDTH);
-    const detailsPanelWidth = useStorage("lfm-details-panel-width", DEFAULT_DETAILS_PANEL_WIDTH);
-    const aiChatPanelWidth = useStorage("lfm-ai-chat-panel-width", DEFAULT_AI_CHAT_PANEL_WIDTH);
+    const leftSidebarWidth = usePersistedPanelSize("lfm-left-sidebar-width", DEFAULT_LEFT_SIDEBAR_WIDTH);
+    const detailsPanelWidth = usePersistedPanelSize("lfm-details-panel-width", DEFAULT_DETAILS_PANEL_WIDTH);
+    const aiChatPanelWidth = usePersistedPanelSize("lfm-ai-chat-panel-width", DEFAULT_AI_CHAT_PANEL_WIDTH);
 
     // Status
-    const statusBarHeight = useStorage("lfm-status-bar-height", DEFAULT_STATUS_BAR_HEIGHT);
+    const statusBarHeight = usePersistedPanelSize("lfm-status-bar-height", DEFAULT_STATUS_BAR_HEIGHT);
 
     /** Maximum combined width for both right panels given the current viewport. */
     function maxCombinedWidth(): number {
