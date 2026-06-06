@@ -148,11 +148,8 @@ function moveDraggedTab() {
     const fromIndex = store.windowTabs.findIndex((t: any) => t.id === draggedTabId.value);
     if (fromIndex === -1 || dropIndex.value === null) return;
 
-    // `dropIndex` is calculated against the list with the dragged tab removed.
-    // After `reorderTabs` splices the source tab out, that index is already the
-    // correct insertion point. Subtracting for rightward moves makes tabs look
-    // draggable only to the left because the target collapses back by one slot.
-    const toIndex = Math.max(0, Math.min(dropIndex.value, store.windowTabs.length - 1));
+    const adjustedToIndex = fromIndex < dropIndex.value ? dropIndex.value - 1 : dropIndex.value;
+    const toIndex = Math.max(0, Math.min(adjustedToIndex, store.windowTabs.length - 1));
 
     if (fromIndex !== toIndex) store.reorderTabs(fromIndex, toIndex);
 }
