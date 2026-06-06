@@ -140,21 +140,16 @@ function handleDragOver(event: DragEvent) {
     event.preventDefault();
     if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
 
-    const hoveredTabId = getDragOverTabId(event.clientX);
-    const hoveredIndex = hoveredTabId ? store.windowTabs.findIndex((t: any) => t.id === hoveredTabId) : -1;
-
-    dragOverTabId.value = hoveredTabId;
-    dropIndex.value = hoveredIndex === -1 ? getDropIndex(event.clientX) : hoveredIndex;
+    dropIndex.value = getDropIndex(event.clientX);
+    dragOverTabId.value = getDragOverTabId(event.clientX);
 }
 
 function moveDraggedTab() {
     const fromIndex = store.windowTabs.findIndex((t: any) => t.id === draggedTabId.value);
     if (fromIndex === -1 || dropIndex.value === null) return;
 
-    // When hovering a tab, `dropIndex` is that tab's current index. After
-    // `reorderTabs` removes the dragged tab, that same index swaps adjacent tabs
-    // in either direction, including first -> second.
-    const toIndex = Math.max(0, Math.min(dropIndex.value, store.windowTabs.length - 1));
+    const adjustedToIndex = fromIndex < dropIndex.value ? dropIndex.value - 1 : dropIndex.value;
+    const toIndex = Math.max(0, Math.min(adjustedToIndex, store.windowTabs.length - 1));
 
     if (fromIndex !== toIndex) store.reorderTabs(fromIndex, toIndex);
 }
