@@ -220,6 +220,8 @@ async fn main() {
             commands::system::check_vscode_installed,
             commands::system::get_available_fonts,
             commands::system::get_home_dir,
+            commands::system::get_git_status,
+            commands::system::run_terminal_command,
             commands::thumbnails::get_video_thumbnail,
             commands::thumbnails::get_image_thumbnail,
             config::get_config,

@@ -2,82 +2,69 @@
  * Explorer store — tracks the current directory view state.
  *
  * Responsibilities:
- *  - Current path
- *  - Loaded file entries
- *  - Selected file set
- *  - Navigation history
- *  - Hidden file toggle
+ * - Current path
+ * - Loaded file entries
+ * - Selected file set
+ * - Navigation history
+ * - Hidden file toggle
  */
 
-import { ref } from 'vue';
-import { acceptHMRUpdate, defineStore } from 'pinia';
+import { acceptHMRUpdate, defineStore } from "pinia";
+import { readDirectory } from "@/services/tauri-bridge";
+import { mapFileMetaToEntry } from "@/services/mappers";
+import type { FileEntry } from "@/types/file-manager";
 
-import { readDirectory } from '@/services/tauri-bridge';
-import { mapFileMetaToEntry } from '@/services/mappers';
-import type { FileEntry } from '@/types/file-manager';
+export const useExplorerStore = defineStore("explorer", {
+    // 1. State replaces `ref()`
+    state: () => ({
+        currentPath: "/",
+        files: [] as FileEntry[],
+        selectedFiles: new Set<string>(),
+        loading: false,
+        error: null as string | null,
+        history: [] as string[],
+        showHiddenFiles: true,
+    }),
 
-export const useExplorerStore = defineStore('explorer', () => {
-	const currentPath = ref('/');
-	const files = ref<FileEntry[]>([]);
-	const selectedFiles = ref<Set<string>>(new Set());
-	const loading = ref(false);
-	const error = ref<string | null>(null);
-	const history = ref<string[]>([]);
-	const showHiddenFiles = ref(true);
+    // 2. Actions replace standard functions
+    actions: {
+        async openDirectory(path: string) {
+            this.loading = true;
+            this.error = null;
 
-	async function openDirectory(path: string) {
-		loading.value = true;
-		error.value = null;
+            try {
+                const info = await readDirectory(path);
+                const entries = info.files.map((meta) => mapFileMetaToEntry(meta));
 
-		try {
-			const info = await readDirectory(path);
-			const entries = info.files.map((meta) => mapFileMetaToEntry(meta));
+                this.files = this.showHiddenFiles ? entries : entries.filter((f) => !f.name.startsWith("."));
 
-			files.value = showHiddenFiles.value
-				? entries
-				: entries.filter((f) => !f.name.startsWith('.'));
+                this.currentPath = path;
+                this.history.push(path);
+            } catch (err) {
+                this.error = String(err);
+            } finally {
+                this.loading = false;
+            }
+        },
 
-			currentPath.value = path;
-			history.value.push(path);
-		} catch (err) {
-			error.value = String(err);
-		} finally {
-			loading.value = false;
-		}
-	}
+        selectFile(path: string) {
+            this.selectedFiles.add(path);
+        },
 
-	function selectFile(path: string) {
-		selectedFiles.value.add(path);
-	}
+        unselectFile(path: string) {
+            this.selectedFiles.delete(path);
+        },
 
-	function unselectFile(path: string) {
-		selectedFiles.value.delete(path);
-	}
+        clearSelection() {
+            this.selectedFiles.clear();
+        },
 
-	function clearSelection() {
-		selectedFiles.value.clear();
-	}
-
-	function toggleHiddenFiles() {
-		showHiddenFiles.value = !showHiddenFiles.value;
-	}
-
-	return {
-		currentPath,
-		files,
-		selectedFiles,
-		loading,
-		error,
-		history,
-		showHiddenFiles,
-		openDirectory,
-		selectFile,
-		unselectFile,
-		clearSelection,
-		toggleHiddenFiles,
-	};
+        toggleHiddenFiles() {
+            this.showHiddenFiles = !this.showHiddenFiles;
+        },
+    },
 });
 
 if (import.meta.hot) {
-	import.meta.hot.accept(acceptHMRUpdate(useExplorerStore, import.meta.hot));
+    import.meta.hot.accept(acceptHMRUpdate(useExplorerStore, import.meta.hot));
 }

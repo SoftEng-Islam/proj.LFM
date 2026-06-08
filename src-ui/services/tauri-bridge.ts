@@ -381,6 +381,28 @@ export function openInTerminal(folderPath: string): Promise<void> {
     return invoke("open_in_terminal", { folderPath });
 }
 
+export interface GitStatus {
+    branch: string;
+    is_repo: boolean;
+    modified_count: number;
+    staged_count: number;
+    untracked_count: number;
+}
+
+export function getGitStatus(folderPath: string): Promise<GitStatus> {
+    return invoke("get_git_status", { folderPath });
+}
+
+export interface TerminalCommandResponse {
+    stdout: string;
+    stderr: string;
+    exit_code: number;
+}
+
+export function runTerminalCommand(cwd: string, command: string): Promise<TerminalCommandResponse> {
+    return invoke("run_terminal_command", { cwd, command });
+}
+
 /** Open a path in Visual Studio Code. */
 export function openInVscode(path: string): Promise<void> {
     return invoke("open_in_vscode", { path });
