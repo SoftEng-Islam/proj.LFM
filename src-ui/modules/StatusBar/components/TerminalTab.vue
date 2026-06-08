@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { Terminal } from 'xterm';
-import 'xterm/css/xterm.css';
+import { Terminal } from '@xterm/xterm';
+import '@xterm/xterm/css/xterm.css';
 import { runTerminalCommand } from '@/services/tauri-bridge';
 
 const props = defineProps<{ cwd: string }>();
@@ -70,7 +70,7 @@ onMounted(() => {
 	writeOutput(`Connected to ${props.cwd || 'shell'}\r\nType \"clear\" to reset the terminal.\r\n`);
 	prompt();
 
-	terminal.onKey(({ key, domEvent }) => {
+	terminal.onKey(({ key, domEvent }: { key: string; domEvent: KeyboardEvent }) => {
 		if (!terminal) return;
 
 		const printable = !domEvent.altKey && !domEvent.ctrlKey && !domEvent.metaKey;
@@ -108,6 +108,6 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<template>
-	<div class="h-full w-full rounded-md border border-base-content/10 bg-black text-white shadow-inner" ref="terminalContainer" />
+<template lang="pug">
+div(class="h-full w-full rounded-md border border-base-content/10 bg-black text-white shadow-inner" ref="terminalContainer")
 </template>

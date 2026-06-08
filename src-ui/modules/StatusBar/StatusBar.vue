@@ -19,15 +19,13 @@ function handleChangeTab(tab: StatusTab) {
 }
 </script>
 
-<template>
-  <div class="relative h-full w-full">
-    <StatusBarPanel v-if="panelOpen" :activeTab="activeTab" :cwd="currentPath" @changeTab="handleChangeTab" @close="closePanel" />
+<template lang="pug">
+div(class="relative h-full w-full")
+  StatusBarPanel(v-if="panelOpen" :activeTab="activeTab" :cwd="currentPath" @changeTab="handleChangeTab" @close="closePanel")
 
-    <footer class="LFM-status-bar flex items-center justify-between px-3 py-2 text-sm" role="status" aria-label="Status bar">
-      <StatusBarLeft />
-      <StatusBarRight :activeTab="activeTab" @toggleTab="handleToggleTab" />
-    </footer>
-  </div>
+  footer(class="LFM-status-bar flex items-center justify-between px-3 py-2 text-sm" role="status" aria-label="Status bar")
+    StatusBarLeft
+    StatusBarRight(:activeTab="activeTab" @toggleTab="handleToggleTab")
 </template>
 
 <style scoped>

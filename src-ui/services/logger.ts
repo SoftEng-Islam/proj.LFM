@@ -51,7 +51,7 @@ export async function initializeLogger(): Promise<void> {
     }
 }
 
-export function debug(message: string, keyValues?: Record<string, unknown>): void {
+export function debug(message: string, keyValues?: Record<string, string | undefined>): void {
     console.debug("[Logger]", message, keyValues ?? "");
     pushLog({
         id: `${Date.now()}-${Math.random()}`,
@@ -65,7 +65,7 @@ export function debug(message: string, keyValues?: Record<string, unknown>): voi
     });
 }
 
-export function info(message: string, keyValues?: Record<string, unknown>): void {
+export function info(message: string, keyValues?: Record<string, string | undefined>): void {
     console.info("[Logger]", message, keyValues ?? "");
     pushLog({
         id: `${Date.now()}-${Math.random()}`,
@@ -79,7 +79,7 @@ export function info(message: string, keyValues?: Record<string, unknown>): void
     });
 }
 
-export function warn(message: string, keyValues?: Record<string, unknown>): void {
+export function warn(message: string, keyValues?: Record<string, string | undefined>): void {
     console.warn("[Logger]", message, keyValues ?? "");
     pushLog({
         id: `${Date.now()}-${Math.random()}`,
@@ -93,7 +93,7 @@ export function warn(message: string, keyValues?: Record<string, unknown>): void
     });
 }
 
-export function error(message: string, keyValues?: Record<string, unknown>): void {
+export function error(message: string, keyValues?: Record<string, string | undefined>): void {
     console.error("[Logger]", message, keyValues ?? "");
     pushLog({
         id: `${Date.now()}-${Math.random()}`,
@@ -108,5 +108,5 @@ export function error(message: string, keyValues?: Record<string, unknown>): voi
 }
 
 export function debugArgs(...args: unknown[]): void {
-    debug(formatArgs(args), { args });
+    debug(formatArgs(args), { args: JSON.stringify(args) });
 }

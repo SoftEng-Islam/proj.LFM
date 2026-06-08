@@ -55,6 +55,18 @@ import type {
     WorkspaceStat,
 } from "@/types/file-manager";
 
+const NAV_WIDTH = 240;
+const MIN_RIGHT_PANEL = 260;
+const MAX_RIGHT_PANEL = 720;
+const MIN_MAIN_CONTENT = 360;
+const MIN_STATUS_BAR_HEIGHT = 20;
+const MAX_STATUS_BAR_HEIGHT = 500;
+
+const DEFAULT_LEFT_SIDEBAR_WIDTH = 360;
+const DEFAULT_DETAILS_PANEL_WIDTH = 360;
+const DEFAULT_AI_CHAT_PANEL_WIDTH = 320;
+const DEFAULT_STATUS_BAR_HEIGHT = 25;
+
 export const useFileManagerStore = defineStore("file-manager", {
     // ── State ─────────────────────────────────────────────────────────────────
     state: () => ({
@@ -77,6 +89,15 @@ export const useFileManagerStore = defineStore("file-manager", {
             paths: [] as string[],
             mode: null as "copy" | "cut" | null,
         },
+
+        leftSidebarOpen: true,
+        detailsOpen: true,
+        aiChatOpen: false,
+        statusBarOpen: true,
+        leftSidebarWidth: useStorage<number>("lfm-left-sidebar-width", DEFAULT_LEFT_SIDEBAR_WIDTH),
+        detailsPanelWidth: useStorage<number>("lfm-details-panel-width", DEFAULT_DETAILS_PANEL_WIDTH),
+        aiChatPanelWidth: useStorage<number>("lfm-ai-chat-panel-width", DEFAULT_AI_CHAT_PANEL_WIDTH),
+        statusBarHeight: useStorage<number>("lfm-status-bar-height", DEFAULT_STATUS_BAR_HEIGHT),
 
         isLoading: false,
         isInitialized: false,
@@ -187,6 +208,109 @@ export const useFileManagerStore = defineStore("file-manager", {
 
     // ── Actions ───────────────────────────────────────────────────────────────
     actions: {
+        maxCombinedRightPanelWidth(): number {
+            if (typeof window === "undefined") return MAX_RIGHT_PANEL * 2;
+            return Math.max(MIN_RIGHT_PANEL * 2, window.innerWidth - NAV_WIDTH - MIN_MAIN_CONTENT);
+        },
+
+        setLeftSidebarWidth(next: number) {
+            const cap = this.maxCombinedRightPanelWidth();
+            let w = Math.round(Math.min(MAX_RIGHT_PANEL, Math.max(MIN_RIGHT_PANEL, next)));
+
+            if (this.aiChatOpen) {
+                w = Math.min(w, cap - Math.max(MIN_RIGHT_PANEL, this.aiChatPanelWidth));
+                w = Math.max(MIN_RIGHT_PANEL, w);
+            } else {
+                w = Math.min(w, Math.max(MIN_RIGHT_PANEL, cap));
+            }
+
+            this.leftSidebarWidth = w;
+        },
+
+        resetLeftSidebarWidth() {
+            this.leftSidebarWidth = DEFAULT_LEFT_SIDEBAR_WIDTH;
+            this.reconcileRightPanelWidths();
+        },
+
+        setDetailsPanelWidth(next: number) {
+            const cap = this.maxCombinedRightPanelWidth();
+            let w = Math.round(Math.min(MAX_RIGHT_PANEL, Math.max(MIN_RIGHT_PANEL, next)));
+
+            if (this.aiChatOpen) {
+                w = Math.min(w, cap - Math.max(MIN_RIGHT_PANEL, this.aiChatPanelWidth));
+                w = Math.max(MIN_RIGHT_PANEL, w);
+            } else {
+                w = Math.min(w, Math.max(MIN_RIGHT_PANEL, cap));
+            }
+
+            this.detailsPanelWidth = w;
+        },
+
+        setAiChatPanelWidth(next: number) {
+            const cap = this.maxCombinedRightPanelWidth();
+            let w = Math.round(Math.min(MAX_RIGHT_PANEL, Math.max(MIN_RIGHT_PANEL, next)));
+
+            if (this.detailsOpen) {
+                w = Math.min(w, cap - Math.max(MIN_RIGHT_PANEL, this.detailsPanelWidth));
+                w = Math.max(MIN_RIGHT_PANEL, w);
+            } else {
+                w = Math.min(w, Math.max(MIN_RIGHT_PANEL, cap));
+            }
+
+            this.aiChatPanelWidth = w;
+        },
+
+        reconcileRightPanelWidths() {
+            if (!this.detailsOpen && !this.aiChatOpen) return;
+
+            if (this.leftSidebarOpen) this.setLeftSidebarWidth(this.leftSidebarWidth);
+            if (this.detailsOpen) this.setDetailsPanelWidth(this.detailsPanelWidth);
+            if (this.aiChatOpen) this.setAiChatPanelWidth(this.aiChatPanelWidth);
+
+            if (this.detailsOpen && this.aiChatOpen) {
+                const cap = this.maxCombinedRightPanelWidth();
+                const sum = this.detailsPanelWidth + this.aiChatPanelWidth;
+
+                if (sum > cap) {
+                    let over = sum - cap;
+                    const nextAi = Math.max(MIN_RIGHT_PANEL, this.aiChatPanelWidth - over);
+                    over -= this.aiChatPanelWidth - nextAi;
+                    this.aiChatPanelWidth = nextAi;
+                    if (over > 0) {
+                        this.detailsPanelWidth = Math.max(MIN_RIGHT_PANEL, this.detailsPanelWidth - over);
+                    }
+                }
+            }
+        },
+
+        resetDetailsPanelWidth() {
+            this.detailsPanelWidth = DEFAULT_DETAILS_PANEL_WIDTH;
+            this.reconcileRightPanelWidths();
+        },
+
+        resetAiChatPanelWidth() {
+            this.aiChatPanelWidth = DEFAULT_AI_CHAT_PANEL_WIDTH;
+            this.reconcileRightPanelWidths();
+        },
+
+        setStatusBarHeight(next: number) {
+            const h = Math.round(Math.min(MAX_STATUS_BAR_HEIGHT, Math.max(MIN_STATUS_BAR_HEIGHT, next)));
+            this.statusBarHeight = h;
+        },
+
+        resetStatusBarHeight() {
+            this.statusBarHeight = DEFAULT_STATUS_BAR_HEIGHT;
+        },
+
+        toggleDetails() {
+            this.detailsOpen = !this.detailsOpen;
+            this.reconcileRightPanelWidths();
+        },
+
+        toggleAiChat() {
+            this.aiChatOpen = !this.aiChatOpen;
+            this.reconcileRightPanelWidths();
+        },
         async initializeHomeDir() {
             const home = await initHomeDirFromStorage();
             this.homePath = home;
