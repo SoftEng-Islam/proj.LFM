@@ -201,17 +201,17 @@ pub fn build_themes(package_json_path: &Path) {
     let version = json_value_or_null!(package_json_file, "version");
 
     let extension_information = serde_json::json!({
-      "extensionType": "theme",
-      "decoder": "json",
-      "name": extension_name,
-      "identifier": identifier,
-      "version": version,
-      "description": description,
-      "author": author,
-      "homepage": homepage,
-      "license": license,
-      "repository": repository,
-      "themes": theme_extension_informations,
+        "extensionType": "theme",
+        "decoder": "json",
+        "name": extension_name,
+        "identifier": identifier,
+        "version": version,
+        "description": description,
+        "author": author,
+        "homepage": homepage,
+        "license": license,
+        "repository": repository,
+        "themes": theme_extension_informations,
     })
     .to_string();
 

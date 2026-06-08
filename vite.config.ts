@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
         watch: {
             open: true,
             usePolling: true,
-            interval: 300,
+            interval: 1000,
             ignored: ["**/src-tauri/target/**"],
         },
     };

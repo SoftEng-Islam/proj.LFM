@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router';
 import { useFileManagerStore } from '@/stores/file-manager';
 import IconHome from '~icons/material-symbols/home';
 import IconChevronRight from '~icons/material-symbols/chevron-right';
-
 const store = useFileManagerStore();
 const route = useRoute();
 
@@ -37,7 +36,7 @@ div(class="flex items-center flex-1 h-8 px-2.5 overflow-hidden mx-2 my-0 shadow-
 
 	IconChevronRight(class="text-base-content opacity-30 mx-0.5 text-[16px] shrink-0")
 
-	div(class="flex items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden")
+	div(class="flex items-center overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden")
 		template(v-for="(crumb, i) in breadcrumbSegments" :key="crumb.label")
 			RouterLink(v-if="i < breadcrumbSegments.length - 1 && crumb.path" :to="crumb.path" class="text-[12px] whitespace-nowrap px-1.5 py-0.5 rounded transition-colors duration-150 text-base-content no-underline hover:bg-base-content/5 hover:text-primary")
 				| {{ crumb.label }}

@@ -27,6 +27,12 @@ import PreviewCanvas from './components/PreviewCanvas.vue';
 import GeneralInfoSection from './components/GeneralInfoSection.vue';
 import MediaInfoSection from './components/MediaInfoSection.vue';
 import PermissionsSection from './components/PermissionsSection.vue';
+import PreviewEmpty from './components/PreviewEmpty.vue';
+import DrivesPreview from './components/DrivesPreview.vue';
+
+import { useRoute } from 'vue-router';
+const route = useRoute();
+console.log(route.name);
 
 const store = useFileManagerStore();
 const { selectedItem, selectedItemMediaInfo, selectedItemPermissions } = storeToRefs(store);
@@ -72,18 +78,14 @@ function resetRename() {
 watch(selectedItem, () => {
 	isEditingName.value = false;
 });
+
 </script>
 
 <template lang="pug">
-div(class="LFM-preview-pane w-full h-full p-5 flex flex-col overflow-y-auto bg-(--color-base-200)/80 backdrop-blur-xl border-l border-white/5")
-	div(v-if="!selectedItem" class="LFM-preview-empty")
-		IconFile.LFM-empty-icon
-		h3 No Selection
-		p Select a file or directory to preview
-
-	div(v-else class="flex flex-col gap-y-8")
+div(class="LFM-preview-pane w-full h-full p-5 flex flex-col bg-(--color-base-200)/80 backdrop-blur-xl border-l border-white/5")
+	div(v-if="selectedItem && route.name !== 'drives' && selectedItem.name !== ''" class="flex flex-col gap-y-8")
 		//- Section 1: File Preview & Immersive Canvas
-		section(class="LFM-preview-section gap-y-8")
+		section(class="LFM-preview-section flex flex-col gap-y-8")
 			//- Modular media/fallback canvas
 			PreviewCanvas(
 				:item="selectedItem"
@@ -111,69 +113,32 @@ div(class="LFM-preview-pane w-full h-full p-5 flex flex-col overflow-y-auto bg-(
 
 		hr(class="text-(--color-base-100)")
 
-		//- Section 2: General Information
-		GeneralInfoSection(
-			:item="selectedItem"
-			:media-info="selectedItemMediaInfo"
-		)
+		div(class="overflow-y-auto h-full flex flex-col gap-y-8")
+			//- Section 2: General Information
+			GeneralInfoSection(
+				:item="selectedItem"
+				:media-info="selectedItemMediaInfo"
+			)
 
-		hr(class="text-(--color-base-100)")
+			hr(class="text-(--color-base-100)")
 
-		//- Section 3: Advanced Media Information (ffprobe)
-		MediaInfoSection(
-			v-if="isVideo || isAudio"
-			:is-video="isVideo"
-			:is-audio="isAudio"
-			:media-info="selectedItemMediaInfo"
-		)
+			//- Section 3: Advanced Media Information (ffprobe)
+			MediaInfoSection(
+				v-if="isVideo || isAudio"
+				:is-video="isVideo"
+				:is-audio="isAudio"
+				:media-info="selectedItemMediaInfo"
+			)
 
-		hr(v-if="isVideo || isAudio" class="text-(--color-base-100)")
+			hr(v-if="isVideo || isAudio" class="text-(--color-base-100)")
 
-		//- Section 4: Linux Permissions
-		PermissionsSection(
-			:permissions="selectedItemPermissions"
-		)
+			//- Section 4: Linux Permissions
+			PermissionsSection(
+				:permissions="selectedItemPermissions"
+			)
+	//- Drives Preview
+	DrivesPreview(v-else-if="route.name == 'drives'")
+
+	//- Preview Empty
+	PreviewEmpty(v-else)
 </template>
-
-<style scoped>
-@reference 'tailwindcss';
-
-.LFM-preview-empty {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	flex: 1;
-	height: 100%;
-	color: hsl(var(--bc)/0.4);
-	gap: 1.5rem;
-	padding: 3rem 1.5rem;
-	text-align: center;
-}
-
-.LFM-preview-empty .LFM-empty-icon {
-	font-size: 5rem;
-	opacity: 0.2;
-	filter: blur(1px);
-}
-
-.LFM-preview-empty h3 {
-	font-size: 1.25rem;
-	font-weight: 600;
-	margin: 0;
-	color: hsl(var(--bc)/0.8);
-	text-shadow: 0 2px 8px hsl(var(--n)/0.3);
-}
-
-.LFM-preview-empty p {
-	font-size: 0.875rem;
-	margin: 0;
-	color: hsl(var(--bc)/0.5);
-	line-height: 1.5;
-}
-
-.LFM-preview-section {
-	display: flex;
-	flex-direction: column;
-}
-</style>

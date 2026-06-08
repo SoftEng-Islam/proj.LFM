@@ -118,7 +118,3 @@ div(class="relative w-full min-h-[240px] rounded-2xl overflow-hidden bg-(--color
 		IconFolder(v-else class="text-7xl")
 		span(v-if="isDirectory" class="font-bold tracking-widest text-xs uppercase") Directory
 </template>
-
-<style scoped>
-@reference "tailwindcss";
-</style>

@@ -168,7 +168,7 @@ async function triggerPaste() {
 </script>
 
 <template lang="pug">
-div(class="border-b border-base-content/10 bg-base-300 shrink-0")
+div(class="border-b border-base-content/10 bg-(--color-base-200) shrink-0")
 	div(class="flex items-center justify-between h-11 px-3 gap-1" role="toolbar" aria-label="Command bar")
 		div(class="flex items-center gap-0.5")
 			//- New Dropdown

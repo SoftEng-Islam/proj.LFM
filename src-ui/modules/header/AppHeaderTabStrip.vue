@@ -231,7 +231,7 @@ div(class="flex items-center h-full bg-base-300 shrink-0 select-none" data-tauri
                 :data-tab-id="tab.id"
                 :to="{ path: resolveAppRoutePath(tab.path), query: { tab: tab.id } }"
                 @click="store.setActiveTab(tab.id)"
-                :class="['tab-pill group relative flex items-center min-w-35 max-w-55 h-9.5 px-3 cursor-pointer text-xs no-underline rounded-lg transition-all duration-150 outline-none', activeTabId === tab.id ? 'bg-(--color-primary)/20 z-10 text-primary font-semibold shadow-sm ring-1 ring-primary/15' : 'bg-base-content/15 hover:bg-base-content/30', draggedTabId === tab.id ? 'is-being-dragged opacity-40 scale-95' : '', dragOverTabId === tab.id ? 'is-drop-target' : '']"
+                :class="['tab-pill group relative flex items-center min-w-35 max-w-55 h-9.5 px-3 cursor-pointer text-xs no-underline rounded-lg transition-all duration-150', activeTabId === tab.id ? 'bg-(--color-primary)/20 z-10 text-primary font-semibold shadow-sm' : 'bg-base-content/15 hover:bg-base-content/30', draggedTabId === tab.id ? 'is-being-dragged opacity-40 scale-95' : '', dragOverTabId === tab.id ? 'is-drop-target' : '']"
                 role="tab"
                 :aria-selected="activeTabId === tab.id"
                 :aria-grabbed="draggedTabId === tab.id"

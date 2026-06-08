@@ -6,7 +6,7 @@ import { useConfigStore } from '@/stores/config';
 import AppPreloader from '@/modules/preloader/AppPreloader.vue';
 import StatusBar from '@/modules/StatusBar/StatusBar.vue';
 import AppHeader from '@/modules/header/AppHeader.vue';
-import AppNavigationBar from '@/modules/top-navbar/AppNavigationBar.vue';
+import AppBreadcrumb from '@/modules/Breadcrumb/default.vue';
 import LeftSidebar from '@/modules/left-navigation/LeftSidebar.vue';
 import ResizableModal from '@/components/ui/ResizableModal.vue';
 import AiChatSidebar from '@/modules/chat/AiChatSidebar.vue';
@@ -42,7 +42,7 @@ onMounted(async () => {
 AppPreloader(:isReady="store.isInitialized")
 div(id="LFM-shell" class="w-full flex flex-col h-screen overflow-hidden bg-base-200 text-base-content text-[12px]")
 	<AppHeader />
-	<AppNavigationBar />
+	<AppBreadcrumb />
 
 	div(class="flex flex-1 overflow-hidden min-w-0")
 		ResizableModal(

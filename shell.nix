@@ -34,7 +34,7 @@ let
     gst_all_1.gst-libav
 
     # NEW: MPV library for tauri-plugin-libmpv local development
-    mpv
+    # mpv
 
     # FFmpeg for video/audio codec support (dynamic linking)
     ffmpeg-full

@@ -7,10 +7,9 @@ import IconBack from '~icons/material-symbols/arrow-back';
 import IconForward from '~icons/material-symbols/arrow-forward';
 import IconUp from '~icons/material-symbols/arrow-upward';
 import IconRefresh from '~icons/material-symbols/refresh';
-import IconSearch from '~icons/material-symbols/search';
-import IconMoreVert from '~icons/material-symbols/more-vert';
 import IconChat from '~icons/material-symbols/chat';
-import AppBreadcrumb from '../../modules/breadcrumb/AppBreadcrumb.vue';
+import AppBreadcrumb from './AppBreadcrumb.vue';
+import SearchBox from './SearchBox.vue';
 
 const store = useFileManagerStore();
 const router = useRouter();
@@ -69,12 +68,10 @@ div(class="flex items-center gap-1 h-12 px-2 bg-base-300 border-b border-base-co
 	AppBreadcrumb
 
 	div(class="flex items-center gap-1 shrink-0")
-		button(class="flex items-center justify-center w-8 h-8 rounded-md bg-transparent border-none cursor-pointer text-base-content transition-all duration-150 shrink-0 text-[20px] hover:not(:disabled):bg-base-content/5 active:not(:disabled):bg-base-content/10 disabled:opacity-30 disabled:cursor-default" title="Expand address bar")
-			IconMoreVert
-		div(class="bg-base-100 border border-base-content/10 rounded-md h-8 mx-1 hidden md:flex items-center relative")
-			IconSearch(class="ml-2 opacity-50")
-			input(ref="searchRef" v-model="store.searchQuery" type="text" placeholder="Search files..." class="bg-transparent border-none outline-none px-2 py-1 w-32 focus:w-64 transition-all duration-300" @keydown.enter="searchRef?.blur()")
-			span(class="text-xs text-muted mr-2 hidden lg:inline") Ctrl+F
+		//- Search Box
+		SearchBox
+
+		//- Toggle Ai Chat
 		button(class="flex items-center justify-center w-8 h-8 rounded-md bg-transparent border-none cursor-pointer text-base-content transition-all duration-150 shrink-0 text-[20px] hover:not(:disabled):bg-base-content/5 active:not(:disabled):bg-base-content/10 disabled:opacity-30 disabled:cursor-default" :class="{ 'text-primary bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)]': store.aiChatOpen }" title="AI Chat" @click="store.toggleAiChat")
 			IconChat
 </template>

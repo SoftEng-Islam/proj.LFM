@@ -1,9 +1,9 @@
 [package]
 name = "lfm"
-version = "0.4.0"
+version = "1.0.0"
 description = "LFM desktop shell built with Tauri and Rust"
 default-run = "lfm"
-edition = "2021"
+edition = "2024"
 build = "src/build.rs"
 
 [build-dependencies]

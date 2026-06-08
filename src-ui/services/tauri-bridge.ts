@@ -458,18 +458,15 @@ export function listenStylesheetChange(): Promise<void> {
 
 /** Minimize the current application window. */
 export async function minimizeWindow(): Promise<void> {
-    const window = getCurrentWindow();
-    await window.minimize();
+    await getCurrentWindow().minimize();
 }
 
 /** Toggle between maximized and restored window states. */
 export async function toggleMaximize(): Promise<void> {
-    const window = getCurrentWindow();
-    await window.toggleMaximize();
+    await getCurrentWindow().toggleMaximize();
 }
 
 /** Close the current application window. */
 export async function closeWindow(): Promise<void> {
-    const window = getCurrentWindow();
-    await window.close();
+    await getCurrentWindow().close();
 }
