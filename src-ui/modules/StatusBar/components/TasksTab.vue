@@ -24,52 +24,52 @@ function statusLabel(status: OperationStatus): string {
 function statusClass(status: OperationStatus): string {
 	switch (status) {
 		case 'completed':
-			return 'bg-emerald-100 text-emerald-800';
+			return 'bg-green-900/50 text-green-300';
 		case 'running':
-			return 'bg-sky-100 text-sky-800';
+			return 'bg-blue-900/50 text-blue-300';
 		case 'pending':
-			return 'bg-amber-100 text-amber-800';
+			return 'bg-yellow-900/50 text-yellow-300';
 		case 'failed':
-			return 'bg-rose-100 text-rose-800';
+			return 'bg-red-900/50 text-red-300';
 	}
 }
 </script>
 
 <template lang="pug">
-div(class="flex h-full flex-col gap-3 text-sm text-base-content")
-	div(class="rounded-md border border-base-content/10 bg-base-100 p-4")
-		p(class="font-semibold") Active file operations
-		p(class="mt-1 text-xs text-base-content/60")
-			| Shows the current copy/move/delete/compress queue.
+div(class="flex h-full flex-col gap-3 text-xs text-slate-300")
+	div(class="rounded-md border border-slate-700 bg-slate-800 p-3")
+		p(class="font-medium text-slate-200") Active Operations
+		p(class="text-slate-400 text-[11px] mt-1")
+			| File operations queue
 
-	div(class="flex-1 overflow-auto rounded-md border border-base-content/10 bg-base-200 p-3")
-		div(v-if="queue.length === 0" class="text-base-content/60")
+	div(class="flex-1 overflow-auto rounded-md border border-slate-700 bg-slate-950 p-3")
+		div(v-if="queue.length === 0" class="text-slate-500")
 			| No running operations.
 
-		div(v-else class="space-y-3")
+		div(v-else class="space-y-2")
 			div(
 				v-for="operation in queue"
 				:key="operation.id"
-				class="rounded-md border border-base-content/10 bg-base-100 p-3"
+				class="rounded-md border border-slate-700 bg-slate-800 p-2"
 			)
-				div(class="flex items-center justify-between gap-3 text-sm")
-					div(class="font-medium") {{ operation.type }}
+				div(class="flex items-center justify-between gap-2 mb-1")
+					div(class="font-medium text-slate-100") {{ operation.type }}
 
 					span(
-						class="rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em]"
+						class="rounded px-1.5 py-0.5 text-[10px] font-medium"
 						:class="statusClass(operation.status)"
 					) {{ statusLabel(operation.status) }}
 
-				div(class="mt-2 text-xs text-base-content/60")
+				div(class="text-slate-400 text-[11px]")
 					div
 						| Source: {{ operation.source }}
 
 					div(v-if="operation.destination")
-						| Destination: {{ operation.destination }}
+						| Dest: {{ operation.destination }}
 
 					div(
 						v-if="operation.error"
-						class="mt-2 text-rose-700"
+						class="text-red-400 mt-1"
 					)
 						| Error: {{ operation.error }}
 </template>

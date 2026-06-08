@@ -93,6 +93,26 @@ function getDriveHealth(percent: number): string {
   if (percent < 90) return 'Limited space';
   return 'Critical space';
 }
+
+let clickTimer: number | undefined;
+
+function handleClick(): void {
+  clickTimer = window.setTimeout(() => {
+    console.log('hello');
+  }, 250);
+}
+
+function handleDoubleClick(navigate: () => void): void {
+  if (clickTimer) {
+    clearTimeout(clickTimer);
+  }
+
+  navigate();
+}
+
+function handleSingleClick(): void {
+  console.log('hello');
+}
 </script>
 
 <template lang="pug">
@@ -110,44 +130,45 @@ div.LFM-drives-page
     p {{ error }}
 
   .LFM-drives-grid(v-if="!loading && !error && driveCards.length > 0")
-    RouterLink.LFM-drive-card(v-for="drive in driveCards" :key="drive.id" :to="drive.id")
-      .LFM-drive-header
-        span.LFM-drive-icon
-          component.LFM-sbar-icon(
-            :is="getDriveIconComponent(drive.driveType)"
-            :class="getDriveIconClass(drive.driveType)"
-            aria-hidden="true"
-          )
-        .LFM-drive-title
-          h2.LFM-drive-name {{ drive.mountName }}
-          p.LFM-drive-path {{ drive.devicePath }}
-        span.LFM-drive-state(:class="getDriveColor(drive.usedPercent)") {{ getDriveHealth(drive.usedPercent) }}
+    RouterLink( v-for="drive in driveCards" :key="drive.id" :to="drive.id" custom v-slot="{ href, navigate }" )
+      a.LFM-drive-card( :href="href" @click.prevent="handleClick" @dblclick.prevent="handleDoubleClick(() => navigate())" )
+        .LFM-drive-header
+          span.LFM-drive-icon
+            component.LFM-sbar-icon(
+              :is="getDriveIconComponent(drive.driveType)"
+              :class="getDriveIconClass(drive.driveType)"
+              aria-hidden="true"
+            )
+          .LFM-drive-title
+            h2.LFM-drive-name {{ drive.mountName }}
+            p.LFM-drive-path {{ drive.devicePath }}
+          span.LFM-drive-state(:class="getDriveColor(drive.usedPercent)") {{ getDriveHealth(drive.usedPercent) }}
 
-      .LFM-drive-info
-        .LFM-info-row
-          span Identifier
-          strong {{ drive.id }}
-        .LFM-info-row
-          span Filesystem
-          strong {{ drive.filesystem }}
-        .LFM-info-row
-          span Mount
-          strong {{ drive.isRemovable ? 'Removable' : 'Fixed' }}
+        .LFM-drive-info
+          .LFM-info-row
+            span Identifier
+            strong {{ drive.id }}
+          .LFM-info-row
+            span Filesystem
+            strong {{ drive.filesystem }}
+          .LFM-info-row
+            span Mount
+            strong {{ drive.isRemovable ? 'Removable' : 'Fixed' }}
 
-      .LFM-drive-usage
-        .LFM-usage-label
-          span.LFM-usage-used {{ drive.usedLabel }}
-          span.LFM-usage-available {{ drive.freeLabel }}
-          span.LFM-usage-percent {{ drive.usedPercent }}%
+        .LFM-drive-usage
+          .LFM-usage-label
+            span.LFM-usage-used {{ drive.usedLabel }}
+            span.LFM-usage-available {{ drive.freeLabel }}
+            span.LFM-usage-percent {{ drive.usedPercent }}%
 
-        .LFM-usage-bar
-          .LFM-usage-bar-used(
-            :style="{ width: `${drive.usedPercent}%` }"
-            :class="getDriveColor(drive.usedPercent)"
-          )
+          .LFM-usage-bar
+            .LFM-usage-bar-used(
+              :style="{ width: `${drive.usedPercent}%` }"
+              :class="getDriveColor(drive.usedPercent)"
+            )
 
-        .LFM-usage-total
-          span {{ drive.capacityLabel }}
+          .LFM-usage-total
+            span {{ drive.capacityLabel }}
 
   .LFM-drives-empty(v-if="!loading && drives.length === 0 && !error")
     p No drives detected.

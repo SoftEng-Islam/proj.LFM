@@ -109,5 +109,5 @@ onBeforeUnmount(() => {
 </script>
 
 <template lang="pug">
-div(class="h-full w-full rounded-md border border-base-content/10 bg-black text-white shadow-inner" ref="terminalContainer")
+div(class="h-full w-full rounded border border-slate-700 bg-black text-slate-100 font-mono text-sm" ref="terminalContainer")
 </template>

@@ -21,19 +21,20 @@ function handleChangeTab(tab: StatusTab) {
 
 <template lang="pug">
 div(class="relative h-full w-full")
-  StatusBarPanel(v-if="panelOpen" :activeTab="activeTab" :cwd="currentPath" @changeTab="handleChangeTab" @close="closePanel")
 
+  StatusBarPanel(v-if="panelOpen" :activeTab="activeTab" :cwd="currentPath" @changeTab="handleChangeTab" @close="closePanel")
   footer(class="LFM-status-bar flex items-center justify-between px-3 py-2 text-sm" role="status" aria-label="Status bar")
-    StatusBarLeft
-    StatusBarRight(:activeTab="activeTab" @toggleTab="handleToggleTab")
+    StatusBarLeft(class="flex-1")
+    StatusBarRight(:activeTab="activeTab" @toggleTab="handleToggleTab" class="flex-shrink-0")
 </template>
 
 <style scoped>
 @reference "tailwindcss";
 
 .LFM-status-bar {
-  @apply flex shrink-0 items-center justify-between gap-2 h-full bg-(--color-base-300) select-none text-sm text-(--color-base-content);
-  border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+  @apply flex shrink-0 items-center justify-between h-full bg-slate-800 select-none text-xs text-slate-300;
+  border-top: 1px solid rgb(30 41 59 / 0.5);
+  gap: 0;
 }
 
 .LFM-status-panel {

@@ -18,17 +18,17 @@ onBeforeUnmount(() => {
 </script>
 
 <template lang="pug">
-div(class="flex h-full flex-col gap-3 text-sm text-base-content")
-	div(class="rounded-md border border-base-content/10 bg-base-100 p-3")
-		p(class="font-medium") Application logs
-		p(class="text-xs text-base-content/60") Reactive log feed generated from frontend logger events.
+div(class="flex h-full flex-col gap-3 text-xs")
+	div(class="rounded-md border border-slate-700 bg-slate-800 p-3")
+		p(class="font-medium text-slate-200") Application logs
+		p(class="text-slate-400 mt-1") Real-time log feed from frontend events.
 
-	div(class="flex-1 overflow-auto rounded-md border border-base-content/10 bg-base-200 p-3")
-		div(v-if="entries.length === 0" class="text-sm text-base-content/70") No logs yet.
+	div(class="flex-1 overflow-auto rounded-md border border-slate-700 bg-slate-950 p-3")
+		div(v-if="entries.length === 0" class="text-slate-500") No logs yet.
 		div(v-else class="space-y-2")
-			div(v-for="entry in entries" :key="entry.id" class="rounded-md border border-base-content/5 bg-base-100 p-2")
-				div(class="flex items-center justify-between gap-3 text-xs text-base-content/70")
+			div(v-for="entry in entries" :key="entry.id" class="rounded-md border border-slate-700 bg-slate-800 p-2")
+				div(class="flex items-center justify-between gap-3 text-slate-400 mb-1")
 					span {{ entry.timestamp }}
-					span(class="rounded-full bg-base-content/5 px-2 py-0.5 text-[11px] uppercase tracking-[0.08em]") {{ entry.level }}
-				div(class="mt-1 text-sm text-base-content") {{ entry.message }}
+					span(class="rounded px-1.5 py-0.5 text-[10px] font-medium" :class="{ 'bg-blue-900/50 text-blue-300': entry.level === 'debug', 'bg-green-900/50 text-green-300': entry.level === 'info', 'bg-yellow-900/50 text-yellow-300': entry.level === 'warn', 'bg-red-900/50 text-red-300': entry.level === 'error', }") {{ entry.level.toUpperCase() }}
+				div(class="text-slate-300 text-xs") {{ entry.message }}
 </template>

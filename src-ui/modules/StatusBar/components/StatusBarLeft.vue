@@ -9,9 +9,9 @@ const selectedLabel = computed(() => (selectedCount.value > 0 ? `${selectedCount
 </script>
 
 <template lang="pug">
-div(class="flex items-center gap-2 text-sm text-base-content")
-	span(class="font-medium") {{ itemCount }} items
+div(class="flex items-center gap-3 px-3 py-1 text-xs text-slate-400")
+	span {{ itemCount }} items
 	template(v-if="selectedLabel")
-		span(class="opacity-70") | |
-		span {{ selectedLabel }}
+		span(class="text-slate-500") •
+		span(class="text-slate-300") {{ selectedLabel }}
 </template>
