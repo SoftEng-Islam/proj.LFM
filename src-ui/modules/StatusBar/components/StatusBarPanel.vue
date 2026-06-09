@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import IconClose from '~icons/material-symbols/close';
 import IconTerminal from '~icons/material-symbols/terminal';
 import IconArticle from '~icons/material-symbols/article';
@@ -8,6 +9,16 @@ import TerminalTab from './TerminalTab.vue';
 import LogTab from './LogTab.vue';
 import GitTab from './GitTab.vue';
 import TasksTab from './TasksTab.vue';
+
+import { useFileManagerStore } from '@/stores/file-manager';
+import { useConfigStore } from '@/stores/config';
+import { useStatusBar, type StatusTab } from "@/stores/useStatusBar.ts";
+
+
+const store = useFileManagerStore();
+const configStore = useConfigStore();
+const { panelOpen, openPanel, togglePanel, closePanel } = useStatusBar();
+
 
 const { activeTab, cwd } = defineProps<{ activeTab: 'terminal' | 'log' | 'git' | 'tasks'; cwd: string }>();
 const emit = defineEmits<{
@@ -28,7 +39,7 @@ function handleTabChange(tab: 'terminal' | 'log' | 'git' | 'tasks') {
 </script>
 
 <template lang="pug">
-div(class="LFM-status-panel absolute inset-x-0 bottom-full z-40 bg-slate-900 border-t border-slate-700 shadow-2xl")
+div(class="LFM-status-panel overflow-hidden bg-(--color-base-300) border-t border-(--color-base-100) shadow-2xl")
 	div(class="flex items-center justify-between bg-slate-800 border-b border-slate-700")
 		div(class="flex items-center")
 			button(
