@@ -1,36 +1,39 @@
-import { defineStore } from "pinia";
+import { acceptHMRUpdate, defineStore } from "pinia";
 
 export type StatusTab = "terminal" | "log" | "git" | "tasks";
 
 interface StatusBarState {
-    panelOpen: boolean;
+    isWorkspaceOpen: boolean;
     activeTab: StatusTab;
 }
 
 export const useStatusBarStore = defineStore("statusBar", {
     state: (): StatusBarState => ({
-        panelOpen: false,
-        activeTab: "terminal",
+        isWorkspaceOpen: false,
+        activeTab: "log",
     }),
 
     actions: {
-        openPanel(tab: StatusTab) {
+        openWorkspace(tab: StatusTab) {
             this.activeTab = tab;
-            this.panelOpen = true;
+            this.isWorkspaceOpen = true;
         },
 
-        togglePanel(tab: StatusTab) {
-            if (this.panelOpen && this.activeTab === tab) {
-                this.panelOpen = false;
+        toggleWorkspace(tab: StatusTab) {
+            if (this.isWorkspaceOpen && this.activeTab === tab) {
+                this.isWorkspaceOpen = false;
                 return;
             }
-
             this.activeTab = tab;
-            this.panelOpen = true;
+            this.isWorkspaceOpen = true;
         },
 
-        closePanel() {
-            this.panelOpen = false;
+        closeWorkspace() {
+            this.isWorkspaceOpen = false;
+            console.log(`closeWorkspace(): Done!`);
         },
     },
 });
+if (import.meta.hot) {
+    import.meta.hot.accept(acceptHMRUpdate(useStatusBarStore, import.meta.hot));
+}

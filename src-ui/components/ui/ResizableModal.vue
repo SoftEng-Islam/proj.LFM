@@ -132,16 +132,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template lang="pug">
-div(
-    class="flex shrink-0 min-h-0 h-full min-w-60 max-w-3xl"
-    :class="{ 'flex-row': isVertical, 'flex-col h-auto min-h-12 max-h-52 w-full max-w-none': !isVertical }"
-    :data-orientation="ariaOrientation"
-    :data-direction="direction"
-    :style="containerStyle"
-)
-    div(
-        class="shrink-0 touch-none bg-transparent relative z-20 transition-colors duration-120"
-        :class="[isVertical ? 'w-2 min-w-2 cursor-col-resize' : 'h-2 min-h-2 w-full cursor-row-resize', (isVertical && direction === 'left') || (!isVertical && direction === 'top') ? 'order-first' : 'order-last',]"
+div(class="container" :data-orientation="ariaOrientation" :data-direction="direction" :style="containerStyle")
+    div.resizer(
         role="separator"
         :data-orientation="ariaOrientation"
         :data-direction="direction"
@@ -152,14 +144,193 @@ div(
         @pointerdown="beginResize"
         @dblclick.prevent="emit('reset')"
     )
-
-    div(
-        class="flex-1 min-w-0 h-full flex flex-col bg-transparent relative border border-slate-700"
-        :class="[kind === 'StatusBar' ? 'overflow-visible' : 'overflow-hidden', isVertical && direction === 'left' ? 'border-l border-r-0 border-t-0 border-b-0' : '', isVertical && direction === 'right' ? 'border-r border-l-0 border-t-0 border-b-0' : '', !isVertical && direction === 'top' ? 'border-t border-l-0 border-r-0 border-b-0' : '', !isVertical && direction === 'bottom' ? 'border-b border-l-0 border-r-0 border-t-0' : '',]"
-        :data-orientation="ariaOrientation"
-        :data-direction="direction"
-        :data-kind="kind"
-        :aria-label="ariaLabel"
-    )
+    div(class="content" :data-orientation="ariaOrientation" :data-direction="direction" :aria-label="ariaLabel")
         slot
 </template>
+
+<style scoped lang="scss">
+@reference "tailwindcss";
+
+.container {
+    display: flex;
+    flex-shrink: 0;
+    min-height: 0;
+    height: 100%;
+    min-width: 260px;
+    max-width: 720px;
+
+    &[data-orientation="vertical"] {
+        flex-direction: row;
+    }
+
+    &[data-orientation="horizontal"] {
+        flex-direction: column;
+        height: auto;
+        min-height: 48px;
+        max-height: 200px;
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+}
+
+.resizer {
+    flex: 0 0 8px;
+    width: 8px;
+    min-width: 8px;
+    touch-action: none;
+    background: transparent;
+    position: relative;
+    z-index: 2;
+    transition:
+        background 120ms ease,
+        border-color 120ms ease;
+
+    &[data-orientation="vertical"] {
+        cursor: col-resize;
+
+        &[data-direction="left"] {
+            order: -1;
+            margin-left: -1px;
+            border-left: 1px solid transparent;
+
+            &::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: 0;
+                bottom: 0;
+                width: 1px;
+                transform: translateX(-50%);
+                background: color-mix(in srgb, var(--color-base-content) 10%, transparent);
+                opacity: 0.85;
+                pointer-events: none;
+            }
+
+            &:hover,
+            &:focus-visible {
+                border-left-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+            }
+        }
+
+        &[data-direction="right"] {
+            order: 1;
+            margin-right: -1px;
+            border-right: 1px solid transparent;
+
+            &::after {
+                content: "";
+                position: absolute;
+                right: 50%;
+                top: 0;
+                bottom: 0;
+                width: 1px;
+                transform: translateX(50%);
+                background: color-mix(in srgb, var(--color-base-content) 10%, transparent);
+                opacity: 0.85;
+                pointer-events: none;
+            }
+
+            &:hover,
+            &:focus-visible {
+                border-right-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+            }
+        }
+    }
+
+    &[data-orientation="horizontal"] {
+        cursor: row-resize;
+        flex: 0 0 8px;
+        height: 8px;
+        min-height: 8px;
+        width: 100%;
+
+        &[data-direction="top"] {
+            order: -1;
+            border-bottom: 1px solid transparent;
+
+            &::after {
+                content: "";
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: color-mix(in srgb, var(--color-base-content) 10%, transparent);
+                opacity: 0.85;
+                pointer-events: none;
+            }
+
+            &:hover,
+            &:focus-visible {
+                border-bottom-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+            }
+        }
+
+        &[data-direction="bottom"] {
+            order: 1;
+            border-top: 1px solid transparent;
+
+            &::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: color-mix(in srgb, var(--color-base-content) 10%, transparent);
+                opacity: 0.85;
+                pointer-events: none;
+            }
+
+            &:hover,
+            &:focus-visible {
+                border-top-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+            }
+        }
+    }
+
+    &:hover,
+    &:focus-visible {
+        background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    }
+
+    &:focus-visible {
+        outline: none;
+    }
+
+    &:active {
+        background: color-mix(in srgb, var(--color-primary) 22%, color-mix(in srgb, var(--color-base-content) 10%, transparent));
+    }
+}
+
+div.content {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+
+    &[data-orientation="vertical"] {
+        &[data-direction="left"] {
+            border-left: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+        }
+
+        &[data-direction="right"] {
+            border-right: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+        }
+    }
+
+    &[data-orientation="horizontal"] {
+        &[data-direction="top"] {
+            border-top: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+        }
+
+        &[data-direction="bottom"] {
+            border-bottom: 1px solid color-mix(in srgb, var(--color-base-content) 10%, transparent);
+        }
+    }
+}
+</style>

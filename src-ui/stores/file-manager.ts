@@ -62,15 +62,14 @@ const MAX_RIGHT_PANEL = 720;
 
 const MIN_MAIN_CONTENT = 360;
 
-const MIN_STATUS_BAR_HEIGHT = 100;
-
-//! FIXME why I can't change the statusbar height to this value
-const MAX_STATUS_BAR_HEIGHT = 600;
-
 const DEFAULT_LEFT_SIDEBAR_WIDTH = 360;
 const DEFAULT_DETAILS_PANEL_WIDTH = 360;
 const DEFAULT_AI_CHAT_PANEL_WIDTH = 320;
-const DEFAULT_STATUS_BAR_HEIGHT = 225;
+
+// Status Bar Constants
+const MIN_STATUS_BAR_HEIGHT = 80;
+const MAX_STATUS_BAR_HEIGHT = 600;
+const DEFAULT_STATUS_BAR_HEIGHT = 280;
 
 export const useFileManagerStore = defineStore("file-manager", {
     // ── State ─────────────────────────────────────────────────────────────────

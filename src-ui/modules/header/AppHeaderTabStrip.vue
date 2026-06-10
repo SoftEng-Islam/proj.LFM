@@ -2,20 +2,13 @@
 import { computed, nextTick, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useFileManagerStore } from "@/stores/file-manager";
-import { useConfigStore } from "@/stores/config";
-import { storeToRefs } from "pinia";
 import IconAdd from "~icons/material-symbols/add";
 import FolderIcon from "@/components/VueIcons/Folder/FolderIcon.vue";
 import IconClose from "~icons/material-symbols/close";
-import IconArrowBack from "~icons/material-symbols/arrow-back";
-import IconArrowForward from "~icons/material-symbols/arrow-forward";
 
 const store = useFileManagerStore();
-const configStore = useConfigStore();
 const router = useRouter();
 const route = useRoute();
-const { config } = storeToRefs(configStore);
-
 const tabStripRef = ref<HTMLElement | null>(null);
 const draggedTabId = ref<string | null>(null);
 const dropIndex = ref<number | null>(null);
@@ -46,9 +39,6 @@ function resolveAppRoutePath(path: string) {
     if (path === "/@settings") return "/@settings";
     return path;
 }
-
-// Default path from config
-const defaultTabPath = computed(() => config.value.behavior.default_path || '@drives');
 
 function handleCloseTab(tabId: string) {
     const idx = store.windowTabs.findIndex((t: any) => t.id === tabId);
@@ -231,7 +221,7 @@ div(class="flex items-center h-full bg-base-300 shrink-0 select-none" data-tauri
                 :data-tab-id="tab.id"
                 :to="{ path: resolveAppRoutePath(tab.path), query: { tab: tab.id } }"
                 @click="store.setActiveTab(tab.id)"
-                :class="['tab-pill group relative flex items-center min-w-35 max-w-55 h-9.5 px-3 cursor-pointer text-xs no-underline rounded-lg transition-all duration-150', activeTabId === tab.id ? 'bg-(--color-primary)/20 z-10 text-primary font-semibold shadow-sm' : 'bg-base-content/15 hover:bg-base-content/30', draggedTabId === tab.id ? 'is-being-dragged opacity-40 scale-95' : '', dragOverTabId === tab.id ? 'is-drop-target' : '']"
+                :class="['tab-pill group relative flex items-center min-w-35 max-w-55 h-9.5 px-3 cursor-pointer text-xs no-underline rounded-lg transition-all duration-150 outline-none', activeTabId === tab.id ? 'bg-(--color-primary)/20 z-10 text-primary font-semibold shadow-sm ring-1 ring-primary/15' : 'bg-base-content/15 hover:bg-base-content/30', draggedTabId === tab.id ? 'is-being-dragged opacity-40 scale-95' : '', dragOverTabId === tab.id ? 'is-drop-target' : '']"
                 role="tab"
                 :aria-selected="activeTabId === tab.id"
                 :aria-grabbed="draggedTabId === tab.id"

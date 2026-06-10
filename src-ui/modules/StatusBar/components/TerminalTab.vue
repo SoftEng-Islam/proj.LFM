@@ -60,7 +60,7 @@ async function executeCurrentLine() {
 }
 
 onMounted(() => {
-	terminal = new Terminal({ cursorBlink: true, cursorStyle: 'bar', cursorWidth: 3, fontFamily: 'monospace', theme: { background: 'rgba(0, 0, 0, 0)' } });
+	terminal = new Terminal({ cursorBlink: true, cursorStyle: 'bar', cursorWidth: 3, fontFamily: 'monospace', allowTransparency: true, theme: { background: 'rgba(0, 0, 0, 0);', } });
 
 	if (terminalContainer.value) {
 		terminal.open(terminalContainer.value);
