@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { getLogHistory, subscribeLogEntries } from '@/services/logger';
-import type { LogEntry } from '@/services/logger';
+import { onBeforeUnmount, onMounted, ref } from "vue";
+import { getLogHistory, subscribeLogEntries } from "@/services/logger";
+import type { LogEntry } from "@/services/logger";
 
 const entries = ref<LogEntry[]>([]);
 let unsubscribe: (() => void) | null = null;
 
 onMounted(() => {
-	entries.value = getLogHistory();
-	unsubscribe = subscribeLogEntries((entry: LogEntry) => {
-	});
+    entries.value = getLogHistory();
+    unsubscribe = subscribeLogEntries((entry: LogEntry) => {
+        entries.value = [...entries.value, entry].slice(-200);
+    });
 });
 
 onBeforeUnmount(() => {
-	unsubscribe?.();
+    unsubscribe?.();
 });
 </script>
 
