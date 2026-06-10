@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useFileManagerStore } from "@/stores/file-manager";
-import { useStatusBar, type StatusTab } from "./useStatusBar";
+import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { useFileManagerStore } from '@/stores/file-manager';
+import { useConfigStore } from '@/stores/config';
+import { useStatusBar, type StatusTab } from "@/stores/useStatusBar.ts";
 import StatusBarLeft from "./components/StatusBarLeft.vue";
 import StatusBarRight from "./components/StatusBarRight.vue";
 import StatusBarPanel from "./components/StatusBarPanel.vue";
+import ResizableModal from "@/components/ui/ResizableModal.vue";
 
 const store = useFileManagerStore();
-const { panelOpen, activeTab, activePanelTab, selectTab, togglePanel, closePanel } = useStatusBar();
+const configStore = useConfigStore();
+const { panelOpen, activeTab, openPanel, togglePanel, closePanel } = useStatusBar();
 const currentPath = computed(() => store.currentPath);
 
 function handleToggleTab(tab: StatusTab) {
@@ -15,8 +18,48 @@ function handleToggleTab(tab: StatusTab) {
 }
 
 function handleChangeTab(tab: StatusTab) {
-  selectTab(tab);
+  openPanel(tab);
 }
+
+function onWindowResize() {
+  store.reconcileRightPanelWidths();
+}
+
+onMounted(() => {
+  store.reconcileRightPanelWidths();
+  window.addEventListener('resize', onWindowResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', onWindowResize);
+});
+
+
+onMounted(async () => {
+  await configStore.loadConfig();
+  store.initializeHomeDir();
+  store.fetchDrives();
+});
+
+
+//! FIXME
+// Automatic Close/open to the StatusBarPanel based on statusBarHeight
+watch(
+  () => store.statusBarHeight,
+  (statusBarHeight) => {
+    if (statusBarHeight <= store.MIN_STATUS_BAR_HEIGHT) {
+      statusBarHeight = 0;
+      // closePanel();
+      panelOpen.value = false;
+      store.statusBarOpen = false;
+    } else {
+      openPanel("terminal");
+      // panelOpen.value = true;
+    }
+  },
+);
+
+
 </script>
 
 <template lang="pug">
@@ -34,19 +77,5 @@ div(class="relative")
     StatusBarPanel(:activeTab="activeTab" :cwd="currentPath" @changeTab="handleChangeTab" @close="closePanel")
   footer(class="LFM-status-bar h-10 flex items-center justify-between px-3 py-2 text-sm" role="status" aria-label="Status bar")
     StatusBarLeft(class="flex-1")
-    StatusBarRight(:activeTab="activePanelTab" @toggleTab="handleToggleTab" class="flex-shrink-0")
+    StatusBarRight(:activeTab="activeTab" @toggleTab="handleToggleTab" class="shrink-0")
 </template>
-
-<style scoped>
-@reference "tailwindcss";
-
-.LFM-status-bar {
-  @apply flex shrink-0 items-center justify-between h-full bg-slate-800 select-none text-xs text-slate-300;
-  border-top: 1px solid rgb(30 41 59 / 0.5);
-  gap: 0;
-}
-
-.LFM-status-panel {
-  min-height: 280px;
-}
-</style>
