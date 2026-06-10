@@ -56,16 +56,21 @@ import type {
 } from "@/types/file-manager";
 
 const NAV_WIDTH = 240;
+
 const MIN_RIGHT_PANEL = 260;
 const MAX_RIGHT_PANEL = 720;
+
 const MIN_MAIN_CONTENT = 360;
-const MIN_STATUS_BAR_HEIGHT = 20;
-const MAX_STATUS_BAR_HEIGHT = 500;
+
+const MIN_STATUS_BAR_HEIGHT = 100;
+
+//! FIXME why I can't change the statusbar height to this value
+const MAX_STATUS_BAR_HEIGHT = 600;
 
 const DEFAULT_LEFT_SIDEBAR_WIDTH = 360;
 const DEFAULT_DETAILS_PANEL_WIDTH = 360;
 const DEFAULT_AI_CHAT_PANEL_WIDTH = 320;
-const DEFAULT_STATUS_BAR_HEIGHT = 25;
+const DEFAULT_STATUS_BAR_HEIGHT = 225;
 
 export const useFileManagerStore = defineStore("file-manager", {
     // ── State ─────────────────────────────────────────────────────────────────
@@ -75,6 +80,14 @@ export const useFileManagerStore = defineStore("file-manager", {
         currentEntries: [] as FileEntry[],
         searchQuery: "",
         selectedItemIds: new Set<string>(),
+        DEFAULT_LEFT_SIDEBAR_WIDTH: DEFAULT_LEFT_SIDEBAR_WIDTH,
+        DEFAULT_DETAILS_PANEL_WIDTH: DEFAULT_DETAILS_PANEL_WIDTH,
+        DEFAULT_AI_CHAT_PANEL_WIDTH: DEFAULT_AI_CHAT_PANEL_WIDTH,
+
+        // Status Bar
+        DEFAULT_STATUS_BAR_HEIGHT: DEFAULT_STATUS_BAR_HEIGHT,
+        MIN_STATUS_BAR_HEIGHT: MIN_STATUS_BAR_HEIGHT,
+        MAX_STATUS_BAR_HEIGHT: MAX_STATUS_BAR_HEIGHT,
 
         // Pinia automatically unwraps refs, so useStorage works here
         viewMode: useStorage<ViewMode>("lfm-view-mode", "grid"),

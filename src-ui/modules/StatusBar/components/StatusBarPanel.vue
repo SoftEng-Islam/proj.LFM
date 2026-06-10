@@ -12,19 +12,19 @@ import type { StatusTab } from "../useStatusBar";
 
 const { activeTab, cwd } = defineProps<{ activeTab: StatusTab; cwd: string }>();
 const emit = defineEmits<{
-    (event: "changeTab", tab: StatusTab): void;
-    (event: "close"): void;
+	(event: "changeTab", tab: StatusTab): void;
+	(event: "close"): void;
 }>();
 
 const tabs = [
-    { id: "terminal", label: "Terminal", icon: IconTerminal },
-    { id: "log", label: "Logs", icon: IconArticle },
-    { id: "git", label: "Git", icon: IconGitBranch },
-    { id: "tasks", label: "Tasks", icon: IconPendingActions },
+	{ id: "terminal", label: "Terminal", icon: IconTerminal },
+	{ id: "log", label: "Logs", icon: IconArticle },
+	{ id: "git", label: "Git", icon: IconGitBranch },
+	{ id: "tasks", label: "Tasks", icon: IconPendingActions },
 ] as const;
 
 function handleTabChange(tab: StatusTab) {
-    emit("changeTab", tab);
+	emit("changeTab", tab);
 }
 </script>
 

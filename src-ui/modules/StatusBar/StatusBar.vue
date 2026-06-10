@@ -11,19 +11,28 @@ const { panelOpen, activeTab, activePanelTab, selectTab, togglePanel, closePanel
 const currentPath = computed(() => store.currentPath);
 
 function handleToggleTab(tab: StatusTab) {
-    togglePanel(tab);
+  togglePanel(tab);
 }
 
 function handleChangeTab(tab: StatusTab) {
-    selectTab(tab);
+  selectTab(tab);
 }
 </script>
 
 <template lang="pug">
-div(class="relative h-full w-full")
-
-  StatusBarPanel(v-if="panelOpen" :activeTab="activeTab" :cwd="currentPath" @changeTab="handleChangeTab" @close="closePanel")
-  footer(class="LFM-status-bar flex items-center justify-between px-3 py-2 text-sm" role="status" aria-label="Status bar")
+div(class="relative")
+  ResizableModal(
+    v-if="store.statusBarOpen && panelOpen"
+    kind="StatusBar"
+    :height="store.statusBarHeight"
+    direction="top"
+    ariaLabel="Status Bar"
+    resizerAriaLabel="Resize Status Bar. Double-click to reset height."
+    @update:height="store.setStatusBarHeight($event)"
+    @reset="store.resetStatusBarHeight()"
+  )
+    StatusBarPanel(:activeTab="activeTab" :cwd="currentPath" @changeTab="handleChangeTab" @close="closePanel")
+  footer(class="LFM-status-bar h-10 flex items-center justify-between px-3 py-2 text-sm" role="status" aria-label="Status bar")
     StatusBarLeft(class="flex-1")
     StatusBarRight(:activeTab="activePanelTab" @toggleTab="handleToggleTab" class="flex-shrink-0")
 </template>
@@ -32,12 +41,12 @@ div(class="relative h-full w-full")
 @reference "tailwindcss";
 
 .LFM-status-bar {
-    @apply flex shrink-0 items-center justify-between h-full bg-slate-800 select-none text-xs text-slate-300;
-    border-top: 1px solid rgb(30 41 59 / 0.5);
-    gap: 0;
+  @apply flex shrink-0 items-center justify-between h-full bg-slate-800 select-none text-xs text-slate-300;
+  border-top: 1px solid rgb(30 41 59 / 0.5);
+  gap: 0;
 }
 
 .LFM-status-panel {
-    min-height: 280px;
+  min-height: 280px;
 }
 </style>

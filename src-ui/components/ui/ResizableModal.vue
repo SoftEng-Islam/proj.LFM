@@ -133,14 +133,14 @@ onBeforeUnmount(() => {
 
 <template lang="pug">
 div(
-    class="flex flex-shrink-0 min-h-0 h-full min-w-60 max-w-3xl"
+    class="flex shrink-0 min-h-0 h-full min-w-60 max-w-3xl"
     :class="{ 'flex-row': isVertical, 'flex-col h-auto min-h-12 max-h-52 w-full max-w-none': !isVertical }"
     :data-orientation="ariaOrientation"
     :data-direction="direction"
     :style="containerStyle"
 )
     div(
-        class="flex-shrink-0 touch-none bg-transparent relative z-20 transition-colors duration-120"
+        class="shrink-0 touch-none bg-transparent relative z-20 transition-colors duration-120"
         :class="[isVertical ? 'w-2 min-w-2 cursor-col-resize' : 'h-2 min-h-2 w-full cursor-row-resize', (isVertical && direction === 'left') || (!isVertical && direction === 'top') ? 'order-first' : 'order-last',]"
         role="separator"
         :data-orientation="ariaOrientation"
