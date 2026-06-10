@@ -60,7 +60,7 @@ async function executeCurrentLine() {
 }
 
 onMounted(() => {
-	terminal = new Terminal({ cursorBlink: true, fontFamily: 'monospace', theme: { background: '#0f172a', foreground: '#e2e8f0' } });
+	terminal = new Terminal({ cursorBlink: true, cursorStyle: 'bar', cursorWidth: 3, fontFamily: 'monospace', theme: { background: 'rgba(0, 0, 0, 0)' } });
 
 	if (terminalContainer.value) {
 		terminal.open(terminalContainer.value);
@@ -109,5 +109,5 @@ onBeforeUnmount(() => {
 </script>
 
 <template lang="pug">
-div(class="h-full w-full rounded border border-slate-700 bg-black text-slate-100 font-mono text-sm" ref="terminalContainer")
+div(class="h-full w-full text-(--color-base-content) font-mono text-sm" ref="terminalContainer")
 </template>

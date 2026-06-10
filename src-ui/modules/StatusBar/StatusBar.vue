@@ -38,13 +38,6 @@ const tabs = [
 
 function handleTabChange(tab: 'terminal' | 'log' | 'git' | 'tasks') {
   // emit('changeTab', tab);
-}
-
-function handleToggleTab(tab: StatusTab) {
-  togglePanel(tab);
-}
-
-function handleChangeTab(tab: StatusTab) {
   togglePanel(tab);
 }
 
@@ -85,7 +78,7 @@ watch(
 <template lang="pug">
 div(class="relative")
   ResizableModal(
-    v-if="store.statusBarOpen && useStatusBarStore().panelOpen"
+    v-if="store.statusBarOpen"
     kind="StatusBar"
     :height="store.statusBarHeight"
     direction="top"
@@ -95,39 +88,37 @@ div(class="relative")
     @reset="store.resetStatusBarHeight()"
   )
     //- Status Bar Head
-    div(class="flex items-center justify-between bg-slate-800 border-b border-slate-700")
+    div(class="flex flex-row items-center justify-between bg-(--color-base-200) border-b border-(--color-base-300)")
       //- Left Side
       div(class="flex items-center")
         button(
           v-for="tab in tabs"
           :key="tab.id"
           type="button"
-          class="inline-flex items-center gap-2 px-4 py-3 text-xs font-medium transition border-b-2 whitespace-nowrap text-slate-400 hover:text-slate-200"
-          :class="activeTab === tab.id ? 'border-blue-500 text-slate-100 bg-slate-700/30' : 'border-transparent'"
+          class="inline-flex items-center gap-2 px-4 py-3 text-xs transition border-b-2 whitespace-nowrap text-(--color-base-content) hover:text-(--color-primary) hover:bg-(--color-base-100) cursor-pointer"
+          :class="activeTab === tab.id ? 'border-(--color-primary) bg-(--color-primary)/30' : 'border-transparent'"
           @click="handleTabChange(tab.id)"
         )
           component(:is="tab.icon" class="w-4 h-4")
           span {{ tab.label }}
 
       //- Right Side
-      div(class="Right-Side")
-        div(class="flex items-center gap-3 px-3 py-1 text-xs text-slate-400")
+      div(class="flex flex-row items-center")
+        div(class="flex items-center gap-3 px-3 py-1 text-xs text-(--color-base-content)")
           span {{ itemCount }} items
           template(v-if="selectedLabel")
-            span(class="text-slate-500") •
-            span(class="text-slate-300") {{ selectedLabel }}
+            span(class="text-(--color-primary)") •
+            span(class="text-(--color-base-content)") {{ selectedLabel }}
         //- Close Button (Minimize)
-        button(class="inline-flex h-8 w-8 items-center justify-center text-slate-400 hover:text-slate-100 transition mr-2" type="button" @click="emit('close')" aria-label="Close status panel")
+        button(class="inline-flex h-8 w-8 items-center justify-center text-(--color-primary) bg-(--color-primary)/20 rounded-md transition mr-2" type="button" @click="closePanel()" aria-label="Close status panel")
           IconClose(class="w-4 h-4")
 
     //- Workspace (The Content)
-    div(class="LFM-status-panel overflow-hidden bg-(--color-base-300) border-t border-(--color-base-100) shadow-2xl")
-      div(class="h-64 overflow-hidden bg-slate-900")
-        div(class="h-full overflow-auto p-4 text-slate-300")
+    div(v-if="useStatusBarStore().panelOpen" class="overflow-hidden bg-(--color-base-300) border-t border-(--color-base-100) shadow-2xl")
+      div(class="h-64 overflow-hidden bg-(--color-base-300)")
+        div(class="h-full overflow-auto p-4 text-(--color-base-content)")
           TerminalTab(v-if="activeTab === 'terminal'" :cwd="currentPath")
           LogTab(v-else-if="activeTab === 'log'")
           GitTab(v-else-if="activeTab === 'git'" :cwd="currentPath")
           TasksTab(v-else-if="activeTab === 'tasks'")
-    //- StatusBarPanel(:activeTab="activeTab" :cwd="currentPath" @changeTab="handleChangeTab" @close="closePanel")
-    //- StatusBarRight(:activeTab="activeTab" @toggleTab="handleToggleTab" class="shrink-0")
 </template>

@@ -10,7 +10,7 @@ interface StatusBarState {
 export const useStatusBarStore = defineStore("statusBar", {
     state: (): StatusBarState => ({
         panelOpen: false,
-        activeTab: "log",
+        activeTab: "terminal",
     }),
 
     actions: {
