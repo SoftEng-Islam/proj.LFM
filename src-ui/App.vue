@@ -23,6 +23,7 @@ function onWindowResize() {
 
 onMounted(() => {
 	store.reconcileRightPanelWidths();
+	store.setStatusBarHeight(store.statusBarHeight);
 	window.addEventListener('resize', onWindowResize);
 });
 
@@ -92,7 +93,7 @@ div(id="LFM-shell" class="w-full flex flex-col h-screen overflow-hidden bg-base-
 		:height="store.statusBarHeight"
 		direction="top"
 		ariaLabel="Status Bar"
-		resizerAriaLabel="Resize Status Bar. Double-click to reset height."
+		resizerAriaLabel="Resize status bar footer. Double-click to reset height."
 		@update:height="store.setStatusBarHeight($event)"
 		@reset="store.resetStatusBarHeight()"
 	)

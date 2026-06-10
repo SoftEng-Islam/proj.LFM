@@ -16,9 +16,9 @@ const MIN_RIGHT_PANEL = 260;
 const MAX_RIGHT_PANEL = 720;
 const MIN_MAIN_CONTENT = 360;
 
-// Status Bar Hight Range
-const MIN_STATUS_BAR_HEIGHT = 20;
-const MAX_STATUS_BAR_HEIGHT = 500;
+// Status bar footer height range
+const MIN_STATUS_BAR_HEIGHT = 24;
+const MAX_STATUS_BAR_HEIGHT = 48;
 
 // width
 const DEFAULT_LEFT_SIDEBAR_WIDTH = 360;
@@ -26,7 +26,7 @@ const DEFAULT_DETAILS_PANEL_WIDTH = 360;
 const DEFAULT_AI_CHAT_PANEL_WIDTH = 320;
 
 // Height
-const DEFAULT_STATUS_BAR_HEIGHT = 25;
+const DEFAULT_STATUS_BAR_HEIGHT = 28;
 
 // ─── Composable ───────────────────────────────────────────────────────────────
 
