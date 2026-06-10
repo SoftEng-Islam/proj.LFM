@@ -1,37 +1,36 @@
-import { ref } from "vue";
+import { defineStore } from "pinia";
 
-type StatusTab = "terminal" | "log" | "git" | "tasks";
+export type StatusTab = "terminal" | "log" | "git" | "tasks";
 
-const panelOpen = ref(false);
-const activeTab = ref<StatusTab>("terminal");
-
-export function useStatusBar() {
-    function openPanel(tab: StatusTab) {
-        activeTab.value = tab;
-        panelOpen.value = true;
-    }
-
-    function togglePanel(tab: StatusTab) {
-        if (panelOpen.value && activeTab.value === tab) {
-            panelOpen.value = false;
-            return;
-        }
-
-        activeTab.value = tab;
-        panelOpen.value = true;
-    }
-
-    function closePanel() {
-        panelOpen.value = false;
-    }
-
-    return {
-        panelOpen,
-        activeTab,
-        openPanel,
-        togglePanel,
-        closePanel,
-    };
+interface StatusBarState {
+    panelOpen: boolean;
+    activeTab: StatusTab;
 }
 
-export type { StatusTab };
+export const useStatusBarStore = defineStore("statusBar", {
+    state: (): StatusBarState => ({
+        panelOpen: false,
+        activeTab: "terminal",
+    }),
+
+    actions: {
+        openPanel(tab: StatusTab) {
+            this.activeTab = tab;
+            this.panelOpen = true;
+        },
+
+        togglePanel(tab: StatusTab) {
+            if (this.panelOpen && this.activeTab === tab) {
+                this.panelOpen = false;
+                return;
+            }
+
+            this.activeTab = tab;
+            this.panelOpen = true;
+        },
+
+        closePanel() {
+            this.panelOpen = false;
+        },
+    },
+});

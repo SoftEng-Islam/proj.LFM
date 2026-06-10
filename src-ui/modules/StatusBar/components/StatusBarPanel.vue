@@ -12,12 +12,12 @@ import TasksTab from './TasksTab.vue';
 
 import { useFileManagerStore } from '@/stores/file-manager';
 import { useConfigStore } from '@/stores/config';
-import { useStatusBar, type StatusTab } from "@/stores/useStatusBar.ts";
+import { useStatusBarStore, type StatusTab } from "@/stores/useStatusBar.ts";
 
 
 const store = useFileManagerStore();
 const configStore = useConfigStore();
-const { panelOpen, openPanel, togglePanel, closePanel } = useStatusBar();
+const { panelOpen, openPanel, togglePanel, closePanel } = useStatusBarStore();
 
 
 const { activeTab, cwd } = defineProps<{ activeTab: 'terminal' | 'log' | 'git' | 'tasks'; cwd: string }>();

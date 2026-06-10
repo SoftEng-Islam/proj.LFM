@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, watch } from 'vue';
 import { useFileManagerStore } from '@/stores/file-manager';
 import { useConfigStore } from '@/stores/config';
-import { useStatusBar, type StatusTab } from "@/stores/useStatusBar.ts";
+import { useStatusBarStore, type StatusTab } from "@/stores/useStatusBar.ts";
 import StatusBarLeft from "./components/StatusBarLeft.vue";
 import StatusBarRight from "./components/StatusBarRight.vue";
 import StatusBarPanel from "./components/StatusBarPanel.vue";
@@ -10,7 +10,7 @@ import ResizableModal from "@/components/ui/ResizableModal.vue";
 
 const store = useFileManagerStore();
 const configStore = useConfigStore();
-const { panelOpen, activeTab, openPanel, togglePanel, closePanel } = useStatusBar();
+const { panelOpen, activeTab, openPanel, togglePanel, closePanel } = useStatusBarStore();
 const currentPath = computed(() => store.currentPath);
 
 function handleToggleTab(tab: StatusTab) {
@@ -50,7 +50,7 @@ watch(
     if (statusBarHeight <= store.MIN_STATUS_BAR_HEIGHT) {
       statusBarHeight = 0;
       // closePanel();
-      panelOpen.value = false;
+      useStatusBarStore().panelOpen = false;
       store.statusBarOpen = false;
     } else {
       openPanel("terminal");
