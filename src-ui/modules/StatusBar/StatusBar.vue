@@ -90,7 +90,7 @@ div(class="relative")
           :key="tab.id"
           type="button"
           class="inline-flex items-center gap-2 px-4 py-3 text-xs transition border-b-2 whitespace-nowrap text-(--color-base-content) hover:text-(--color-primary) hover:bg-(--color-base-100) cursor-pointer"
-          :class="activeTab === tab.id && !isWorkspaceOpen ? 'border-(--color-primary) bg-(--color-primary)/30' : 'border-transparent'"
+          :class="activeTab === tab.id && isWorkspaceOpen ? 'border-(--color-primary) bg-(--color-primary)/30' : 'border-transparent'"
           @click="toggleWorkspace(tab.id)"
         )
           component(:is="tab.icon" class="w-4 h-4")
@@ -104,11 +104,11 @@ div(class="relative")
             span(class="text-(--color-primary)") •
             span(class="text-(--color-base-content)") {{ selectedLabel }}
         //- Close Button (Minimize)
-        button(v-if="!isWorkspaceOpen.valueOf()" class="inline-flex h-8 w-8 items-center justify-center text-(--color-primary) bg-(--color-primary)/20 rounded-md transition ml-2 cursor-pointer" type="button" @click="closeWorkspace()" aria-label="Close status Workspace")
+        button(v-if="isWorkspaceOpen.valueOf()" class="inline-flex h-8 w-8 items-center justify-center text-(--color-primary) bg-(--color-primary)/20 rounded-md transition ml-2 cursor-pointer" type="button" @click="closeWorkspace()" aria-label="Close status Workspace")
           IconClose(class="w-4 h-4")
 
     //- Workspace (The Content)
-    div(v-if="!isWorkspaceOpen" class="overflow-hidden bg-(--color-base-300) border-t border-(--color-base-100) shadow-2xl")
+    div(v-if="isWorkspaceOpen" class="overflow-hidden bg-(--color-base-300) border-t border-(--color-base-100) shadow-2xl")
       div(class="h-64 overflow-hidden bg-(--color-base-300)")
         div(class="h-full overflow-auto p-4 text-(--color-base-content)")
           TerminalTab(v-if="activeTab === 'terminal'" :cwd="currentPath")
