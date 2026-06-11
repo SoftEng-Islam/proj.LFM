@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { computed, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useFileManagerStore } from '@/stores/file-manager';
 import { useConfigStore } from '@/stores/config';
 import { useStatusBarStore, type StatusTab } from "@/stores/useStatusBar.ts";
@@ -21,11 +22,10 @@ import TasksTab from './components/TasksTab.vue';
 // Constants
 const store = useFileManagerStore();
 // const configStore = useConfigStore();
-const { isWorkspaceOpen, activeTab, openWorkspace, toggleWorkspace, closeWorkspace } = useStatusBarStore();
+const statusBarStore = useStatusBarStore();
+const { isWorkspaceOpen, activeTab } = storeToRefs(statusBarStore);
+const { openWorkspace, toggleWorkspace, closeWorkspace } = statusBarStore;
 const currentPath = computed(() => store.currentPath);
-
-console.log(`isWorkspaceOpen: ${isWorkspaceOpen}`);
-console.log(`activeTab: ${activeTab}`);
 
 const itemCount = computed(() => store.currentEntries.length);
 const selectedCount = computed(() => (store.selectedItem ? 1 : 0));
@@ -44,29 +44,10 @@ watch(
     if (statusBarHeight <= store.MIN_STATUS_BAR_HEIGHT) {
       closeWorkspace();
     } else {
-      openWorkspace(activeTab);
+      openWorkspace(activeTab.value);
     }
   },
 );
-
-// function onWindowResize() {
-//   store.reconcileRightPanelWidths();
-// }
-
-// onMounted(() => {
-//   store.reconcileRightPanelWidths();
-//   window.addEventListener('resize', onWindowResize);
-// });
-
-// onUnmounted(() => {
-//   window.removeEventListener('resize', onWindowResize);
-// });
-
-// onMounted(async () => {
-//   await configStore.loadConfig();
-//   store.initializeHomeDir();
-//   store.fetchDrives();
-// });
 </script>
 
 <template lang="pug">
@@ -74,7 +55,7 @@ div(class="relative")
   ResizableModal(
     v-if="store.statusBarOpen"
     kind="StatusBar"
-    :height="store.statusBarHeight"
+    :height="isWorkspaceOpen ? store.statusBarHeight : 48"
     direction="top"
     ariaLabel="Status Bar"
     resizerAriaLabel="Resize Status Bar. Double-click to reset height."
@@ -82,7 +63,10 @@ div(class="relative")
     @reset="store.resetStatusBarHeight()"
   )
     //- Status Bar Head
-    div(class="h-12 flex flex-row items-center justify-between bg-(--color-base-200) border-b border-(--color-base-300)")
+    div(
+      class="h-12 flex flex-row items-center justify-between bg-(--color-base-200) w-full"
+      :class="isWorkspaceOpen ? 'border-b border-(--color-base-300)' : ''"
+    )
       //- Left Side
       div(class="flex items-center")
         button(
@@ -90,7 +74,7 @@ div(class="relative")
           :key="tab.id"
           type="button"
           class="inline-flex items-center gap-2 px-4 py-3 text-xs transition border-b-2 whitespace-nowrap text-(--color-base-content) hover:text-(--color-primary) hover:bg-(--color-base-100) cursor-pointer"
-          :class="activeTab === tab.id && isWorkspaceOpen ? 'border-(--color-primary) bg-(--color-primary)/30' : 'border-transparent'"
+          :class="isWorkspaceOpen && activeTab === tab.id ? 'border-(--color-primary) bg-(--color-primary)/30' : 'border-transparent'"
           @click="toggleWorkspace(tab.id)"
         )
           component(:is="tab.icon" class="w-4 h-4")
@@ -104,12 +88,12 @@ div(class="relative")
             span(class="text-(--color-primary)") •
             span(class="text-(--color-base-content)") {{ selectedLabel }}
         //- Close Button (Minimize)
-        button(v-if="isWorkspaceOpen.valueOf()" class="inline-flex h-8 w-8 items-center justify-center text-(--color-primary) bg-(--color-primary)/20 rounded-md transition ml-2 cursor-pointer" type="button" @click="closeWorkspace()" aria-label="Close status Workspace")
+        button(v-if="isWorkspaceOpen" class="inline-flex h-8 w-8 items-center justify-center text-(--color-primary) bg-(--color-primary)/20 rounded-md transition ml-2 cursor-pointer" type="button" @click="closeWorkspace()" aria-label="Close status Workspace")
           IconClose(class="w-4 h-4")
 
     //- Workspace (The Content)
-    div(v-if="isWorkspaceOpen" class="overflow-hidden bg-(--color-base-300) border-t border-(--color-base-100) shadow-2xl")
-      div(class="h-64 overflow-hidden bg-(--color-base-300)")
+    div(v-if="isWorkspaceOpen" class="flex-1 min-h-0 flex flex-col bg-(--color-base-300)")
+      div(class="flex-1 min-h-0 bg-(--color-base-300)")
         div(class="h-full overflow-auto p-4 text-(--color-base-content)")
           TerminalTab(v-if="activeTab === 'terminal'" :cwd="currentPath")
           LogTab(v-else-if="activeTab === 'log'")

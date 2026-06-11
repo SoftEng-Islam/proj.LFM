@@ -167,7 +167,7 @@ div(class="container" :data-orientation="ariaOrientation" :data-direction="direc
         flex-direction: column;
         height: auto;
         min-height: 48px;
-        max-height: 200px;
+        max-height: none;
         min-width: 0;
         max-width: none;
         width: 100%;
