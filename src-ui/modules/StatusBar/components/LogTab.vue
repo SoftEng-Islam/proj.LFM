@@ -19,11 +19,11 @@ onBeforeUnmount(() => {
 
 <template lang="pug">
 div(class="flex h-full flex-col gap-3 text-xs")
-	div(class="rounded-md border border-slate-700 bg-slate-800 p-3")
-		p(class="font-medium text-slate-200") Application logs
-		p(class="text-slate-400 mt-1") Real-time log feed from frontend events.
+	div(class="rounded-md bg-(--color-base-200) p-3")
+		p(class="font-medium text-(--color-base-content)/50") Application logs
+		p(class="text-(--color-base-content) mt-1") Real-time log feed from frontend events.
 
-	div(class="flex-1 overflow-auto rounded-md border border-slate-700 bg-slate-950 p-3")
+	div(class="flex-1 overflow-auto rounded-md bg-(--color-base-200) p-3")
 		div(v-if="entries.length === 0" class="text-slate-500") No logs yet.
 		div(v-else class="space-y-2")
 			div(v-for="entry in entries" :key="entry.id" class="rounded-md border border-slate-700 bg-slate-800 p-2")

@@ -14,7 +14,7 @@ defineEmits<{
 </script>
 
 <template lang="pug">
-button.LFM-sbar-section-header(:aria-expanded="!isCollapsed" @click="$emit('toggle')")
+button(:aria-expanded="!isCollapsed" @click="$emit('toggle')" class="LFM-sbar-section-header")
 	IconChevronRight.LFM-sbar-chevron(:class="{ 'LFM-sbar-chevron--collapsed': isCollapsed }")
 	component.mr-2.text-xs(v-if="icon" :is="icon")
 	span {{ title }}

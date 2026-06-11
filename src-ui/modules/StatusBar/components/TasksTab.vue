@@ -36,14 +36,14 @@ function statusClass(status: OperationStatus): string {
 </script>
 
 <template lang="pug">
-div(class="flex h-full flex-col gap-3 text-xs text-slate-300")
-	div(class="rounded-md border border-slate-700 bg-slate-800 p-3")
-		p(class="font-medium text-slate-200") Active Operations
-		p(class="text-slate-400 text-[11px] mt-1")
+div(class="flex h-full flex-col gap-3 text-xs text-(--color-base-content)")
+	div(class="rounded-md bg-(--color-base-200) p-3")
+		p(class="font-medium text-(--color-base-content)/50") Active Operations
+		p(class="text-(--color-base-content) text-[11px] mt-1")
 			| File operations queue
 
-	div(class="flex-1 overflow-auto rounded-md border border-slate-700 bg-slate-950 p-3")
-		div(v-if="queue.length === 0" class="text-slate-500")
+	div(class="flex-1 overflow-auto rounded-md bg-(--color-base-200) p-3")
+		div(v-if="queue.length === 0" class="text-(--color-base-content)/50")
 			| No running operations.
 
 		div(v-else class="space-y-2")

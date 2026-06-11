@@ -42,22 +42,7 @@ RouterLink.LFM-sbar-item(
 @reference "tailwindcss";
 
 .LFM-sbar-item {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	min-height: 36px;
-	padding: 0 12px;
-	border-radius: 8px;
-	cursor: pointer;
-	text-decoration: none;
-	color: var(--color-base-content);
-	transition: all 150ms ease;
-	position: relative;
-	margin: 1px 8px;
-}
-
-.LFM-sbar-item:hover {
-	background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
+	@apply relative flex items-center justify-start gap-2.5 min-h-9 py-0 px-3 rounded-md cursor-pointer text-(--color-base-content) my-0.5 mx-2 hover:bg-(--color-base-100);
 }
 
 .LFM-sbar-item--active {
@@ -88,24 +73,15 @@ RouterLink.LFM-sbar-item(
 }
 
 .LFM-sbar-item--special .LFM-sbar-label {
-	font-size: 14px;
-	font-weight: 700;
+	@apply text-base font-bold;
 }
 
 .LFM-sbar-icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 20px;
-	flex-shrink: 0;
-	font-size: 18px;
+	@apply pb-0.5 flex items-center justify-center w-5 shrink-0;
 }
 
 .LFM-sbar-label {
-	flex: 1;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	@apply pt-0.5 text-base flex-1 whitespace-nowrap overflow-hidden text-ellipsis;
 }
 
 .LFM-sbar-pin {

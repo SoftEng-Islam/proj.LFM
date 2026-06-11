@@ -100,6 +100,7 @@ const saveSettings = async (): Promise<void> => {
 		return;
 	}
 	toast.success(store.saveMessage || 'Settings saved');
+	closeSettings();
 };
 </script>
 
@@ -229,7 +230,7 @@ div.LFM-settings-shell
 									input(type="checkbox" v-model="store.config.appearance.window_controls")
 									span Show window controls
 
-							div(class="ml-6 flex flex-col gap-y-2 mt-[-8px] mb-4" v-if="store.config.appearance.window_controls")
+							div(class="ml-6 flex flex-col gap-y-2 -mt-2 mb-4" v-if="store.config.appearance.window_controls")
 								.LFM-control.LFM-checkbox-control
 									label
 										input(type="checkbox" v-model="store.config.appearance.show_minimize")
@@ -249,9 +250,9 @@ div.LFM-settings-shell
 
 				//- Footer Actions
 				div(class="flex justify-end border-t-2 border-solid border-(--color-base-300) bg-(--color-base-200) px-5 py-8 gap-4")
-					button(type="button" class="bg-(--color-neutral) inline-flex items-center justify-center rounded-xl px-6 py-2.5 text-sm font-semibold cursor-pointer hover:opacity-50")
+					button(type="button" class="bg-(--color-neutral) inline-flex items-center justify-center rounded-xl px-6 py-2.5 text-sm font-semibold cursor-pointer opacity-50 hover:opacity-100")
 						span(class="") Reset
-					button(type="submit" :disabled="store.isSaving || store.isLoading" class="bg-(--color-primary) inline-flex items-center justify-center rounded-xl px-6 py-2.5 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:opacity-50")
+					button(type="submit" :disabled="store.isSaving || store.isLoading" class="bg-(--color-primary) inline-flex items-center justify-center rounded-xl px-6 py-2.5 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer opacity-50 hover:opacity-100")
 						span(v-if="store.isSaving") Saving...
 						span(v-else) Save configuration
 </template>

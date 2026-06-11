@@ -37,21 +37,7 @@ RouterLink(
 @reference "tailwindcss";
 
 .LFM-sbar-item {
-  gap: 12px;
-  min-height: 36px;
-  padding: 0 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--color-base-content);
-  transition: all 150ms ease;
-  position: relative;
-  margin: 1px 8px;
-  background: var(--color-base-300);
-}
-
-.LFM-sbar-item:hover {
-  background: color-mix(in srgb, var(--color-base-content) 6%, transparent);
+  @apply relative gap-3 min-h-9 py-0 px-3 rounded-md cursor-pointer text-(--color-base-content) my-0.5 mx-2 bg-(--color-base-300) transition-all duration-150 ease-in-out hover:bg-(--color-base-300)/50;
 }
 
 .LFM-sbar-item--active {
@@ -93,10 +79,7 @@ RouterLink(
 }
 
 .LFM-sbar-drive-copy {
-  display: grid;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
+  @apply grid gap-0.5 min-w-0 flex-1;
 }
 
 .LFM-sbar-label {
