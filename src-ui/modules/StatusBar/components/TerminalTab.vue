@@ -111,3 +111,9 @@ onBeforeUnmount(() => {
 <template lang="pug">
 div(class="h-full w-full text-(--color-base-content) font-mono text-sm" ref="terminalContainer")
 </template>
+<style>
+.xterm,
+.xterm .xterm-viewport {
+	background: transparent !important;
+}
+</style>

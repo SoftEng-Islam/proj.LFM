@@ -68,7 +68,7 @@ const DEFAULT_AI_CHAT_PANEL_WIDTH = 320;
 
 // Status Bar Constants
 const MIN_STATUS_BAR_HEIGHT = 80;
-const MAX_STATUS_BAR_HEIGHT = 600;
+const MAX_STATUS_BAR_HEIGHT = 500;
 const DEFAULT_STATUS_BAR_HEIGHT = 280;
 
 export const useFileManagerStore = defineStore("file-manager", {
