@@ -133,6 +133,10 @@ pub struct Shortcuts {
     pub extend_down: Vec<String>,
     pub extend_left: Vec<String>,
     pub extend_right: Vec<String>,
+    pub focus_up: Vec<String>,
+    pub focus_down: Vec<String>,
+    pub focus_left: Vec<String>,
+    pub focus_right: Vec<String>,
 }
 
 #[derive(Deserialize, Debug, Clone, Default)]
@@ -181,6 +185,10 @@ struct ShortcutsFile {
     extend_down: Option<Vec<String>>,
     extend_left: Option<Vec<String>>,
     extend_right: Option<Vec<String>>,
+    focus_up: Option<Vec<String>>,
+    focus_down: Option<Vec<String>>,
+    focus_left: Option<Vec<String>>,
+    focus_right: Option<Vec<String>>,
 }
 
 fn default_theme() -> String {
@@ -299,6 +307,10 @@ impl Default for Shortcuts {
             extend_down: vec!["Shift+ArrowDown".to_string()],
             extend_left: vec!["Shift+ArrowLeft".to_string()],
             extend_right: vec!["Shift+ArrowRight".to_string()],
+            focus_up: vec!["Ctrl+ArrowUp".to_string(), "Meta+ArrowUp".to_string()],
+            focus_down: vec!["Ctrl+ArrowDown".to_string(), "Meta+ArrowDown".to_string()],
+            focus_left: vec!["Ctrl+ArrowLeft".to_string(), "Meta+ArrowLeft".to_string()],
+            focus_right: vec!["Ctrl+ArrowRight".to_string(), "Meta+ArrowRight".to_string()],
         }
     }
 }
@@ -387,6 +399,16 @@ fn parse_config(content: &str) -> Result<Config, toml::de::Error> {
             extend_right: raw_shortcuts
                 .extend_right
                 .unwrap_or(default_shortcuts.extend_right),
+            focus_up: raw_shortcuts.focus_up.unwrap_or(default_shortcuts.focus_up),
+            focus_down: raw_shortcuts
+                .focus_down
+                .unwrap_or(default_shortcuts.focus_down),
+            focus_left: raw_shortcuts
+                .focus_left
+                .unwrap_or(default_shortcuts.focus_left),
+            focus_right: raw_shortcuts
+                .focus_right
+                .unwrap_or(default_shortcuts.focus_right),
         },
     })
 }

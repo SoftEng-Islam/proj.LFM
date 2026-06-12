@@ -93,12 +93,33 @@ const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null }>({
 
 // ── Drag selection state ─────────────────────────────────────────────────────
 
+/** Whether the user is currently drag-selecting */
 const isDragging = ref(false);
+/** Starting coordinates of the drag selection box */
 const dragStart = ref<{ x: number; y: number } | null>(null);
+/** Ending coordinates of the drag selection box */
 const dragEnd = ref<{ x: number; y: number } | null>(null);
+/** Reference to the workspace container element */
 const workspaceRef = ref<HTMLElement>();
+/** The item ID that acts as the anchor for Shift+Click range selections */
 const selectionAnchorId = ref<string | null>(null);
+/** The item ID that is currently focused (navigated to via arrow keys) */
+const focusedItemId = ref<string | null>(null);
+/** Array of cleanup functions for global event bus listeners */
 const busCleanup: Array<() => void> = [];
+
+/**
+ * Smoothly scrolls the item with the given ID into view.
+ * Uses requestAnimationFrame to ensure the DOM is up to date before scrolling.
+ */
+function scrollItemIntoView(id: string) {
+	requestAnimationFrame(() => {
+		const el = document.querySelector(`[data-item-id="${CSS.escape(id)}"]`);
+		if (el) {
+			el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+		}
+	});
+}
 
 // Computed style for the selection box
 const selectionBoxStyle = computed(() => {
@@ -116,6 +137,9 @@ const selectionBoxStyle = computed(() => {
 	};
 });
 
+/**
+ * Starts drag selection when clicking on the workspace background.
+ */
 function handleMouseDown(e: MouseEvent) {
 	if (e.target === workspaceRef.value || (e.target as HTMLElement).classList.contains('LFM-workspace-content')) {
 		e.preventDefault();
@@ -125,6 +149,9 @@ function handleMouseDown(e: MouseEvent) {
 	}
 }
 
+/**
+ * Updates the drag selection box and selects items that fall within it.
+ */
 function handleMouseMove(e: MouseEvent) {
 	if (isDragging.value && dragStart.value) {
 		dragEnd.value = { x: e.clientX, y: e.clientY };
@@ -155,6 +182,9 @@ function handleMouseMove(e: MouseEvent) {
 	}
 }
 
+/**
+ * Finalizes drag selection and applies the selection to the store.
+ */
 function handleMouseUp(e: MouseEvent) {
 	if (isDragging.value && dragStart.value && dragEnd.value) {
 		const startX = Math.min(dragStart.value.x, dragEnd.value.x);
@@ -200,6 +230,7 @@ function handleWorkspaceClick() {
 	if (!wasDragging.value) {
 		store.clearSelection();
 		selectionAnchorId.value = null;
+		focusedItemId.value = null;
 	}
 	wasDragging.value = false;
 }
@@ -222,6 +253,7 @@ function openEmptyContextMenu(e: MouseEvent) {
 	e.preventDefault();
 	store.clearSelection();
 	selectionAnchorId.value = null;
+	focusedItemId.value = null;
 	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId: '' };
 }
 
@@ -278,30 +310,48 @@ function isFolder(entry: { kind: string }) {
 	return entry.kind === 'folder';
 }
 
-function currentGridStride(): number {
-	switch (iconSize.value) {
-		case 'small': return 84;
-		case 'large': return 124;
-		case 'extra-large': return 154;
-		default: return 104;
-	}
-}
-
+/**
+ * Dynamically calculates how many items fit in a single grid row.
+ * It checks the `offsetTop` of rendered items to see how many share the first row.
+ * This is robust against container resizing, gap changes, and item width changes.
+ */
 function currentItemsPerRow(): number {
 	if (store.viewMode !== 'grid') return 1;
-	const containerWidth = workspaceRef.value?.offsetWidth || window.innerWidth;
-	return Math.max(1, Math.floor(containerWidth / currentGridStride()));
+	const gridItems = document.querySelectorAll('.LFM-grid-item');
+	if (gridItems.length === 0) return 1;
+
+	const firstTop = (gridItems[0] as HTMLElement).offsetTop;
+	let count = 0;
+	for (let i = 0; i < gridItems.length; i++) {
+		if ((gridItems[i] as HTMLElement).offsetTop === firstTop) {
+			count++;
+		} else {
+			break;
+		}
+	}
+	return Math.max(1, count);
 }
 
+/**
+ * Returns the currently active selected ID, if any.
+ */
 function activeSelectedId(): string | null {
 	return store.selectedItemIds.size > 0 ? selectedId.value : null;
 }
 
+/**
+ * Sets a single item as the primary selection and anchors it for future range selections.
+ */
 function setPrimarySelection(itemId: string) {
 	store.selectItem(itemId);
 	selectionAnchorId.value = itemId;
+	focusedItemId.value = itemId;
 }
 
+/**
+ * Selects a range of items from the current anchor to the target item.
+ * Used for Shift+Click and Shift+Arrow navigation.
+ */
 function setRangeSelection(targetId: string) {
 	const items = store.currentEntries;
 	if (items.length === 0) return;
@@ -316,26 +366,40 @@ function setRangeSelection(targetId: string) {
 
 	const [start, end] = anchorIndex < targetIndex ? [anchorIndex, targetIndex] : [targetIndex, anchorIndex];
 	store.setSelectedItems(items.slice(start, end + 1).map((item) => item.id));
+	focusedItemId.value = targetId;
 }
 
+/**
+ * Toggles the selection state of the currently focused item.
+ */
 function toggleFocusedSelection() {
-	const focusedId = activeSelectedId() || selectionAnchorId.value || store.currentEntries[0]?.id;
+	const focusedId = focusedItemId.value || activeSelectedId() || selectionAnchorId.value || store.currentEntries[0]?.id;
 	if (!focusedId) return;
 	store.toggleItemSelection(focusedId);
 	selectionAnchorId.value = focusedId;
+	focusedItemId.value = focusedId;
 }
 
-function moveSelection(direction: 'up' | 'down' | 'left' | 'right', extend: boolean) {
+/**
+ * Moves focus (and potentially selection) in the specified direction.
+ * @param direction Direction to navigate ('up', 'down', 'left', 'right')
+ * @param extend If true, extends the selection to the new target (Shift key behavior)
+ * @param keepSelection If true, only moves focus, leaving selection as is (Ctrl/Meta key behavior)
+ */
+function moveSelection(direction: 'up' | 'down' | 'left' | 'right', extend: boolean, keepSelection: boolean) {
 	const items = store.currentEntries;
 	if (items.length === 0) return;
 
-	if (!activeSelectedId() && !selectionAnchorId.value) {
+	if (!focusedItemId.value && !activeSelectedId() && !selectionAnchorId.value) {
 		const firstItem = items[0];
-		if (firstItem) setPrimarySelection(firstItem.id);
+		if (firstItem) {
+			setPrimarySelection(firstItem.id);
+			scrollItemIntoView(firstItem.id);
+		}
 		return;
 	}
 
-	const currentId = activeSelectedId() || selectionAnchorId.value || items[0]?.id;
+	const currentId = focusedItemId.value || activeSelectedId() || selectionAnchorId.value || items[0]?.id;
 	if (!currentId) return;
 
 	const currentIndex = items.findIndex((item) => item.id === currentId);
@@ -357,23 +421,46 @@ function moveSelection(direction: 'up' | 'down' | 'left' | 'right', extend: bool
 			selectionAnchorId.value = currentId;
 		}
 		setRangeSelection(target.id);
+		scrollItemIntoView(target.id);
+		return;
+	}
+
+	if (keepSelection) {
+		focusedItemId.value = target.id;
+		scrollItemIntoView(target.id);
 		return;
 	}
 
 	setPrimarySelection(target.id);
+	scrollItemIntoView(target.id);
 }
 
-// Replaced custom CSS logic with Tailwind classes
+/**
+ * Generates dynamic Tailwind classes for grid view items.
+ * Uses `!important` to ensure dynamic backgrounds override any static base classes.
+ */
 function fileEntryClass(id: string, isHidden?: boolean) {
+	const isSelected = store.selectedItemIds.has(id);
+	const isFocused = focusedItemId.value === id;
 	return {
-		'bg-[color-mix(in_srgb,var(--color-primary)_14%,transparent)] border-[var(--color-primary)]': store.selectedItemIds.has(id),
+		'!bg-[color-mix(in_srgb,var(--color-primary)_24%,transparent)] !border-[var(--color-primary)]': isSelected && isFocused,
+		'!bg-[color-mix(in_srgb,var(--color-primary)_14%,transparent)] !border-[var(--color-primary)]': isSelected && !isFocused,
+		'!bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] !border-[color-mix(in_srgb,var(--color-base-content)_20%,transparent)]': isFocused && !isSelected,
 		'opacity-[0.58]': !!isHidden && store.hiddenFilesVisualStyle !== 'normal',
 	};
 }
 
+/**
+ * Generates dynamic Tailwind classes for list view rows.
+ * Uses `!important` to ensure dynamic backgrounds override any static base classes.
+ */
 function listEntryClass(id: string, isHidden?: boolean) {
+	const isSelected = store.selectedItemIds.has(id);
+	const isFocused = focusedItemId.value === id;
 	return {
-		'bg-[color-mix(in_srgb,var(--color-primary)_14%,transparent)]': store.selectedItemIds.has(id),
+		'!bg-[color-mix(in_srgb,var(--color-primary)_24%,transparent)]': isSelected && isFocused,
+		'!bg-[color-mix(in_srgb,var(--color-primary)_14%,transparent)]': isSelected && !isFocused,
+		'!bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)]': isFocused && !isSelected,
 		'opacity-[0.58]': !!isHidden && store.hiddenFilesVisualStyle !== 'normal',
 	};
 }
@@ -385,6 +472,7 @@ function iconFilterClass(isHidden?: boolean) {
 }
 
 function handleItemClick(entry: FileEntry, e: MouseEvent) {
+	focusedItemId.value = entry.id;
 	if (e.shiftKey) {
 		if (!selectionAnchorId.value) selectionAnchorId.value = activeSelectedId() || entry.id;
 		setRangeSelection(entry.id);
@@ -421,7 +509,7 @@ onMounted(() => {
 		busOn('shortcut:rename', () => { if (store.selectedItem) openRenameDialog(store.selectedItem.id); })
 	);
 	busCleanup.push(
-		busOn('shortcut:navigate', (payload: { direction: 'up' | 'down' | 'left' | 'right'; extend: boolean }) => { moveSelection(payload.direction, payload.extend); })
+		busOn('shortcut:navigate', (payload: { direction: 'up' | 'down' | 'left' | 'right'; extend: boolean; keepSelection?: boolean }) => { moveSelection(payload.direction, payload.extend, payload.keepSelection || false); })
 	);
 	busCleanup.push(
 		busOn('shortcut:toggle-selection', () => { toggleFocusedSelection(); })
@@ -436,6 +524,7 @@ onMounted(() => {
 			if (propertiesDialog.value.visible) { propertiesDialog.value.visible = false; return; }
 			store.clearSelection();
 			selectionAnchorId.value = null;
+			focusedItemId.value = null;
 		})
 	);
 });

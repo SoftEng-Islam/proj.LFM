@@ -100,6 +100,10 @@ export interface LfmConfigShortcuts {
     extend_down: string[];
     extend_left: string[];
     extend_right: string[];
+    focus_up: string[];
+    focus_down: string[];
+    focus_left: string[];
+    focus_right: string[];
 }
 
 // ─── Root Config ────────────────────────────────────────────────────────────
@@ -175,6 +179,10 @@ export const DEFAULT_CONFIG: LfmConfig = {
         extend_down: ["Shift+ArrowDown"],
         extend_left: ["Shift+ArrowLeft"],
         extend_right: ["Shift+ArrowRight"],
+        focus_up: ["Ctrl+ArrowUp", "Meta+ArrowUp"],
+        focus_down: ["Ctrl+ArrowDown", "Meta+ArrowDown"],
+        focus_left: ["Ctrl+ArrowLeft", "Meta+ArrowLeft"],
+        focus_right: ["Ctrl+ArrowRight", "Meta+ArrowRight"],
     },
 };
 
@@ -229,6 +237,10 @@ export const SHORTCUT_FIELD_ORDER: Array<{
     { key: "extend_down", label: "Extend Selection Down" },
     { key: "extend_left", label: "Extend Selection Left" },
     { key: "extend_right", label: "Extend Selection Right" },
+    { key: "focus_up", label: "Focus Up (Keep Selection)" },
+    { key: "focus_down", label: "Focus Down (Keep Selection)" },
+    { key: "focus_left", label: "Focus Left (Keep Selection)" },
+    { key: "focus_right", label: "Focus Right (Keep Selection)" },
 ];
 
 const VALID_ICON_SIZES: LfmConfigAppearance["icon_size"][] = ["small", "medium", "large", "extra-large"];

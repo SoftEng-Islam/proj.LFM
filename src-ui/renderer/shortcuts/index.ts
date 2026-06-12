@@ -7,24 +7,32 @@ let wheelHandler: ((event: WheelEvent) => void) | null = null;
 
 type NavigationDirection = 'up' | 'down' | 'left' | 'right';
 
-function navigationPayload(action: ShortcutConfigKey): { direction: NavigationDirection; extend: boolean } | null {
+function navigationPayload(action: ShortcutConfigKey): { direction: NavigationDirection; extend: boolean; keepSelection: boolean } | null {
 	switch (action) {
 		case 'move_up':
-			return { direction: 'up', extend: false };
+			return { direction: 'up', extend: false, keepSelection: false };
 		case 'move_down':
-			return { direction: 'down', extend: false };
+			return { direction: 'down', extend: false, keepSelection: false };
 		case 'move_left':
-			return { direction: 'left', extend: false };
+			return { direction: 'left', extend: false, keepSelection: false };
 		case 'move_right':
-			return { direction: 'right', extend: false };
+			return { direction: 'right', extend: false, keepSelection: false };
 		case 'extend_up':
-			return { direction: 'up', extend: true };
+			return { direction: 'up', extend: true, keepSelection: false };
 		case 'extend_down':
-			return { direction: 'down', extend: true };
+			return { direction: 'down', extend: true, keepSelection: false };
 		case 'extend_left':
-			return { direction: 'left', extend: true };
+			return { direction: 'left', extend: true, keepSelection: false };
 		case 'extend_right':
-			return { direction: 'right', extend: true };
+			return { direction: 'right', extend: true, keepSelection: false };
+		case 'focus_up':
+			return { direction: 'up', extend: false, keepSelection: true };
+		case 'focus_down':
+			return { direction: 'down', extend: false, keepSelection: true };
+		case 'focus_left':
+			return { direction: 'left', extend: false, keepSelection: true };
+		case 'focus_right':
+			return { direction: 'right', extend: false, keepSelection: true };
 		default:
 			return null;
 	}
@@ -146,6 +154,10 @@ function dispatchShortcut(action: ShortcutConfigKey) {
 		case 'extend_down':
 		case 'extend_left':
 		case 'extend_right':
+		case 'focus_up':
+		case 'focus_down':
+		case 'focus_left':
+		case 'focus_right':
 			busEmit('shortcut:navigate', navigationPayload(action));
 			return;
 	}
