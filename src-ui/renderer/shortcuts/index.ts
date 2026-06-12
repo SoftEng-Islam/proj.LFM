@@ -182,6 +182,14 @@ export function initShortcuts() {
 	keydownHandler = (event: KeyboardEvent) => {
 		if (isEditableTarget(event.target)) return;
 
+		// Intercept the ContextMenu key (physical menu key on keyboard)
+		// before the native contextmenu event fires on whatever has DOM focus.
+		if (event.key === 'ContextMenu' || event.key === 'Apps') {
+			event.preventDefault();
+			busEmit('shortcut:context-menu');
+			return;
+		}
+
 		const shortcut = eventToShortcut(event);
 		const action = findMatchingAction(shortcut);
 		if (!action) return;

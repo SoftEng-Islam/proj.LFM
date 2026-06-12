@@ -117,6 +117,7 @@ function scrollItemIntoView(id: string) {
 		const el = document.querySelector(`[data-item-id="${CSS.escape(id)}"]`);
 		if (el) {
 			el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+			(el as HTMLElement).focus({ preventScroll: true });
 		}
 	});
 }
@@ -242,7 +243,26 @@ function openContextMenu(e: MouseEvent, itemId: string) {
 	if (!store.selectedItemIds.has(itemId)) {
 		setPrimarySelection(itemId);
 	}
-	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId };
+
+	let x = e.clientX;
+	let y = e.clientY;
+
+	// Handle keyboard context menu invocation. A true mouse right-click has e.button === 2.
+	// If triggered by keyboard, button is typically 0.
+	if (e.button !== 2) {
+		const itemEl = document.querySelector(`[data-item-id="${CSS.escape(itemId)}"]`);
+		if (itemEl) {
+			const rect = itemEl.getBoundingClientRect();
+			x = rect.left + rect.width / 2;
+			y = rect.top + rect.height / 2;
+		} else if (e.target instanceof Element) {
+			const rect = e.target.getBoundingClientRect();
+			x = rect.left + rect.width / 2;
+			y = rect.top + rect.height / 2;
+		}
+	}
+
+	contextMenu.value = { visible: true, x, y, itemId };
 }
 
 function closeContextMenu() {
@@ -251,10 +271,23 @@ function closeContextMenu() {
 
 function openEmptyContextMenu(e: MouseEvent) {
 	e.preventDefault();
+	
+	// If a keyboard triggers the context menu on the empty space but we have a focused item,
+	// redirect to the item's context menu.
+	if (focusedItemId.value && e.button !== 2) {
+		openContextMenu(e, focusedItemId.value);
+		return;
+	}
+
 	store.clearSelection();
 	selectionAnchorId.value = null;
 	focusedItemId.value = null;
-	contextMenu.value = { visible: true, x: e.clientX, y: e.clientY, itemId: '' };
+	contextMenu.value = { 
+		visible: true, 
+		x: e.clientX || window.innerWidth / 2, 
+		y: e.clientY || window.innerHeight / 2, 
+		itemId: '' 
+	};
 }
 
 // ── Dialog openers ──────────────────────────────────────────────────────────
@@ -473,6 +506,11 @@ function iconFilterClass(isHidden?: boolean) {
 
 function handleItemClick(entry: FileEntry, e: MouseEvent) {
 	focusedItemId.value = entry.id;
+
+	// Ensure the clicked element receives actual DOM focus so keyboard events target it
+	const currentTarget = e.currentTarget as HTMLElement | null;
+	if (currentTarget) currentTarget.focus({ preventScroll: true });
+
 	if (e.shiftKey) {
 		if (!selectionAnchorId.value) selectionAnchorId.value = activeSelectedId() || entry.id;
 		setRangeSelection(entry.id);
@@ -525,6 +563,35 @@ onMounted(() => {
 			store.clearSelection();
 			selectionAnchorId.value = null;
 			focusedItemId.value = null;
+		})
+	);
+
+	// Open the correct full context menu for the currently focused or selected item.
+	// This is triggered by the physical ContextMenu/Apps key on the keyboard.
+	busCleanup.push(
+		busOn('shortcut:context-menu', () => {
+			const targetId = focusedItemId.value || activeSelectedId();
+			if (targetId) {
+				// Locate the item in the DOM and position the menu at its center
+				const el = document.querySelector(`[data-item-id="${CSS.escape(targetId)}"]`);
+				if (el) {
+					const rect = el.getBoundingClientRect();
+					contextMenu.value = {
+						visible: true,
+						x: rect.left + rect.width / 2,
+						y: rect.top + rect.height / 2,
+						itemId: targetId,
+					};
+				}
+			} else {
+				// No item focused — open the background context menu in the center
+				contextMenu.value = {
+					visible: true,
+					x: window.innerWidth / 2,
+					y: window.innerHeight / 2,
+					itemId: '',
+				};
+			}
 		})
 	);
 });
