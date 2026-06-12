@@ -486,14 +486,14 @@ onUnmounted(() => {
 					path(d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z")
 					line(x1="12" y1="9" x2="12" y2="13")
 					line(x1="12" y1="17" x2="12.01" y2="17")
-			.LFM-nav-error-title(class="text-[18px] font-semibold text-[var(--color-base-content)]")
+			.LFM-nav-error-title(class="text-[18px] font-semibold text-(--color-base-content)")
 				| {{ store.navError.kind === 'permission' ? 'Access Denied' : store.navError.kind === 'not-found' ? 'Not Found' : 'Cannot Open Directory' }}
-			.LFM-nav-error-desc(class="text-[13px] text-[var(--color-base-content)] opacity-60 max-w-[360px] leading-relaxed")
+			.LFM-nav-error-desc(class="text-[13px] text-(--color-base-content) opacity-60 max-w-90 leading-relaxed")
 				| {{ store.navError.kind === 'permission' ? "You don't have permission to view this directory." : store.navError.kind === 'not-found' ? 'This directory no longer exists.' : 'An error occurred while trying to open this directory.' }}
-			.LFM-nav-error-path(class="text-[11px] font-mono bg-[color-mix(in_srgb,var(--color-base-content)_6%,transparent)] text-[var(--color-base-content)] opacity-70 py-1 px-3 rounded max-w-full overflow-hidden text-ellipsis whitespace-nowrap") {{ store.navError.path }}
+			.LFM-nav-error-path(class="text-[11px] font-mono bg-[color-mix(in_srgb,var(--color-base-content)_6%,transparent)] text-(--color-base-content) opacity-70 py-1 px-3 rounded max-w-full overflow-hidden text-ellipsis whitespace-nowrap") {{ store.navError.path }}
 			button.LFM-nav-error-btn(
 				@click="store.navError = null"
-				class="mt-1 py-2 px-5 rounded-md bg-[var(--color-base-100)] border border-[color-mix(in_srgb,var(--color-base-content)_10%,transparent)] text-[var(--color-base-content)] text-[13px] cursor-pointer transition-[background,border-color] duration-150 hover:bg-[color-mix(in_srgb,var(--color-base-content)_6%,transparent)] hover:border-[var(--color-primary)]"
+				class="mt-1 py-2 px-5 rounded-md bg-(--color-base-100) border border-[color-mix(in_srgb,var(--color-base-content)_10%,transparent)] text-(--color-base-content) text-[13px] cursor-pointer transition-[background,border-color] duration-150 hover:bg-[color-mix(in_srgb,var(--color-base-content)_6%,transparent)] hover:border-(--color-primary)"
 			) Go Back
 
 		//- ── Normal file view ────────────────────────────────────────────
@@ -509,7 +509,7 @@ onUnmounted(() => {
 					v-for="entry in store.currentEntries"
 					:key="entry.id"
 					type="button"
-					class="flex flex-col items-center w-[var(--lfm-grid-item-width,100px)] pt-2 pb-[6px] px-1 rounded border-2 border-transparent bg-transparent cursor-pointer text-[var(--color-base-content)] transition-[background,border-color] duration-100 text-center outline-none hover:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)]"
+					class="flex flex-col items-center w-(--lfm-grid-item-width,100px) pt-2 pb-1.5 px-1 rounded border-2 border-transparent bg-transparent cursor-pointer text-(--color-base-content) transition-[background,border-color] duration-100 text-center outline-none hover:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)]"
 					:class="fileEntryClass(entry.id, entry.isHidden)"
 					:aria-selected="store.selectedItemIds.has(entry.id)"
 					:title="entry.name"
@@ -519,7 +519,7 @@ onUnmounted(() => {
 					@contextmenu="(e) => openContextMenu(e, entry.id)"
 				)
 					.LFM-grid-item-icon(
-						class="flex items-center justify-center h-[var(--lfm-grid-icon-container-size,64px)] w-[var(--lfm-grid-icon-container-size,64px)] transition-all"
+						class="flex items-center justify-center h-(--lfm-grid-icon-container-size,64px) w-(--lfm-grid-icon-container-size,64px) transition-all"
 						:class="iconFilterClass(entry.isHidden)"
 					)
 						FolderIcon(v-if="isFolder(entry)" :size="gridFolderSize" :color="'orange'")
@@ -528,10 +528,10 @@ onUnmounted(() => {
 							:src="entry.preview"
 							loading="lazy"
 							decoding="async"
-							class="max-w-[var(--lfm-grid-icon-container-size,64px)] max-h-[var(--lfm-grid-icon-container-size,64px)] object-cover rounded shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
+							class="max-w-(--lfm-grid-icon-container-size,64px) max-h-(--lfm-grid-icon-container-size,64px) object-cover rounded shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
 						)
 						FileIcon(v-else :name="entry.name" :path="entry.id" :size="gridFileSize")
-					span.LFM-grid-item-name(class="mt-[6px] text-[11px] leading-[1.3] max-w-[calc(var(--lfm-grid-item-width,100px)-8px)] overflow-hidden text-ellipsis line-clamp-2 break-words") {{ entry.name }}
+					span.LFM-grid-item-name(class="mt-1.5 text-[11px] leading-[1.3] max-w-[calc(var(--lfm-grid-item-width,100px)-8px)] overflow-hidden text-ellipsis line-clamp-2 wrap-break-word") {{ entry.name }}
 
 			//- List view
 			.LFM-list(
