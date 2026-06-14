@@ -240,7 +240,7 @@ aside(aria-label="Navigation pane" class="w-full h-full flex flex-col shrink-0 p
 					IconStorage
 
 	//- Settings button
-	div(class="flex px-2")
+	div(class="flex p-2 pb-0 bg-(--color-base-200)")
 		button(
 			class="w-full bg-(--color-base-100) text-(--color-base-content) hover:text-(--color-primary) hover:bg-(--color-primary)/20 cursor-pointer flex items-center justify-center gap-x-2 p-3 rounded-md"
 			type="button"

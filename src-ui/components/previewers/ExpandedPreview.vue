@@ -233,15 +233,15 @@ onMounted(() => {
 <template lang="pug">
 Teleport(to="body")
 	Transition(
-		enter-active-class="transition-opacity duration-300 ease-in-out"
-		leave-active-class="transition-opacity duration-300 ease-in-out"
+		enter-active-class="transition-opacity duration-100 ease-in-out"
+		leave-active-class="transition-opacity duration-100 ease-in-out"
 		enter-from-class="opacity-0"
 		leave-to-class="opacity-0"
 	)
-		div(class="fixed inset-0 bg-black/40 backdrop-blur-md z-[9999] flex items-center justify-center p-10" v-if="item && !isMinimized" @click.self="close")
+		div(class="fixed inset-0 bg-black/40 backdrop-blur-md z-9999 flex items-center justify-center p-10" v-if="item && !isMinimized" @click.self="close")
 			div(
-				class="w-full max-w-[1000px] h-full max-h-[800px] bg-base-100 rounded-2xl border border-base-content/10 flex flex-col shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5),0_18px_36px_-18px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.2,1,0.3,1)]"
-				:class="{ '!max-w-none !max-h-none !rounded-none !p-0': isFullscreen }"
+				class="w-full max-w-250 h-full max-h-200 bg-base-100 rounded-2xl border border-base-content/10 flex flex-col shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5),0_18px_36px_-18px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-100 ease-[cubic-bezier(0.2,1,0.3,1)]"
+				:class="{ 'max-w-none! max-h-none! rounded-none! p-0!': isFullscreen }"
 				v-motion
 				:initial="{ opacity: 0, scale: 0.9, y: 20 }"
 				:enter="{ opacity: 1, scale: 1, y: 0 }"
@@ -256,24 +256,24 @@ Teleport(to="body")
 					div(class="flex items-center gap-1.5")
 						//- Type-specific tools
 						template(v-if="isCode || isMarkdown")
-							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content [&.is-active]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] [&.is-active]:text-primary" @click="toggleEdit" :class="{ 'is-active': isEditing }" :title="isEditing ? 'View Mode' : 'Edit Mode'")
+							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-100 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content [&.is-active]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] [&.is-active]:text-primary" @click="toggleEdit" :class="{ 'is-active': isEditing }" :title="isEditing ? 'View Mode' : 'Edit Mode'")
 								component(:is="isEditing ? IconVisibility : IconEdit")
-							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content" v-if="isEditing" @click="handleSave" title="Save Changes")
+							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-100 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content" v-if="isEditing" @click="handleSave" title="Save Changes")
 								IconSave(class="text-emerald-500")
 
 						template(v-if="isImage")
-							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content [&.is-active]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] [&.is-active]:text-primary" @click="toggleDrawing" :class="{ 'is-active': isDrawing }" title="Draw on image")
+							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-100 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content [&.is-active]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] [&.is-active]:text-primary" @click="toggleDrawing" :class="{ 'is-active': isDrawing }" title="Draw on image")
 								IconBrush
-							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content [&.is-active]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] [&.is-active]:text-primary" @click="toggleCropping" :class="{ 'is-active': isCropping }" title="Crop Image")
+							button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-100 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content [&.is-active]:bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] [&.is-active]:text-primary" @click="toggleCropping" :class="{ 'is-active': isCropping }" title="Crop Image")
 								IconCrop
 
-						div(class="w-[1px] h-5 bg-base-content/10 mx-1")
+						div(class="w-px h-5 bg-base-content/10 mx-1")
 
-						button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content" @click="toggleFullscreen" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'")
+						button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-100 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content" @click="toggleFullscreen" :title="isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'")
 							component(:is="isFullscreen ? IconFullscreenExit : IconFullscreen")
-						button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content" @click="isMinimized = true" title="Minimize")
+						button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-100 cursor-pointer bg-transparent border-none hover:bg-base-content/5 hover:text-base-content" @click="isMinimized = true" title="Minimize")
 							IconMinimize
-						button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:!bg-red-500 hover:!text-white" @click="close" title="Close")
+						button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-100 cursor-pointer bg-transparent border-none hover:bg-red-500! hover:text-white!" @click="close" title="Close")
 							IconClose
 
 				//- Body
@@ -291,7 +291,7 @@ Teleport(to="body")
 									img(class="max-w-full max-h-full block select-none LFM-expanded-image" :src="resolvedPreviewSrc" alt="Full Preview" draggable="false")
 
 									canvas(
-										class="absolute top-0 left-0 w-full h-full cursor-crosshair z-[5]"
+										class="absolute top-0 left-0 w-full h-full cursor-crosshair z-5"
 										v-if="isDrawing"
 										ref="canvasRef"
 										width="800"
@@ -307,7 +307,7 @@ Teleport(to="body")
 											class="absolute border-2 border-dashed border-primary bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] pointer-events-auto"
 											:style="{ left: cropRect.x + 'px', top: cropRect.y + 'px', width: cropRect.width + 'px', height: cropRect.height + 'px' }"
 										)
-											button(class="absolute -bottom-8 -right-[2px] bg-primary text-white border-none rounded px-3 py-1 text-xs font-semibold cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all duration-200 hover:bg-sky-500 hover:-translate-y-0.5" @click.stop="applyCrop") Apply Crop
+											button(class="absolute -bottom-8 -right-0.5 bg-primary text-white border-none rounded px-3 py-1 text-xs font-semibold cursor-pointer shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-all duration-100 hover:bg-sky-500 hover:-translate-y-0.5" @click.stop="applyCrop") Apply Crop
 							video(class="w-full h-full outline-none" v-else-if="isVideo" :src="resolvedPreviewSrc" controls autoplay)
 							CodePreview(v-else-if="isCode" :src="resolvedPreviewSrc" :title="item.name")
 							MarkdownPreview(v-else-if="isMarkdown" :src="resolvedPreviewSrc" :title="item.name")
@@ -340,15 +340,15 @@ Teleport(to="body")
 						span(v-else) Viewing
 
 	Transition(
-		enter-active-class="transition-all duration-300 ease-[cubic-bezier(0.2,1,0.3,1)]"
-		leave-active-class="transition-all duration-300 ease-[cubic-bezier(0.2,1,0.3,1)]"
+		enter-active-class="transition-all duration-100 ease-[cubic-bezier(0.2,1,0.3,1)]"
+		leave-active-class="transition-all duration-100 ease-[cubic-bezier(0.2,1,0.3,1)]"
 		enter-from-class="opacity-0 translate-y-10 scale-90"
 		leave-to-class="opacity-0 translate-y-10 scale-90"
 	)
-		div(class="fixed bottom-6 right-6 z-[9999] bg-base-100 border border-base-content/10 rounded-3xl py-2 px-3 pl-4 flex items-center gap-4 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.4),0_4px_10px_-2px_rgba(0,0,0,0.3)] cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-5px_rgba(0,0,0,0.5),0_6px_14px_-2px_rgba(0,0,0,0.4)] hover:border-primary" v-if="item && isMinimized" @click="isMinimized = false")
+		div(class="fixed bottom-6 right-6 z-9999 bg-base-100 border border-base-content/10 rounded-3xl py-2 px-3 pl-4 flex items-center gap-4 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.4),0_4px_10px_-2px_rgba(0,0,0,0.3)] cursor-pointer transition-all duration-100 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-5px_rgba(0,0,0,0.5),0_6px_14px_-2px_rgba(0,0,0,0.4)] hover:border-primary" v-if="item && isMinimized" @click="isMinimized = false")
 			div(class="flex items-center gap-2")
 				span(class="text-[18px]") {{ item.category === 'folder' ? '📁' : '📄' }}
-				span(class="text-[13px] font-semibold text-base-content max-w-[200px] whitespace-nowrap overflow-hidden text-ellipsis") Viewing: {{ item.name }}
-			button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-200 cursor-pointer bg-transparent border-none hover:!bg-red-500 hover:!text-white" @click.stop="close" title="Close")
+				span(class="text-[13px] font-semibold text-base-content max-w-50 whitespace-nowrap overflow-hidden text-ellipsis") Viewing: {{ item.name }}
+			button(class="w-8 h-8 rounded-lg flex items-center justify-center text-base-content/60 transition-all duration-100 cursor-pointer bg-transparent border-none hover:bg-red-500! hover:text-white!" @click.stop="close" title="Close")
 				IconClose
 </template>

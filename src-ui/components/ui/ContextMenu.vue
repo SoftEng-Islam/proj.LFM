@@ -192,132 +192,58 @@ const menuItems = computed(() => {
 
 <template lang="pug">
 Teleport(to="body")
-	div(ref="menuRef" class="LFM-context-menu" :style="{ left: `${x}px`, top: `${y}px` }" role="menu")
-		div(class="LFM-context-toolbar")
-			button(v-for="cmd in commandActions" :key="cmd.title" class="LFM-context-cmd" :class="{ 'LFM-context-cmd--disabled': cmd.disabled }" :title="cmd.title" :disabled="cmd.disabled" @click="cmd.action")
-				component(:is="cmd.icon" class="LFM-context-cmd-icon")
+	//- Context menu container — fixed positioned via :style, animated via menu-pop keyframe
+	div(
+		ref="menuRef"
+		role="menu"
+		class="fixed z-[9999] min-w-[260px] bg-(--color-base-100) backdrop-blur-[12px] border border-[color-mix(in_srgb,var(--color-base-content)_12%,transparent)] rounded-xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] p-1.5 text-(--color-base-content) text-[13px] select-none animate-[menu-pop_150ms_ease-out]"
+		:style="{ left: `${x}px`, top: `${y}px` }"
+	)
+		//- Quick-action toolbar (Cut / Copy / Paste / Rename / Delete / Properties)
+		div(class="flex items-center justify-around p-1")
+			button(
+				v-for="cmd in commandActions"
+				:key="cmd.title"
+				class="flex items-center justify-center w-9 h-9 rounded-lg bg-transparent border-none cursor-pointer text-(--color-base-content) transition-all duration-150 hover:bg-[color-mix(in_srgb,var(--color-base-content)_8%,transparent)] hover:text-(--color-primary) disabled:opacity-30 disabled:cursor-default disabled:pointer-events-none"
+				:title="cmd.title"
+				:disabled="cmd.disabled"
+				@click="cmd.action"
+			)
+				component(:is="cmd.icon" class="text-[18px]")
 
-		div(class="LFM-context-divider")
+		//- Divider between toolbar and menu list
+		div(class="h-px bg-[color-mix(in_srgb,var(--color-base-content)_10%,transparent)] my-1.5 mx-1 opacity-60")
 
+		//- Menu item list
 		template(v-for="(item, i) in menuItems" :key="i")
-			div(v-if="'divider' in item && item.divider" class="LFM-context-divider")
-			button(v-else-if="'label' in item" class="LFM-context-item" :class="{ 'LFM-context-item--disabled': item.disabled }" role="menuitem" :disabled="item.disabled" @click="item.action && item.action()")
-				component(:is="item.icon" class="LFM-context-item-icon")
-				span(class="LFM-context-item-label") {{ item.label }}
-				span(v-if="'hasArrow' in item && item.hasArrow" class="LFM-context-item-arrow") ›
+			//- Divider row
+			div(
+				v-if="'divider' in item && item.divider"
+				class="h-px bg-[color-mix(in_srgb,var(--color-base-content)_10%,transparent)] my-1.5 mx-1 opacity-60"
+			)
+			//- Action row
+			button(
+				v-else-if="'label' in item"
+				role="menuitem"
+				class="flex items-center gap-3 w-full py-2 px-3 rounded-md bg-transparent border-none cursor-pointer text-(--color-base-content) text-left transition-all duration-150 hover:bg-[color-mix(in_srgb,var(--color-base-content)_8%,transparent)] disabled:opacity-40 disabled:cursor-default disabled:pointer-events-none"
+				:disabled="item.disabled"
+				@click="item.action && item.action()"
+			)
+				component(:is="item.icon" class="text-[18px] w-5 text-center shrink-0 opacity-80")
+				span(class="flex-1") {{ item.label }}
+				span(v-if="'hasArrow' in item && item.hasArrow" class="opacity-40 text-[16px]") ›
 </template>
 
-<style scoped>
-@reference "tailwindcss";
-
-.LFM-context-menu {
-	position: fixed;
-	z-index: 9999;
-	min-width: 260px;
-	background: var(--color-base-100);
-	backdrop-filter: blur(12px);
-	border: 1px solid color-mix(in srgb, var(--color-base-content) 12%, transparent);
-	border-radius: 12px;
-	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-	padding: 6px;
-	color: var(--color-base-content);
-	font-size: 13px;
-	user-select: none;
-	animation: menu-pop 150ms ease-out;
-}
-
+<style>
+/* Only the keyframe definition remains — everything else is expressed as Tailwind classes above */
 @keyframes menu-pop {
 	from {
 		opacity: 0;
 		transform: scale(0.95) translateY(-10px);
 	}
-
 	to {
 		opacity: 1;
 		transform: scale(1) translateY(0);
 	}
-}
-
-.LFM-context-toolbar {
-	display: flex;
-	align-items: center;
-	justify-content: space-around;
-	padding: 4px;
-}
-
-.LFM-context-cmd {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 36px;
-	height: 36px;
-	border-radius: 8px;
-	background: transparent;
-	border: none;
-	cursor: pointer;
-	color: var(--color-base-content);
-	transition: all 150ms ease;
-}
-
-.LFM-context-cmd:hover:not(:disabled) {
-	background: color-mix(in srgb, var(--color-base-content) 8%, transparent);
-	color: var(--color-primary);
-}
-
-.LFM-context-cmd--disabled {
-	opacity: 0.3;
-	cursor: default;
-}
-
-.LFM-context-cmd-icon {
-	font-size: 18px;
-}
-
-.LFM-context-divider {
-	height: 1px;
-	background: color-mix(in srgb, var(--color-base-content) 10%, transparent);
-	margin: 6px 4px;
-	opacity: 0.6;
-}
-
-.LFM-context-item {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	width: 100%;
-	padding: 8px 12px;
-	border-radius: 6px;
-	background: transparent;
-	border: none;
-	cursor: pointer;
-	color: var(--color-base-content);
-	text-align: left;
-	transition: all 150ms ease;
-}
-
-.LFM-context-item:hover:not(:disabled) {
-	background: color-mix(in srgb, var(--color-base-content) 8%, transparent);
-}
-
-.LFM-context-item--disabled {
-	opacity: 0.4;
-	cursor: default;
-}
-
-.LFM-context-item-icon {
-	font-size: 18px;
-	width: 20px;
-	text-align: center;
-	flex-shrink: 0;
-	opacity: 0.8;
-}
-
-.LFM-context-item-label {
-	flex: 1;
-}
-
-.LFM-context-item-arrow {
-	opacity: 0.4;
-	font-size: 16px;
 }
 </style>
