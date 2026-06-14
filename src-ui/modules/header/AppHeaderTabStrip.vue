@@ -199,34 +199,67 @@ function handleTabKeydown(tabId: string, event: KeyboardEvent) {
             ?.focus(),
     );
 }
+
+/**
+ * Returns the dynamic classes for a tab pill.
+ * Handles active, dragging, drop-target, and focus-visible states.
+ */
+function tabPillClass(tabId: string) {
+    const isActive = activeTabId.value === tabId;
+    const isBeingDragged = draggedTabId.value === tabId;
+    const isDropTarget = dragOverTabId.value === tabId;
+
+    return [
+        // Base layout & shape
+        'tab-pill relative flex items-center min-w-35 max-w-55 h-9.5 px-3',
+        'cursor-pointer text-xs no-underline rounded-lg',
+        'transition-all duration-150 outline-none will-change-[transform,opacity]',
+        // Active vs idle background
+        isActive
+            ? 'bg-(--color-primary)/20 z-10 text-primary font-semibold shadow-sm ring-1 ring-primary/15'
+            : 'bg-base-content/15 hover:bg-base-content/30',
+        // Being dragged
+        isBeingDragged ? 'opacity-40 scale-95 cursor-grabbing' : '',
+        // Drop target highlight (only when not the tab being dragged)
+        isDropTarget && !isBeingDragged
+            ? '!bg-[color-mix(in_srgb,var(--color-primary)_18%,color-mix(in_srgb,var(--color-base-content)_12%,transparent))]'
+            : '',
+    ];
+}
 </script>
 
 <template lang="pug">
 div(class="flex items-center h-full bg-base-300 shrink-0 select-none" data-tauri-drag-region)
+    //- Tab strip — isolate stacking context so z-index of drop-indicator stays local
     div(
         ref="tabStripRef"
-        class="tab-strip relative flex items-center h-full gap-2 overflow-hidden [-webkit-app-region:no-drag]"
-        :class="{ 'is-dragging': isDragging }"
+        class="relative flex items-center h-full gap-2 overflow-hidden isolate [-webkit-app-region:no-drag]"
         role="tablist"
         aria-label="Open folders"
         @dragover="handleDragOver"
         @drop="handleDrop"
         @dragleave="handleDragLeave"
     )
-        span(class="drop-indicator" :style="dropIndicatorStyle" aria-hidden="true")
+        //- Drop position indicator bar
+        span(
+            class="absolute left-0 top-[7px] bottom-[7px] z-30 w-[3px] rounded-full bg-(--color-primary) pointer-events-none transition-[transform,opacity] duration-[120ms] ease-out shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-primary)_35%,transparent),0_0_16px_color-mix(in_srgb,var(--color-primary)_55%,transparent)]"
+            :style="dropIndicatorStyle"
+            aria-hidden="true"
+        )
+
         transition-group(name="tab-list" tag="div" class="flex items-center h-full gap-2")
             RouterLink(
                 v-for="tab in store.windowTabs"
                 :key="tab.id"
                 :data-tab-id="tab.id"
                 :to="{ path: resolveAppRoutePath(tab.path), query: { tab: tab.id } }"
-                @click="store.setActiveTab(tab.id)"
-                :class="['tab-pill group relative flex items-center min-w-35 max-w-55 h-9.5 px-3 cursor-pointer text-xs no-underline rounded-lg transition-all duration-150 outline-none', activeTabId === tab.id ? 'bg-(--color-primary)/20 z-10 text-primary font-semibold shadow-sm ring-1 ring-primary/15' : 'bg-base-content/15 hover:bg-base-content/30', draggedTabId === tab.id ? 'is-being-dragged opacity-40 scale-95' : '', dragOverTabId === tab.id ? 'is-drop-target' : '']"
+                :class="tabPillClass(tab.id)"
                 role="tab"
                 :aria-selected="activeTabId === tab.id"
                 :aria-grabbed="draggedTabId === tab.id"
                 draggable="true"
                 title="Drag to reorder · Alt+Left/Right to move"
+                @click="store.setActiveTab(tab.id)"
                 @dragstart="handleDragStart(tab.id, $event)"
                 @dragend="handleDragEnd"
                 @keydown="handleTabKeydown(tab.id, $event)"
@@ -234,68 +267,33 @@ div(class="flex items-center h-full bg-base-300 shrink-0 select-none" data-tauri
                 div(class="flex items-center justify-center gap-x-2 w-full overflow-hidden pointer-events-none")
                     FolderIcon(:color="'var(--color-primary)'" :size="18" class="pb-1 shrink-0")
                     span(class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap font-normal") {{ tab.label }}
+                //- Close button — only visible when more than one tab is open
                 button(
                     v-if="store.windowTabs.length > 1"
-                    class="tab-close flex items-center justify-center w-5 h-5 ml-2 rounded-md bg-base-100/80 border-none cursor-pointer text-base-content text-[12px] hover:text-error hover:bg-error/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/40"
+                    class="tab-close-btn flex items-center justify-center w-5 h-5 ml-2 rounded-md bg-base-100/80 border-none cursor-pointer text-base-content text-[12px] hover:text-error hover:bg-error/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error/40 [-webkit-app-region:no-drag]"
                     title="Close tab"
                     @click.prevent="handleCloseTab(tab.id)"
                     @dragstart.prevent
                 )
                     IconClose
 
-        button(class="new-tab-button flex items-center justify-center w-7 h-7 ml-1.5 rounded-md border-none cursor-pointer text-lg bg-base-content/10 hover:bg-(--color-primary)/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" title="New tab" @click="handleNewTab")
-            IconAdd
+    //- New tab button
+    button(
+        class="flex items-center justify-center w-7 h-7 ml-1.5 rounded-md border-none cursor-pointer text-lg bg-base-content/10 hover:bg-(--color-primary)/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 [-webkit-app-region:no-drag]"
+        title="New tab"
+        @click="handleNewTab"
+    )
+        IconAdd
 
     div(class="flex-1 [-webkit-app-region:drag]" data-tauri-drag-region)
 </template>
 
-<style scoped lang="scss">
-@reference "tailwindcss";
-
-.tab-strip {
-    isolation: isolate;
-}
-
-.drop-indicator {
-    position: absolute;
-    left: 0;
-    top: 7px;
-    bottom: 7px;
-    z-index: 30;
-    width: 3px;
-    border-radius: 999px;
-    background: var(--color-primary);
-    box-shadow:
-        0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent),
-        0 0 16px color-mix(in srgb, var(--color-primary) 55%, transparent);
-    pointer-events: none;
-    transition:
-        transform 120ms ease,
-        opacity 120ms ease;
-}
-
-.tab-pill {
-    will-change: transform, opacity;
-
-    &:focus-visible {
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 45%, transparent);
-    }
-
-    &.is-drop-target:not(.is-being-dragged) {
-        background: color-mix(in srgb, var(--color-primary) 18%, var(--color-base-content) 12%);
-    }
-
-    &.is-being-dragged {
-        cursor: grabbing;
-        box-shadow: none;
-    }
-}
-
-.tab-close,
-.new-tab-button {
-    -webkit-app-region: no-drag;
-}
-
+<style>
+/*
+ * Tab transition animations for <transition-group name="tab-list">.
+ * These cannot be expressed as Tailwind utility classes — everything else
+ * has been moved to inline classes above.
+ */
 .tab-list-move,
 .tab-list-enter-active,
 .tab-list-leave-active {
@@ -312,5 +310,11 @@ div(class="flex items-center h-full bg-base-300 shrink-0 select-none" data-tauri
 
 .tab-list-leave-active {
     position: absolute;
+}
+
+/* focus-visible ring on tab pills — expressed here because Tailwind's
+   focus-visible: variant doesn't support box-shadow with CSS variables directly */
+.tab-pill:focus-visible {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 45%, transparent);
 }
 </style>

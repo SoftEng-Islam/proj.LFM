@@ -137,10 +137,10 @@ Teleport(to="body")
 		enter-from-class="opacity-0"
 		leave-to-class="opacity-0"
 	)
-		div(class="fixed inset-0 z-[10000] bg-black/40 backdrop-blur-[4px] flex items-center justify-center" v-if="state.visible" @click.self="emit('close')")
+		div(class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center" v-if="state.visible" @click.self="emit('close')")
 			div(
 				class="bg-base-100 border border-base-content/10 rounded-xl p-5 shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
-				:class="state.mode === 'advanced' ? 'w-[600px] max-h-[80vh] overflow-y-auto' : 'w-[400px]'"
+				:class="state.mode === 'advanced' ? 'w-150 max-h-[80vh] overflow-y-auto' : 'w-100'"
 				v-motion
 				:initial="{ opacity: 0, scale: 0.9, y: 20 }"
 				:enter="{ opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } }"
@@ -212,7 +212,7 @@ Teleport(to="body")
 					// Preview
 					div(class="mt-5 pt-5 border-t border-base-content/10")
 						h4(class="text-[13px] font-semibold mb-3 text-base-content") Preview
-						div(class="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-1")
+						div(class="flex flex-col gap-2 max-h-50 overflow-y-auto pr-1")
 							div(class="flex items-center gap-3 p-2 rounded-md bg-base-content/5" v-for="preview in previews" :key="preview.originalPath")
 								div(class="flex-1 text-[12px] text-base-content overflow-hidden text-ellipsis whitespace-nowrap opacity-60") {{ preview.originalName }}
 								div(class="text-base-content/40 text-[14px]") →
