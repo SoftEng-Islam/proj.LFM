@@ -27,3 +27,8 @@ Tailwind Plugins (aspect-ratio & container-queries): Verified that they aren't e
 All temporary files and scripts used to automate this mass conversion have been safely removed.
 
 The workspace is now clean from these dependencies. Feel free to let me know if you run into any compilation issues!
+
+---
+
+Make sure that the video items (in grid view and list view) in "src-ui/components/ui/Workspace.vue" are render the thumbnails using "ffmpeg-next the rust package". and check why the thumbnails doesn't appears directly, for example when I enter a dir(folder) like the downloads where I have a lot of media files like images and videos. I can only see the thumbnails of the pictures but the videos doesn't and when I click anywhere inside "div.LFM-workspace-content" the video thumbnails appears and works fine.
+also I want the same thumbnails of the selected video to be showing in "LFM-preview-section" see this file "src-ui/components/previewers/VideoPreview.vue" and "src-ui/modules/right-preview-panel/components/PreviewCanvas.vue".

@@ -446,8 +446,11 @@ export const useFileManagerStore = defineStore("file-manager", {
                     if (category === "video") {
                         getVideoThumbnail(id)
                             .then((thumbPath) => {
-                                entry.preview = convertFileSrc(thumbPath);
-                                entry.thumbnail = thumbPath;
+                                const target = this.currentEntries.find((e) => e.id === id);
+                                if (target) {
+                                    target.preview = convertFileSrc(thumbPath);
+                                    target.thumbnail = thumbPath;
+                                }
                             })
                             .catch((err) => {
                                 console.error(`Video thumbnail failed for ${file.basename}:`, err);
@@ -455,8 +458,11 @@ export const useFileManagerStore = defineStore("file-manager", {
                     } else if (category === "image") {
                         getImageThumbnail(id)
                             .then((thumbPath) => {
-                                entry.preview = convertFileSrc(thumbPath);
-                                entry.thumbnail = thumbPath;
+                                const target = this.currentEntries.find((e) => e.id === id);
+                                if (target) {
+                                    target.preview = convertFileSrc(thumbPath);
+                                    target.thumbnail = thumbPath;
+                                }
                             })
                             .catch((err) => {
                                 console.error(`Image thumbnail failed for ${file.basename}:`, err);

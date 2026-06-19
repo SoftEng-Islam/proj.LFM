@@ -1,9 +1,11 @@
-use tokio::process::Command;
 use sha2::{Sha256, Digest};
 use std::fs;
 use std::path::Path;
 use dirs::cache_dir;
 use image::imageops::FilterType;
+use ffmpeg_next as ffmpeg;
+use ffmpeg::software::scaling::{Context as ScalerContext, flag::Flags};
+use ffmpeg::util::format::Pixel;
 
 #[tauri::command]
 pub async fn get_image_thumbnail(image_path: String) -> Result<String, String> {
@@ -41,6 +43,94 @@ pub async fn get_image_thumbnail(image_path: String) -> Result<String, String> {
     Ok(thumbnail_path.to_str().unwrap().to_string())
 }
 
+fn extract_video_frame(video_path: &str) -> Result<image::DynamicImage, String> {
+    ffmpeg::init().map_err(|e| format!("Failed to init FFmpeg: {}", e))?;
+    
+    let mut input = ffmpeg::format::input(&video_path)
+        .map_err(|e| format!("Failed to open video: {}", e))?;
+        
+    let video_stream = input.streams()
+        .best(ffmpeg::media::Type::Video)
+        .ok_or_else(|| "No video stream found".to_string())?;
+        
+    let video_stream_index = video_stream.index();
+    
+    let codec_context = ffmpeg::codec::context::Context::from_parameters(video_stream.parameters())
+        .map_err(|e| format!("Failed to get codec context: {}", e))?;
+        
+    let mut decoder = codec_context.decoder().video()
+        .map_err(|e| format!("Failed to get video decoder: {}", e))?;
+        
+    // Seek to 1.0 second (1,000,000 microseconds)
+    let _ = input.seek(1_000_000, ..1_000_000);
+    
+    let mut scaler = ScalerContext::get(
+        decoder.format(),
+        decoder.width(),
+        decoder.height(),
+        Pixel::RGB24,
+        decoder.width(),
+        decoder.height(),
+        Flags::BILINEAR,
+    ).map_err(|e| format!("Failed to initialize scaler: {}", e))?;
+    
+    let mut frame = ffmpeg::util::frame::Video::empty();
+    let mut rgb_frame = ffmpeg::util::frame::Video::empty();
+    
+    let mut decoded_frame = false;
+    
+    for (stream, packet) in input.packets() {
+        if stream.index() == video_stream_index {
+            if decoder.send_packet(&packet).is_ok() {
+                while decoder.receive_frame(&mut frame).is_ok() {
+                    scaler.run(&frame, &mut rgb_frame)
+                        .map_err(|e| format!("Scaling failed: {}", e))?;
+                    decoded_frame = true;
+                    break;
+                }
+            }
+        }
+        if decoded_frame {
+            break;
+        }
+    }
+    
+    if !decoded_frame {
+        let _ = decoder.send_eof();
+        while decoder.receive_frame(&mut frame).is_ok() {
+            scaler.run(&frame, &mut rgb_frame)
+                .map_err(|e| format!("Scaling failed: {}", e))?;
+            decoded_frame = true;
+            break;
+        }
+    }
+    
+    if !decoded_frame {
+        return Err("No video frames could be decoded".to_string());
+    }
+    
+    let width = rgb_frame.width();
+    let height = rgb_frame.height();
+    let stride = rgb_frame.stride(0);
+    let data = rgb_frame.data(0);
+    
+    let mut rgb_data = Vec::with_capacity((width * height * 3) as usize);
+    for y in 0..height {
+        let start = (y as usize) * stride;
+        let end = start + (width as usize) * 3;
+        if end <= data.len() {
+            rgb_data.extend_from_slice(&data[start..end]);
+        } else {
+            return Err("RGB frame data bounds exceeded".to_string());
+        }
+    }
+    
+    let rgb_img = image::ImageBuffer::<image::Rgb<u8>, Vec<u8>>::from_raw(width, height, rgb_data)
+        .ok_or_else(|| "Failed to create ImageBuffer from RGB data".to_string())?;
+        
+    Ok(image::DynamicImage::ImageRgb8(rgb_img))
+}
+
 #[tauri::command]
 pub async fn get_video_thumbnail(video_path: String) -> Result<String, String> {
     let path = Path::new(&video_path);
@@ -59,39 +149,16 @@ pub async fn get_video_thumbnail(video_path: String) -> Result<String, String> {
         return Ok(thumbnail_path.to_str().unwrap().to_string());
     }
 
-    // Use ffmpegthumbnailer for faster video thumbnails
-    let mut cmd = Command::new("ffmpegthumbnailer");
-    cmd.args(&[
-        "-i", &video_path,
-        "-o", thumbnail_path.to_str().unwrap(),
-        "-s", "256",
-        "-c", "jpeg",
-        "-q", "8",
-    ]);
-
-    let output = cmd.output()
-        .await
-        .map_err(|e| format!("Failed to run ffmpegthumbnailer: {}", e))?;
-
-    if !output.status.success() {
-        // Fallback to ffmpeg if ffmpegthumbnailer fails
-        let mut fallback_cmd = Command::new("ffmpeg");
-        fallback_cmd.args(&[
-            "-i", &video_path,
-            "-ss", "00:00:01",
-            "-vframes", "1",
-            "-s", "256x256",
-            thumbnail_path.to_str().unwrap(),
-        ]);
-        
-        let fallback_output = fallback_cmd.output()
-            .await
-            .map_err(|e| format!("Failed to run ffmpeg fallback: {}", e))?;
-
-        if !fallback_output.status.success() {
-            return Err(format!("Thumbnail generation failed: {}", String::from_utf8_lossy(&fallback_output.stderr)));
-        }
-    }
+    let video_path_clone = video_path.clone();
+    let thumb_path_clone = thumbnail_path.clone();
+    
+    tokio::task::spawn_blocking(move || {
+        let img = extract_video_frame(&video_path_clone)?;
+        let thumbnail = img.resize(256, 256, FilterType::Lanczos3);
+        thumbnail.save(&thumb_path_clone)
+            .map_err(|e| format!("Failed to save thumbnail: {}", e))?;
+        Ok::<(), String>(())
+    }).await.map_err(|e| e.to_string())??;
 
     Ok(thumbnail_path.to_str().unwrap().to_string())
 }

@@ -439,6 +439,11 @@ export function getVideoThumbnail(videoPath: string): Promise<string> {
     return invoke("get_video_thumbnail", { videoPath });
 }
 
+/** Get the port of the local media server for HTTP streaming. */
+export function getMediaServerPort(): Promise<number> {
+    return invoke("get_media_server_port");
+}
+
 /**
  * Generate or retrieve a cached thumbnail image for an image file using Rust.
  * Returns the absolute path to the generated .jpg thumbnail.

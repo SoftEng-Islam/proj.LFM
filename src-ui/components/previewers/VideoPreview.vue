@@ -9,6 +9,7 @@ import { NativeMediaPlayer, type NativeMediaState } from '@/services/native-medi
 
 interface Props {
 	path: string;
+	thumbnail?: string;
 }
 
 const props = defineProps<Props>();
@@ -209,7 +210,7 @@ const mimeType = computed(() => LFMVideoMimeResolver.getMimeType(props.path));
 
 <template lang="pug">
 div(class="w-full h-full min-h-65 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center")
-	div(v-if="nativeReady && !fallbackMode" class="relative w-full h-full min-h-65 flex flex-col justify-end overflow-hidden rounded-lg bg-transparent")
+	div(v-if="nativeReady && !fallbackMode" class="relative w-full h-full min-h-65 flex flex-col justify-end overflow-hidden rounded-lg bg-cover bg-center bg-no-repeat" :style="nativeState.isPaused && thumbnail ? { backgroundImage: `url(${thumbnail})` } : {}")
 		div(class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/10 text-white")
 			div(class="rounded-md border border-white/15 bg-black/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/70 backdrop-blur-md") {{ statusLabel }}
 			div(class="max-w-[80%] truncate text-sm font-semibold text-white/80") {{ nativeState.filename || fileName }}
@@ -222,6 +223,6 @@ div(class="w-full h-full min-h-65 bg-black/20 rounded-lg overflow-hidden flex it
 			IconVolumeUp(class="size-4 text-white/70")
 			input(class="h-1 w-16 cursor-pointer appearance-none rounded bg-white/20 accent-white" type="range" min="0" max="100" :value="nativeState.volume" @input="handleVolume" title="Volume")
 		p(v-if="loadError" class="relative z-10 m-0 border-t border-amber-400/20 bg-amber-500/15 px-3 py-2 text-xs text-amber-100") {{ loadError }}
-	video(v-else ref="videoRef" class="w-full h-full object-contain rounded-lg shadow-lg" controls preload="metadata" :src="videoUrl" :key="videoUrl" @error="handleVideoError" @loadedmetadata="handleVideoLoadedMetadata")
+	video(v-else ref="videoRef" class="w-full h-full object-contain rounded-lg shadow-lg" controls preload="metadata" :src="videoUrl" :poster="thumbnail" :key="videoUrl" @error="handleVideoError" @loadedmetadata="handleVideoLoadedMetadata")
 	p(v-if="loadError" class="relative z-10 m-0 border-t border-amber-400/20 bg-amber-500/15 px-3 py-2 text-xs text-amber-100") {{ loadError }}
 </template>

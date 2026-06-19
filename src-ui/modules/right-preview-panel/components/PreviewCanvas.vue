@@ -94,7 +94,7 @@ div(class="relative w-full min-h-[240px] rounded-2xl overflow-hidden bg-(--color
 
 	//- Video preview
 	div(v-else-if="isVideo && previewSrc" class="w-full h-full flex items-center justify-center bg-transparent")
-		VideoPreview(:path="item.id")
+		VideoPreview(:path="item.id" :thumbnail="thumbnailSrc")
 
 	//- Audio preview
 	div(v-else-if="isAudio && previewSrc" class="w-full p-8 flex flex-col items-center gap-4 bg-(--color-base-100)/20")

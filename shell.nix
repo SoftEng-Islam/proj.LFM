@@ -26,18 +26,18 @@ let
     glib-networking
 
     # GStreamer codecs and plugins required for video/audio playback inside WebKitGTK
-    gst_all_1.gstreamer
-    gst_all_1.gst-plugins-base
-    gst_all_1.gst-plugins-good
-    gst_all_1.gst-plugins-bad
-    gst_all_1.gst-plugins-ugly
-    gst_all_1.gst-libav
-
-    # NEW: MPV library for tauri-plugin-libmpv local development
-    # mpv
+    # gst_all_1.gstreamer
+    # gst_all_1.gst-plugins-base
+    # gst_all_1.gst-plugins-good
+    # gst_all_1.gst-plugins-bad
+    # gst_all_1.gst-plugins-ugly
+    # gst_all_1.gst-libav
 
     # FFmpeg for video/audio codec support (dynamic linking)
     ffmpeg-full
+
+    # Tool to get/set ATA/SATA drive parameters under Linux
+    hdparm
   ];
 
   # Build tools and utilities needed inside the shell

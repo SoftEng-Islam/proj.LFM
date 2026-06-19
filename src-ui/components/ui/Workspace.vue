@@ -271,7 +271,7 @@ function closeContextMenu() {
 
 function openEmptyContextMenu(e: MouseEvent) {
 	e.preventDefault();
-	
+
 	// If a keyboard triggers the context menu on the empty space but we have a focused item,
 	// redirect to the item's context menu.
 	if (focusedItemId.value && e.button !== 2) {
@@ -282,11 +282,11 @@ function openEmptyContextMenu(e: MouseEvent) {
 	store.clearSelection();
 	selectionAnchorId.value = null;
 	focusedItemId.value = null;
-	contextMenu.value = { 
-		visible: true, 
-		x: e.clientX || window.innerWidth / 2, 
-		y: e.clientY || window.innerHeight / 2, 
-		itemId: '' 
+	contextMenu.value = {
+		visible: true,
+		x: e.clientX || window.innerWidth / 2,
+		y: e.clientY || window.innerHeight / 2,
+		itemId: ''
 	};
 }
 
