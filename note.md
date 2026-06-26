@@ -10,25 +10,4 @@ vue-pug-plugin
 sass
 animate.css
 
-pnpm remove xlsx vue-toastification @tailwindcss/aspect-ratio @tailwindcss/container-queries sass animate.css
-
-I've successfully updated the source files to reflect the removal of the requested packages while strictly following the project rules (including not polluting the package.json, avoiding destructive edits, and preserving existing behavior).
-
-Here's a breakdown of the changes made to ./src:
-
-sass: Since the compiler was removed, I programmatically transpired the <style lang="sass"> blocks across 38 Vue components into standard CSS using a temporary, sandboxed SASS script with pnpm. The lang="sass" tags were removed. I also compiled src-ui/styles/main.sass into src-ui/styles/main.css and updated its import in main.ts.
-vue-toastification:
-Removed initialization and imports from src-ui/main.ts.
-Stripped the useToast imports across 9 .vue components (e.g., WorkspaceOverview, ContextMenu, etc.).
-Replaced all toast.success, toast.error, etc. calls with safe console fallback equivalents so that application flows remain intact and don't throw undefined errors.
-xlsx: Removed the XLSX import and its processing block from src-ui/components/ui/OfficePreview.vue. Excel files will now safely fail gracefully and show a "disabled preview" placeholder.
-animate.css: Removed the import from src-ui/main.ts.
-Tailwind Plugins (aspect-ratio & container-queries): Verified that they aren't explicitly declared in postcss.config.ts. Because Tailwind v4+ uses direct CSS directives (or you previously removed them manually), there was no trace left to break your build.
-All temporary files and scripts used to automate this mass conversion have been safely removed.
-
-The workspace is now clean from these dependencies. Feel free to let me know if you run into any compilation issues!
-
----
-
-Make sure that the video items (in grid view and list view) in "src-ui/components/ui/Workspace.vue" are render the thumbnails using "ffmpeg-next the rust package". and check why the thumbnails doesn't appears directly, for example when I enter a dir(folder) like the downloads where I have a lot of media files like images and videos. I can only see the thumbnails of the pictures but the videos doesn't and when I click anywhere inside "div.LFM-workspace-content" the video thumbnails appears and works fine.
-also I want the same thumbnails of the selected video to be showing in "LFM-preview-section" see this file "src-ui/components/previewers/VideoPreview.vue" and "src-ui/modules/right-preview-panel/components/PreviewCanvas.vue".
+In workspace "src-ui/components/ui/Workspace.vue" there is a grid-view for the items (folders and files). and also the list-view, I want the default sort for the both of them to be sort by type so the folders will be the first then the files and the last the hidden items. also we must make the sort options that in this file `src-ui/modules/ActionToolbar/ActionToolbar.vue` works fine. also make sure that everything synced with the store and the schemas.
