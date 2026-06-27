@@ -1,3 +1,27 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { formatBytes } from '@/utils/format';
+
+const props = defineProps<{
+	filename: string;
+	fileSize: number;
+	fontType: string;
+	fontFamily: string;
+	metrics?: any;
+}>();
+
+const samples = [
+	'ABCDEFGHIJKLM',
+	'NOPQRSTUVWXYZ',
+	'abcdefghijklm',
+	'nopqrstuvwxyz',
+	'1234567890',
+	'!@#$%^&*()_+-=[]{}|;:\'",./<>?'
+];
+
+const formatFileSize = (size: number) => formatBytes(size);
+</script>
+
 <template lang="pug">
 div(class="p-4")
 	div(class="flex justify-between items-start mb-5")

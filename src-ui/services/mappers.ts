@@ -112,6 +112,7 @@ export function mapFileMetaToEntry(meta: FileMetaData, accent: AccentTone = "sky
         locationPath: locationParts,
         tags,
         collaborators: [],
+        childCount: 0,
         pinned: false,
     };
 }
@@ -140,6 +141,7 @@ export function mapTrashMetaToEntry(meta: TrashMetaData, accent: AccentTone = "s
         locationPath: [meta.original_parent, meta.basename],
         tags: ["trash"],
         collaborators: [],
+        childCount: 0,
         pinned: false,
     };
 }

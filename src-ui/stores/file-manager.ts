@@ -21,6 +21,7 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 import { defaultPath, createNavigationGroups, createInitialTabs, driveCards as initialDriveCards } from "@/modules/left-navigation/navigation";
 import { initHomeDirFromStorage } from "@/composables/useFilesystem";
 import { mapDriveInfoToCard, mapTrashMetaToEntry } from "@/services/mappers";
+import { useConfigStore } from "@/stores/config";
 import {
     convertFileSrc,
     copy as tauriCopy,
@@ -90,7 +91,6 @@ export const useFileManagerStore = defineStore("file-manager", {
 
         // Pinia automatically unwraps refs, so useStorage works here
         viewMode: useStorage<ViewMode>("lfm-view-mode", "grid"),
-        sortMode: useStorage<SortMode>("lfm-sort-mode", "modified"),
 
         settingsOpen: false,
         showHiddenFiles: false,
@@ -143,6 +143,11 @@ export const useFileManagerStore = defineStore("file-manager", {
             return state.windowTabs.map((tab) => ({ ...tab, accent: "slate" as const }));
         },
 
+        sortMode(): SortMode {
+            const configStore = useConfigStore();
+            return configStore.config.behavior.sort_mode as SortMode;
+        },
+
         sortedAndFilteredEntries(state): FileEntry[] {
             const source = state.showHiddenFiles ? [...state.currentEntries] : state.currentEntries.filter((entry) => !entry.isHidden);
             const query = state.searchQuery.trim().toLowerCase();
@@ -155,10 +160,19 @@ export const useFileManagerStore = defineStore("file-manager", {
                 : source;
 
             return filtered.sort((left, right) => {
-                if (left.kind === "folder" && right.kind !== "folder") return -1;
-                if (left.kind !== "folder" && right.kind === "folder") return 1;
+                const getPriority = (entry: FileEntry) => {
+                    if (entry.isHidden) return entry.kind === "folder" ? 3 : 4;
+                    return entry.kind === "folder" ? 1 : 2;
+                };
 
-                switch (state.sortMode) {
+                const pLeft = getPriority(left);
+                const pRight = getPriority(right);
+
+                if (pLeft !== pRight) {
+                    return pLeft - pRight;
+                }
+
+                switch (this.sortMode) {
                     case "name":
                         return left.name.localeCompare(right.name);
                     case "size":
@@ -546,7 +560,9 @@ export const useFileManagerStore = defineStore("file-manager", {
         },
 
         setSortMode(nextMode: SortMode) {
-            this.sortMode = nextMode;
+            const configStore = useConfigStore();
+            configStore.config.behavior.sort_mode = nextMode;
+            configStore.saveConfig();
         },
 
         setShowHiddenFiles(nextValue: boolean) {
@@ -565,7 +581,8 @@ export const useFileManagerStore = defineStore("file-manager", {
         cycleSortMode() {
             const order: SortMode[] = ["modified", "name", "size", "kind"];
             const currentIndex = order.indexOf(this.sortMode);
-            this.sortMode = order[(currentIndex + 1) % order.length] ?? "modified";
+            const nextMode = order[(currentIndex + 1) % order.length] ?? "modified";
+            this.setSortMode(nextMode);
         },
 
         openSettings() {

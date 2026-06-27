@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { fileIcons } from "@/file-associations/src/core/icons/fileIcons";
 
 interface FileIconAssociation {

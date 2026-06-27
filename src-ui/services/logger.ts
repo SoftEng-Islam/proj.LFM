@@ -5,7 +5,7 @@ export interface LogEntry {
     timestamp: string;
     level: "debug" | "info" | "warn" | "error";
     message: string;
-    keyValues?: Record<string, unknown>;
+    keyValues?: Record<string, string | undefined>;
 }
 
 const history: LogEntry[] = [];
@@ -58,9 +58,10 @@ export function debug(message: string, keyValues?: Record<string, string | undef
         timestamp: new Date().toLocaleTimeString(),
         level: "debug",
         message,
-        keyValues,
+        ...(keyValues ? { keyValues } : {}),
     });
-    void tauriDebug(message, { keyValues }).catch((error) => {
+    const options = keyValues ? { keyValues } : undefined;
+    void tauriDebug(message, options).catch((error) => {
         console.debug("[Logger] tauri debug failed", error);
     });
 }
@@ -72,9 +73,10 @@ export function info(message: string, keyValues?: Record<string, string | undefi
         timestamp: new Date().toLocaleTimeString(),
         level: "info",
         message,
-        keyValues,
+        ...(keyValues ? { keyValues } : {}),
     });
-    void tauriInfo(message, { keyValues }).catch((error) => {
+    const options = keyValues ? { keyValues } : undefined;
+    void tauriInfo(message, options).catch((error) => {
         console.warn("[Logger] tauri info failed", error);
     });
 }
@@ -86,9 +88,10 @@ export function warn(message: string, keyValues?: Record<string, string | undefi
         timestamp: new Date().toLocaleTimeString(),
         level: "warn",
         message,
-        keyValues,
+        ...(keyValues ? { keyValues } : {}),
     });
-    void tauriWarn(message, { keyValues }).catch((error) => {
+    const options = keyValues ? { keyValues } : undefined;
+    void tauriWarn(message, options).catch((error) => {
         console.warn("[Logger] tauri warn failed", error);
     });
 }
@@ -100,9 +103,10 @@ export function error(message: string, keyValues?: Record<string, string | undef
         timestamp: new Date().toLocaleTimeString(),
         level: "error",
         message,
-        keyValues,
+        ...(keyValues ? { keyValues } : {}),
     });
-    void tauriError(message, { keyValues }).catch((err) => {
+    const options = keyValues ? { keyValues } : undefined;
+    void tauriError(message, options).catch((err) => {
         console.error("[Logger] tauri error failed", err);
     });
 }

@@ -44,7 +44,6 @@
 		"vitest.config.ts"
 	],
 	"exclude": [
-		"src-ui/file-associations",
 		"node_modules",
 		"dist"
 	]

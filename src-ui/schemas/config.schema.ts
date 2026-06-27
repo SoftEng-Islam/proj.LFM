@@ -50,6 +50,8 @@ export interface LfmConfigBehavior {
     confirm_delete: boolean;
     /** Open files/folders with a single click instead of double */
     single_click_open: boolean;
+    /** Default sort mode for the workspace */
+    sort_mode: "name" | "modified" | "size" | "kind";
 }
 
 // ─── Terminal ───────────────────────────────────────────────────────────────
@@ -140,6 +142,7 @@ export const DEFAULT_CONFIG: LfmConfig = {
         default_path: "/drives",
         confirm_delete: true,
         single_click_open: false,
+        sort_mode: "kind",
     },
     terminal: {
         emulator: "kitty",
@@ -303,6 +306,7 @@ export function validateConfig(raw: PartialLfmConfig): LfmConfig {
             default_path: typeof behavior.default_path === "string" ? behavior.default_path : d.behavior.default_path,
             confirm_delete: typeof behavior.confirm_delete === "boolean" ? behavior.confirm_delete : d.behavior.confirm_delete,
             single_click_open: typeof behavior.single_click_open === "boolean" ? behavior.single_click_open : d.behavior.single_click_open,
+            sort_mode: ["name", "modified", "size", "kind"].includes(behavior.sort_mode as any) ? (behavior.sort_mode as any) : d.behavior.sort_mode,
         },
         terminal: {
             emulator: typeof terminal.emulator === "string" ? terminal.emulator : d.terminal.emulator,

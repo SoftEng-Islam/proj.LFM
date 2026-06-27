@@ -86,6 +86,8 @@ pub struct Behavior {
     pub confirm_delete: bool,
     #[serde(default)]
     pub single_click_open: bool,
+    #[serde(default = "default_sort_mode")]
+    pub sort_mode: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -207,6 +209,10 @@ fn default_confirm_delete() -> bool {
     true
 }
 
+fn default_sort_mode() -> String {
+    "kind".to_string()
+}
+
 fn default_terminal_emulator() -> String {
     "kitty".to_string()
 }
@@ -247,6 +253,7 @@ impl Default for Behavior {
             default_path: default_path(),
             confirm_delete: default_confirm_delete(),
             single_click_open: false,
+            sort_mode: default_sort_mode(),
         }
     }
 }
