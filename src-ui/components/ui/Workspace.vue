@@ -662,7 +662,7 @@ onUnmounted(() => {
 				class="grid grid-cols-[repeat(auto-fill,minmax(var(--lfm-grid-item-width,100px),1fr))] gap-4 p-4 mx-auto"
 				)
 				button.LFM-grid-item(
-					v-for="entry in store.currentEntries"
+					v-for="entry in store.sortedAndFilteredEntries"
 					:key="entry.id"
 					type="button"
 					class="flex flex-col items-center w-(--lfm-grid-item-width,100px) pt-2 pb-1.5 px-1 rounded border-2 border-transparent bg-transparent cursor-pointer text-(--color-base-content) transition-[background,border-color] duration-100 text-center outline-none hover:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)]"
@@ -702,7 +702,7 @@ onUnmounted(() => {
 					span.LFM-list-col(class="flex items-center gap-1.5 overflow-hidden whitespace-nowrap text-ellipsis") Type
 					span.LFM-list-col(class="flex items-center gap-1.5 overflow-hidden whitespace-nowrap text-ellipsis justify-end") Size
 				button.LFM-list-row(
-					v-for="row in store.currentEntries"
+					v-for="row in store.sortedAndFilteredEntries"
 					:key="row.id"
 					type="button"
 					class="grid grid-cols-[minmax(0,2fr)_1.2fr_1fr_0.7fr] gap-1 py-0.75 px-2 border-b border-t-0 border-l-0 border-r-0 border-[color-mix(in_srgb,var(--color-base-content)_10%,transparent)] bg-transparent cursor-pointer text-(--color-base-content) text-[12px] text-left w-full transition-colors duration-75 hover:bg-[color-mix(in_srgb,var(--color-base-content)_6%,transparent)]"

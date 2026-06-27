@@ -562,7 +562,7 @@ export const useFileManagerStore = defineStore("file-manager", {
         setSortMode(nextMode: SortMode) {
             const configStore = useConfigStore();
             configStore.config.behavior.sort_mode = nextMode;
-            configStore.saveConfig();
+            // No need to call saveConfig() — the getter is reactive off configStore.config
         },
 
         setShowHiddenFiles(nextValue: boolean) {
