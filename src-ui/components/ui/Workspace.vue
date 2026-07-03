@@ -164,7 +164,7 @@ function handleMouseMove(e: MouseEvent) {
 
 		const itemsToSelect: string[] = [];
 
-		store.currentEntries.forEach((entry) => {
+		store.sortedAndFilteredEntries.forEach((entry) => {
 			const element = document.querySelector(`[data-item-id="${entry.id}"]`) as HTMLElement;
 			if (element) {
 				const rect = element.getBoundingClientRect();
@@ -197,7 +197,7 @@ function handleMouseUp(e: MouseEvent) {
 		if (workspaceRect) {
 			const itemsToSelect: string[] = [];
 
-			store.currentEntries.forEach((entry) => {
+			store.sortedAndFilteredEntries.forEach((entry) => {
 				const element = document.querySelector(`[data-item-id="${entry.id}"]`) as HTMLElement;
 				if (element) {
 					const rect = element.getBoundingClientRect();
@@ -353,7 +353,9 @@ function currentItemsPerRow(): number {
 	const gridItems = document.querySelectorAll('.LFM-grid-item');
 	if (gridItems.length === 0) return 1;
 
-	const firstTop = (gridItems[0] as HTMLElement).offsetTop;
+	const first = gridItems[0] as HTMLElement | undefined;
+	if (!first) return 1;
+	const firstTop = first.offsetTop;
 	let count = 0;
 	for (let i = 0; i < gridItems.length; i++) {
 		if ((gridItems[i] as HTMLElement).offsetTop === firstTop) {
@@ -369,7 +371,13 @@ function currentItemsPerRow(): number {
  * Returns the currently active selected ID, if any.
  */
 function activeSelectedId(): string | null {
-	return store.selectedItemIds.size > 0 ? selectedId.value : null;
+	if (store.selectedItemIds.size === 0) return null;
+	// Return the first selected ID that actually exists in the visible list
+	const visibleItems = store.sortedAndFilteredEntries;
+	for (const id of store.selectedItemIds) {
+		if (visibleItems.some((e) => e.id === id)) return id;
+	}
+	return null;
 }
 
 /**
@@ -386,7 +394,7 @@ function setPrimarySelection(itemId: string) {
  * Used for Shift+Click and Shift+Arrow navigation.
  */
 function setRangeSelection(targetId: string) {
-	const items = store.currentEntries;
+	const items = store.sortedAndFilteredEntries;
 	if (items.length === 0) return;
 
 	const anchorId = selectionAnchorId.value || activeSelectedId() || targetId;
@@ -406,7 +414,7 @@ function setRangeSelection(targetId: string) {
  * Toggles the selection state of the currently focused item.
  */
 function toggleFocusedSelection() {
-	const focusedId = focusedItemId.value || activeSelectedId() || selectionAnchorId.value || store.currentEntries[0]?.id;
+	const focusedId = focusedItemId.value || activeSelectedId() || selectionAnchorId.value || store.sortedAndFilteredEntries[0]?.id;
 	if (!focusedId) return;
 	store.toggleItemSelection(focusedId);
 	selectionAnchorId.value = focusedId;
@@ -420,7 +428,7 @@ function toggleFocusedSelection() {
  * @param keepSelection If true, only moves focus, leaving selection as is (Ctrl/Meta key behavior)
  */
 function moveSelection(direction: 'up' | 'down' | 'left' | 'right', extend: boolean, keepSelection: boolean) {
-	const items = store.currentEntries;
+	const items = store.sortedAndFilteredEntries;
 	if (items.length === 0) return;
 
 	if (!focusedItemId.value && !activeSelectedId() && !selectionAnchorId.value) {
@@ -436,15 +444,28 @@ function moveSelection(direction: 'up' | 'down' | 'left' | 'right', extend: bool
 	if (!currentId) return;
 
 	const currentIndex = items.findIndex((item) => item.id === currentId);
-	const safeIndex = currentIndex === -1 ? 0 : currentIndex;
-	let nextIndex = safeIndex;
+	// If the currently focused item is no longer visible (e.g. filtered out), start from the top
+	if (currentIndex === -1) {
+		const firstItem = items[0];
+		if (firstItem) {
+			setPrimarySelection(firstItem.id);
+			scrollItemIntoView(firstItem.id);
+		}
+		return;
+	}
+
+	const perRow = currentItemsPerRow();
+	let nextIndex = currentIndex;
 
 	switch (direction) {
-		case 'left': nextIndex = Math.max(0, safeIndex - 1); break;
-		case 'right': nextIndex = Math.min(items.length - 1, safeIndex + 1); break;
-		case 'up': nextIndex = Math.max(0, safeIndex - currentItemsPerRow()); break;
-		case 'down': nextIndex = Math.min(items.length - 1, safeIndex + currentItemsPerRow()); break;
+		case 'left': nextIndex = Math.max(0, currentIndex - 1); break;
+		case 'right': nextIndex = Math.min(items.length - 1, currentIndex + 1); break;
+		case 'up': nextIndex = Math.max(0, currentIndex - perRow); break;
+		case 'down': nextIndex = Math.min(items.length - 1, currentIndex + perRow); break;
 	}
+
+	// Don't do anything if we're already at the boundary
+	if (nextIndex === currentIndex) return;
 
 	const target = items[nextIndex];
 	if (!target) return;
