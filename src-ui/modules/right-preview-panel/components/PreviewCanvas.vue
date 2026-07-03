@@ -15,8 +15,8 @@ import { computed, ref, useTemplateRef } from 'vue';
 
 
 import IconFullscreen from '~icons/material-symbols/fullscreen';
-import IconFile from '~icons/material-symbols/description';
-import IconFolder from '~icons/material-symbols/folder';
+import FolderIcon from '@/components/VueIcons/Folder/FolderIcon.vue';
+import FileIcon from '@/components/VueIcons/File/FileIcon.vue';
 import IconImage from '~icons/material-symbols/image';
 import IconVideo from '~icons/material-symbols/videocam';
 import IconMusic from '~icons/material-symbols/music-note';
@@ -114,7 +114,7 @@ div(class="relative w-full min-h-[240px] rounded-2xl overflow-hidden bg-(--color
 
 	//- Fallback placeholder for directories and other types
 	div(v-else class="flex flex-col items-center gap-2 opacity-40")
-		IconFile(v-if="!isDirectory" class="text-7xl")
-		IconFolder(v-else class="text-7xl")
+		FileIcon(v-if="!isDirectory" :name="item.name" :path="item.id" :size="72")
+		FolderIcon(v-else :size="72" color="orange")
 		span(v-if="isDirectory" class="font-bold tracking-widest text-xs uppercase") Directory
 </template>
