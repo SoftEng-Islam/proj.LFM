@@ -496,11 +496,13 @@ function moveSelection(direction: 'up' | 'down' | 'left' | 'right', extend: bool
 function fileEntryClass(id: string, isHidden?: boolean) {
 	const isSelected = store.selectedItemIds.has(id);
 	const isFocused = focusedItemId.value === id;
+	const isCut = store.clipboard.mode === 'cut' && store.clipboard.paths.includes(id);
 	return {
 		'!bg-[color-mix(in_srgb,var(--color-primary)_24%,transparent)] !border-[var(--color-primary)]': isSelected && isFocused,
 		'!bg-[color-mix(in_srgb,var(--color-primary)_14%,transparent)] !border-[var(--color-primary)]': isSelected && !isFocused,
 		'!bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] !border-[color-mix(in_srgb,var(--color-base-content)_20%,transparent)]': isFocused && !isSelected,
-		'opacity-[0.58]': !!isHidden && store.hiddenFilesVisualStyle !== 'normal',
+		'opacity-[0.58]': !!isHidden && store.hiddenFilesVisualStyle !== 'normal' && !isCut,
+		'opacity-[0.4] grayscale-[0.3]': isCut,
 	};
 }
 
@@ -511,11 +513,13 @@ function fileEntryClass(id: string, isHidden?: boolean) {
 function listEntryClass(id: string, isHidden?: boolean) {
 	const isSelected = store.selectedItemIds.has(id);
 	const isFocused = focusedItemId.value === id;
+	const isCut = store.clipboard.mode === 'cut' && store.clipboard.paths.includes(id);
 	return {
 		'!bg-[color-mix(in_srgb,var(--color-primary)_24%,transparent)]': isSelected && isFocused,
 		'!bg-[color-mix(in_srgb,var(--color-primary)_14%,transparent)]': isSelected && !isFocused,
 		'!bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)]': isFocused && !isSelected,
-		'opacity-[0.58]': !!isHidden && store.hiddenFilesVisualStyle !== 'normal',
+		'opacity-[0.58]': !!isHidden && store.hiddenFilesVisualStyle !== 'normal' && !isCut,
+		'opacity-[0.4] grayscale-[0.3]': isCut,
 	};
 }
 
