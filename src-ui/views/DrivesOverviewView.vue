@@ -5,7 +5,7 @@ import type { DriveInformation } from '@/services/tauri-bridge';
 import { mapDriveInfoToCard } from '@/services/mappers';
 import { useFileManagerStore } from '@/stores/file-manager';
 import { shouldShowDriveCard } from '@/utils/mount-points';
-import fileIcons from '@/modules/icons/fileIcons.ts';
+import fileIcons from '@/composables/fileIcons';
 
 // Icons
 import IconHomeStorage from '~icons/material-symbols/home-storage';

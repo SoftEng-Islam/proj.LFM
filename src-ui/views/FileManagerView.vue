@@ -3,7 +3,6 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import Workspace from '@/components/ui/Workspace.vue';
-import RenameModal from '@/components/ui/RenameModal.vue';
 import PropertiesModal from '@/components/ui/PropertiesModal.vue';
 import { useFileManagerStore } from '@/stores/file-manager';
 import type { FileEntry } from '@/types/file-manager';
@@ -12,12 +11,6 @@ const route = useRoute();
 const router = useRouter();
 const store = useFileManagerStore();
 const toast = { success: console.log, error: console.error, info: console.log, warning: console.warn };
-
-const renameDialog = ref<{ visible: boolean; path: string; currentName: string }>({
-	visible: false,
-	path: '',
-	currentName: '',
-});
 
 const propertiesDialog = ref<{ visible: boolean; item: FileEntry | null }>({
 	visible: false,

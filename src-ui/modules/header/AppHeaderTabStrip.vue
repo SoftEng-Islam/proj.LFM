@@ -242,7 +242,7 @@ div(class="flex items-center h-full bg-base-300 shrink-0 select-none" data-tauri
     )
         //- Drop position indicator bar
         span(
-            class="absolute left-0 top-[7px] bottom-[7px] z-30 w-[3px] rounded-full bg-(--color-primary) pointer-events-none transition-[transform,opacity] duration-[120ms] ease-out shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-primary)_35%,transparent),0_0_16px_color-mix(in_srgb,var(--color-primary)_55%,transparent)]"
+            class="absolute left-0 top-1.75 bottom-1.75 z-30 w-0.75 rounded-full bg-(--color-primary) pointer-events-none transition-[transform,opacity] duration-120 ease-out shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-primary)_35%,transparent),0_0_16px_color-mix(in_srgb,var(--color-primary)_55%,transparent)]"
             :style="dropIndicatorStyle"
             aria-hidden="true"
         )

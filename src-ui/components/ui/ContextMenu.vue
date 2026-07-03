@@ -196,7 +196,7 @@ Teleport(to="body")
 	div(
 		ref="menuRef"
 		role="menu"
-		class="fixed z-[9999] min-w-[260px] bg-(--color-base-100) backdrop-blur-[12px] border border-[color-mix(in_srgb,var(--color-base-content)_12%,transparent)] rounded-xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] p-1.5 text-(--color-base-content) text-[13px] select-none animate-[menu-pop_150ms_ease-out]"
+		class="fixed z-9999 min-w-65 bg-(--color-base-100) backdrop-blur-md border border-[color-mix(in_srgb,var(--color-base-content)_12%,transparent)] rounded-xl shadow-[0_12px_32px_rgba(0,0,0,0.4)] p-1.5 text-(--color-base-content) text-[13px] select-none animate-[menu-pop_150ms_ease-out]"
 		:style="{ left: `${x}px`, top: `${y}px` }"
 	)
 		//- Quick-action toolbar (Cut / Copy / Paste / Rename / Delete / Properties)
@@ -241,6 +241,7 @@ Teleport(to="body")
 		opacity: 0;
 		transform: scale(0.95) translateY(-10px);
 	}
+
 	to {
 		opacity: 1;
 		transform: scale(1) translateY(0);

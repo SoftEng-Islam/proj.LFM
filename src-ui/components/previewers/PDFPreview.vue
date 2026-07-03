@@ -87,7 +87,7 @@ div(class="flex flex-col h-full bg-base-100 rounded-xl border border-base-conten
 		div(class="text-[11px] text-base-content/60 bg-base-content/5 px-1.5 py-0.5 rounded font-medium" v-if="pageCount > 0") {{ pageCount }} page{{ pageCount > 1 ? 's' : '' }}
 
 	//- PDF content
-	div(class="flex-1 flex items-center justify-center p-4 min-h-[200px]")
+	div(class="flex-1 flex items-center justify-center p-4 min-h-50")
 		div(class="flex flex-col items-center justify-center text-base-content/60 text-xs gap-2" v-if="isLoading")
 			div(class="w-6 h-6 border-2 border-base-content/10 border-t-primary rounded-full animate-spin")
 			span Loading PDF...

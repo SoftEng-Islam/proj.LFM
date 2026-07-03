@@ -133,7 +133,7 @@ div(class="flex flex-col gap-2 p-3 bg-base-100 rounded-xl border border-base-con
 			span(class="text-[11px] font-semibold text-base-content/60 whitespace-nowrap w-7 text-center") {{ currentTimeDisplay }}
 			input(
 				v-if="isReady"
-				class="flex-1 h-1 appearance-none rounded-[2px] cursor-pointer border-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 hover:[&::-webkit-slider-thumb]:w-[14px] hover:[&::-webkit-slider-thumb]:h-[14px] hover:[&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(59,130,246,0.5)] [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-200 hover:[&::-moz-range-thumb]:w-[14px] hover:[&::-moz-range-thumb]:h-[14px] hover:[&::-moz-range-thumb]:shadow-[0_0_8px_rgba(59,130,246,0.5)]"
+				class="flex-1 h-1 appearance-none rounded-xs cursor-pointer border-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 hover:[&::-webkit-slider-thumb]:w-3.5 hover:[&::-webkit-slider-thumb]:h-3.5 hover:[&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(59,130,246,0.5)] [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:transition-all [&::-moz-range-thumb]:duration-200 hover:[&::-moz-range-thumb]:w-3.5 hover:[&::-moz-range-thumb]:h-3.5 hover:[&::-moz-range-thumb]:shadow-[0_0_8px_rgba(59,130,246,0.5)]"
 				:style="`background: linear-gradient(to right, var(--color-primary) 0%, var(--color-primary) ${progressPercent}%, color-mix(in srgb, var(--color-base-content) 10%, transparent) ${progressPercent}%, color-mix(in srgb, var(--color-base-content) 10%, transparent) 100%)`"
 				type="range"
 				min="0"
@@ -142,7 +142,7 @@ div(class="flex flex-col gap-2 p-3 bg-base-100 rounded-xl border border-base-con
 				@input="handleSeek"
 				title="Seek"
 			)
-			div(class="flex-1 h-1 bg-base-content/10 rounded-[2px]" v-else)
+			div(class="flex-1 h-1 bg-base-content/10 rounded-xs" v-else)
 			span(class="text-[11px] font-semibold text-base-content/60 whitespace-nowrap w-7 text-center") {{ durationDisplay }}
 
 		//- Volume Control
@@ -150,7 +150,7 @@ div(class="flex flex-col gap-2 p-3 bg-base-100 rounded-xl border border-base-con
 			button(class="w-6 h-6 rounded-md bg-transparent border border-base-content/10 text-base-content/60 cursor-pointer flex items-center justify-center transition-all duration-200 hover:bg-base-content/5 hover:text-base-content" @click="toggleMute" title="Mute/Unmute")
 				component(:is="isMuted ? IconVolumeMute : IconVolumeUp" class="w-4 h-4")
 			input(
-				class="w-10 h-[3px] appearance-none bg-base-content/10 rounded-[2px] cursor-pointer border-none outline-none disabled:opacity-50 disabled:cursor-not-allowed [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-base-content/60 [&::-webkit-slider-thumb]:cursor-pointer [&:not(:disabled):hover::-webkit-slider-thumb]:bg-base-content [&::-moz-range-thumb]:w-2.5 [&::-moz-range-thumb]:h-2.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-base-content/60 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&:not(:disabled):hover::-moz-range-thumb]:bg-base-content"
+				class="w-10 h-0.75 appearance-none bg-base-content/10 rounded-xs cursor-pointer border-none outline-none disabled:opacity-50 disabled:cursor-not-allowed [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-base-content/60 [&::-webkit-slider-thumb]:cursor-pointer [&:not(:disabled):hover::-webkit-slider-thumb]:bg-base-content [&::-moz-range-thumb]:w-2.5 [&::-moz-range-thumb]:h-2.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-base-content/60 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&:not(:disabled):hover::-moz-range-thumb]:bg-base-content"
 				type="range"
 				min="0"
 				max="1"
