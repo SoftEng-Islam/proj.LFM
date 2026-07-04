@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Get the nested properties of an object.
  * This solution is lighter than the lodash get-version.

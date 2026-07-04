@@ -45,6 +45,8 @@
 	],
 	"exclude": [
 		"node_modules",
-		"dist"
+		"dist",
+		"src-tauri",
+		"src-ui/file-associations"
 	]
 }

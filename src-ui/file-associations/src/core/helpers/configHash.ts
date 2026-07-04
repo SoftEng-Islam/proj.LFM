@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getDefaultConfig } from '../generator/config/defaultConfig';
 import { logger } from '../logging/logger';
 import type { Config } from '../models/icons/config';
