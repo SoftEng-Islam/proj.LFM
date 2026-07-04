@@ -3,7 +3,7 @@
 /**
  * ExpandedPreview Component — Floating mini-window for detailed file interaction
  */
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, toRaw, defineAsyncComponent } from 'vue';
 import { useFileManagerStore } from '@/stores/file-manager';
 import { storeToRefs } from 'pinia';
 
@@ -20,10 +20,10 @@ import IconVisibility from '~icons/material-symbols/visibility';
 import IconCrop from '~icons/material-symbols/crop';
 import IconBrush from '~icons/material-symbols/brush';
 
-import CodePreview from './CodePreview.vue';
-import MarkdownPreview from './MarkdownPreview.vue';
-import PDFPreview from './PDFPreview.vue';
-import OfficePreview from './OfficePreview.vue';
+const CodePreview = defineAsyncComponent(() => import('./CodePreview.vue'));
+const MarkdownPreview = defineAsyncComponent(() => import('./MarkdownPreview.vue'));
+const PDFPreview = defineAsyncComponent(() => import('./PDFPreview.vue'));
+const OfficePreview = defineAsyncComponent(() => import('./OfficePreview.vue'));
 
 const store = useFileManagerStore();
 const { expandedPreviewId, currentEntries } = storeToRefs(store);
@@ -31,7 +31,8 @@ const toast = { success: console.log, error: console.error, info: console.log, w
 
 const item = computed(() => {
 	if (!expandedPreviewId.value) return null;
-	return currentEntries.value.find(e => e.id === expandedPreviewId.value) || null;
+	const entries = toRaw(currentEntries.value);
+	return entries.find((e) => e.id === expandedPreviewId.value) || null;
 });
 
 const isImage = computed(() => item.value?.category === 'image');
@@ -217,17 +218,7 @@ function toggleEdit() {
 	isEditing.value = !isEditing.value;
 }
 
-watch(expandedPreviewId, (newId) => {
-	if (newId) {
-		loadContent();
-	}
-});
 
-onMounted(() => {
-	if (expandedPreviewId.value) {
-		loadContent();
-	}
-});
 </script>
 
 <template lang="pug">
@@ -238,14 +229,10 @@ Teleport(to="body")
 		enter-from-class="opacity-0"
 		leave-to-class="opacity-0"
 	)
-		div(class="fixed inset-0 bg-black/40 backdrop-blur-md z-9999 flex items-center justify-center p-10" v-if="item && !isMinimized" @click.self="close")
+		div(class="fixed inset-0 bg-black/60 z-9999 flex items-center justify-center p-10" v-if="item && !isMinimized" @click.self="close")
 			div(
 				class="w-full max-w-250 h-full max-h-200 bg-base-100 rounded-2xl border border-base-content/10 flex flex-col shadow-[0_30px_60px_-12px_rgba(0,0,0,0.5),0_18px_36px_-18px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-100 ease-[cubic-bezier(0.2,1,0.3,1)]"
 				:class="{ 'max-w-none! max-h-none! rounded-none! p-0!': isFullscreen }"
-				v-motion
-				:initial="{ opacity: 0, scale: 0.9, y: 20 }"
-				:enter="{ opacity: 1, scale: 1, y: 0 }"
-				:leave="{ opacity: 0, scale: 0.9, y: 20 }"
 			)
 				//- Header
 				header(class="flex items-center justify-between px-4 py-3 bg-base-100 border-b border-base-content/10 shrink-0")
